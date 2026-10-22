@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Open hardware, one layer up</title>
+<style>
+:root{--ground:#f0ece1;--card:#f6f2e7;--line:#d9d2c0;--ink:#1a2230;--ink2:#56637a;--accent:#0f4c81;--accent-soft:#e2ebf4;
+--good:#1a6e4f;--good-bg:#dcebe1;--warn:#9a6200;--warn-bg:#f1e4c6;--bad:#a8342a;--bad-bg:#f0d9d4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:48px 16px 80px}
+.eyebrow{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1,h2,.big{font-family:Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-.01em}
+h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:14px 0 16px}
+h2{font-size:26px;margin:0 0 6px}
+.stand{font-size:19px;color:var(--ink2);max-width:760px;margin:0 0 18px}
+.meta{font:12px/1.6 ui-monospace,Menlo,monospace;color:var(--ink2);display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:28px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 40px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px}
+.tile .big{font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.tile .lbl{font-size:13px;color:var(--ink2);margin-top:6px}
+section{margin:0 0 44px}
+.lede{color:var(--ink2);margin:0 0 16px;max-width:760px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px 20px;margin:0 0 14px}
+.card h3{margin:0 0 4px;font:600 18px/1.3 Georgia,serif}
+.n{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:var(--accent);text-transform:uppercase}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:10px}
+@media(max-width:700px){.cols{grid-template-columns:1fr}}
+.cols h4{margin:0 0 4px;font:600 11px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+.cols p,.cols ul{margin:0;font-size:15px}
+ul{padding-left:18px}
+li{margin:2px 0}
+code{font:13px ui-monospace,Menlo,monospace;background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+.pill{display:inline-block;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:99px;margin-left:8px;vertical-align:middle}
+.good{background:var(--good-bg);color:var(--good)}.warn{background:var(--warn-bg);color:var(--warn)}.bad{background:var(--bad-bg);color:var(--bad)}
+.ask{background:var(--accent);color:#f4f2ec;border-radius:8px;padding:22px 24px}
+.ask h2{color:#f4f2ec}.ask li{margin:6px 0}.ask .eyebrow{color:#b9cfe6}
+.scroll{overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{position:sticky;top:0;background:var(--accent-soft);text-align:left;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;padding:10px 12px}
+td{padding:9px 12px;border-top:1px solid var(--line);vertical-align:top}
+tr:hover td{background:#f1ecdd}
+.talk p{margin:0 0 10px}.talk b{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--accent)}
+footer{color:var(--ink2);font-size:13px}
+</style>
+</head>
+<body>
+<main>
+
+<div class="eyebrow">HackAIWoo · alternate pitch · for Seeed Studio</div>
+<h1>The SO-101 is open. We built the layer that makes it safe, visible and easy to use, and we are giving it back.</h1>
+<p class="stand">Seeed and the SO-ARM100/101 community opened the hardware. The next barrier to adoption is not the arm. It is what sits above it: who owns the serial port, what stops a model from crashing the arm into the table, how a newcomer sees what is happening, and how an AI agent drives it without guessing. We built that layer in a hackathon and propose to contribute it upstream.</p>
+<div class="meta"><span>audience: Seeed Studio team</span><span>hardware: SO-ARM101 · LeRobot 0.6.1</span><span>prepared 2026-10-23</span><span>sibling of: hackathon-pitch-script.html</span></div>
+
+<div class="tiles">
+  <div class="tile"><div class="big">1</div><div class="lbl">process owns the serial port; everything else is a client</div></div>
+  <div class="tile"><div class="big">31</div><div class="lbl">MCP tools an agent can call, all through the same guards</div></div>
+  <div class="tile"><div class="big">164</div><div class="lbl">tests in the daemon, run against a fake bus, no hardware needed</div></div>
+  <div class="tile"><div class="big">17</div><div class="lbl">recorded demonstrations, each with an outcome card</div></div>
+  <div class="tile"><div class="big">0</div><div class="lbl">ways for an agent to take the arm from a human</div></div>
+</div>
+
+<section>
+  <div class="eyebrow">The gap</div>
+  <h2>Open hardware gets bought. Open infrastructure gets used.</h2>
+  <p class="lede">A new SO-101 owner today meets four walls: scripts that each open the serial port and collide ("Port is in use"); no live view of load or temperature; an AI agent with no brakes; and every run lost because nothing recorded what happened. Each is solvable once, in the open, instead of by every user separately. That is the contribution.</p>
+</section>
+
+<section>
+  <div class="eyebrow">What we contribute</div>
+  <h2>Five pieces, one stack</h2>
+  <p class="lede">Each card says what exists today and what we would hand over. The heat piece is the youngest and is labelled honestly.</p>
+
+  <div class="card">
+    <div class="n">1 · Daemon <span class="pill good">working</span></div>
+    <h3>One owner for the bus, a documented API for everyone else</h3>
+    <div class="cols">
+      <div><h4>Today</h4><ul>
+        <li>Single process holds the serial port; torque is never dropped on start or exit.</li>
+        <li>20 Hz state for every servo (position, goal, load, torque, temperature) over HTTP and WebSocket.</li>
+        <li>Camera proxy, annotated vision, demo recording, named poses. Binds to loopback only.</li>
+        <li>Wraps LeRobot rather than replacing it: a <code>released</code> holder hands the bus to <code>lerobot-teleoperate</code> and takes it back.</li>
+        <li>Full <code>API.md</code> a builder can code a client from.</li>
+      </ul></div>
+      <div><h4>We would upstream</h4><ul>
+        <li>The bus-ownership pattern and API spec as a reference for the SO-ARM100 repo.</li>
+        <li>The fake-bus test harness, so contributors can develop without an arm.</li>
+        <li>A LeRobot-compatible holder handoff, already in use.</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="n">2 · MCP <span class="pill good">working</span></div>
+    <h3>Any model, open or closed, drives the same arm</h3>
+    <div class="cols">
+      <div><h4>Today</h4><ul>
+        <li>31 tools: <code>look</code>, <code>pose</code>, <code>align_to</code>, <code>grasp</code>, <code>release</code>, <code>stop</code>, demo search and replay.</li>
+        <li>Every write returns one result: <code>ok</code>, <code>frozen</code> or <code>refused</code>, plus a plain-language reason. The model never has to guess what happened.</li>
+        <li>Grab logic is a decision tree with a stated attempt budget (three jaw closes, then ask).</li>
+        <li>A cheap model (Haiku) was used as the stress test; its failures drove the tool design.</li>
+      </ul></div>
+      <div><h4>We would upstream</h4><ul>
+        <li>The MCP server, as the first standard tool interface for the SO-101.</li>
+        <li>The <code>driving-the-arm</code> skill: when to look, grab, stop or ask.</li>
+        <li>The outcome vocabulary, reusable for other low-cost arms.</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="n">3 · Dashboard <span class="pill good">working</span></div>
+    <h3>See the arm, take it back, stop it</h3>
+    <div class="cols">
+      <div><h4>Today</h4><ul>
+        <li>3D model built from the real SO-101 STL meshes and URDF, driven by the same kinematics as the daemon.</li>
+        <li>Live gripper camera with a 1 cm table grid, detections and size/offset in cm.</li>
+        <li>Per-joint angle, load and temperature; sliders, nudges, named poses, big STOP, holder switch.</li>
+        <li>A log of every motion result from every client, human or agent.</li>
+      </ul></div>
+      <div><h4>We would upstream</h4><ul>
+        <li>The dashboard as a no-build, single-folder UI (vendored three.js).</li>
+        <li>The URDF-driven 3D viewer, usable by any SO-101 project.</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="n">4 · Heat performance analysis <span class="pill warn">partly built</span></div>
+    <h3>Make servo thermal behaviour visible, then measurable</h3>
+    <div class="cols">
+      <div><h4>Today</h4><ul>
+        <li>Temperature of each servo is read from the bus and shown live: servo colour on the 3D model runs 32 to 60 °C, and a joint is flagged hot at 55 °C or load above 85% of the guard.</li>
+        <li>The firmware alarm is 70 °C, so the display warns well before the servo trips itself.</li>
+        <li>Temperature is part of the API state, so any client can read it.</li>
+      </ul></div>
+      <div><h4>Not built yet (the contribution)</h4><ul>
+        <li>Temperature is not written to the command logs or demo files, so there is no thermal history to analyse.</li>
+        <li>Plan: log temperature and load per joint, report heat per task type (carry, hold, long reach), and publish a duty-cycle guide for SO-101 builds.</li>
+        <li>Plan: a temperature guard next to the load guard, so a hot servo slows or refuses before the firmware cuts out.</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="n">5 · Operational guardrails <span class="pill good">working</span></div>
+    <h3>An AI that cannot hurt the arm, the table or the person</h3>
+    <div class="cols">
+      <div><h4>Today</h4><ul>
+        <li><b>Human first:</b> the daemon starts with the human in control. Only a request carrying the human key can hand control to an agent. An agent cannot take it back.</li>
+        <li><b>STOP for anyone,</b> resume for humans only. The legacy STOP file still works.</li>
+        <li><b>Load and lag guard</b> on every move, always on; the arm freezes where it is and holds.</li>
+        <li><b>Table clearance</b> check before the move, refused with the reachable height.</li>
+        <li><b>Joint limits</b> clamp and report. One write at a time; extras are refused as <code>busy</code>.</li>
+        <li>Torque off while the arm is raised is refused without confirmation.</li>
+      </ul></div>
+      <div><h4>We would upstream</h4><ul>
+        <li>The guard set and the control model as a written safety profile for low-cost arms driven by AI.</li>
+        <li>The tests that prove each guard, including that the agent cannot override them.</li>
+      </ul></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">Proof it is real</div>
+  <h2>What a run looks like</h2>
+  <p class="lede">On 22 to 23 Oct, Claude picked a carton and placed it on a tray through MCP on the real arm. Misses were analysed and fed back into the tool design: the grab now refuses to close the jaws when the object is not aligned, and reports <code>not_aligned</code> instead of failing silently. Twelve recorded runs are summarised in <code>reports/robot-ai-practices/run-analysis.html</code>.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Layer</th><th>What a newcomer gets</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Daemon</td><td>No port collisions; a documented API</td><td><span class="pill good">working</span></td></tr>
+      <tr><td>MCP</td><td>Any model can drive the arm with honest outcomes</td><td><span class="pill good">working</span></td></tr>
+      <tr><td>Dashboard</td><td>Live 3D, camera, loads, STOP</td><td><span class="pill good">working</span></td></tr>
+      <tr><td>Heat</td><td>Live temperature today; history and a guard next</td><td><span class="pill warn">partly built</span></td></tr>
+      <tr><td>Guardrails</td><td>Human-first control, STOP, load/table/limit guards</td><td><span class="pill good">working</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="ask">
+  <div class="eyebrow">The ask</div>
+  <h2>Three things we want from Seeed</h2>
+  <ol style="padding-left:20px;margin:8px 0 0">
+    <li><b>A home.</b> A place in the SO-ARM100/101 ecosystem (a repo under Seeed or a link from the docs) so owners find this layer on day one.</li>
+    <li><b>Servo facts.</b> Seeed's numbers on ST3215 thermal limits and duty cycle, so the heat guard uses vendor data rather than our guesses.</li>
+    <li><b>Review.</b> An engineer to check the guard set before we call it a safety profile.</li>
+  </ol>
+  <p style="margin:14px 0 0;color:#d6e3f1">In return: MIT-style licence, tests that run without hardware, and a maintainer for the first six months.</p>
+</section>
+
+<section class="talk">
+  <div class="eyebrow">Talk track · about 4 minutes</div>
+  <h2>Say it like this</h2>
+  <p><b>30 s</b> "You opened the arm. Thank you: we built on it in a day. What we hit next was not hardware. It was the layer above."</p>
+  <p><b>60 s</b> "Four problems: port collisions, no visibility, an AI with no brakes, no memory of what happened. We solved them once. One daemon owns the bus. Everything else is a client."</p>
+  <p><b>60 s</b> Live: open the dashboard, show the 3D model and temperature colours. Ask the agent to pick the carton. Hit STOP mid-move. "It froze where it was. The agent cannot take control back; only I can."</p>
+  <p><b>45 s</b> "Heat is the youngest piece. We show temperature live. We do not yet log it. That is where we want your servo data."</p>
+  <p><b>45 s</b> The ask: a home, servo facts, a reviewer. "We would rather this be yours than ours."</p>
+</section>
+
+<section>
+  <div class="eyebrow">Appendix</div>
+  <h2>Method and caveats</h2>
+  <ul>
+    <li>Figures come from the repo at commit <code>15d3a6d</code>: 164 test functions across the daemon tests, 31 MCP tool names, 17 demo folders in the main checkout.</li>
+    <li>Heat: the colour ramp and 55 °C flag are in <code>static/arm3d.js</code>; temperature is polled about every 2.5 s (every 50th poll). No temperature appears in <code>logs/20261023.jsonl</code>, so no heat analysis exists yet. Do not present it as done.</li>
+    <li>The 70 °C firmware alarm is a comment in our code; confirm it against the ST3215 datasheet before quoting it to Seeed.</li>
+    <li>Guards are advisory in one case: table clearance depends on a model that is wrong when the arm rests on something.</li>
+    <li>"Licence" and "maintainer for six months" are offers to confirm with the team, not yet decided.</li>
+    <li>Vision uses YOLO-World and is imperfect for small objects above 6 cm; the pitch claims one successful carton pick and a documented set of failures.</li>
+  </ul>
+</section>
+
+<footer>Alternate to <code>reports/hackathon-pitch-script.html</code> (the "Arms, not bodies" talk). Local file, not published.</footer>
+</main>
+</body>
+</html>
