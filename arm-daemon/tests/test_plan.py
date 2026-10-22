@@ -80,3 +80,43 @@ def test_replan_rules(sk, fd):
     assert p3["attempt"] == 3 and p3["shift_along_jaws_cm"] != 0
     p4 = sk.replan(p3, {"quality": "edge"})
     assert p4["feasible"] is False and "ask" in p4["reason"]
+
+
+# --- 23 Oct 06:xx: what let two Haiku runs stall before any jaw close -----------------------------
+def test_analyze_ignores_low_confidence_hits(sk, fd):
+    """A 0.07 'carton' (the leader arm's gripper) got a feasible plan. Below the planning floor a
+    detection is reported, never planned on."""
+    fd.object.update(conf=0.07)
+    a = sk.analyze_object("carton")
+    assert a["card"] is None and a["plan"] is None
+    assert "low-confidence" in a["reason"] and a["low_confidence"]["conf"] == 0.07
+    assert "align_to" in a["reason"]
+
+
+def test_analyze_pan_scan_is_relative_and_restored(sk, fd):
+    """The scan used to jump to absolute +35/-40 and leave the arm there; a failed search now ends
+    where it started so the caller's next look() is the same scene."""
+    fd.object = None
+    start = fd.q["shoulder_pan"]
+    a = sk.analyze_object("cup")
+    assert a["card"] is None
+    assert a["searched_pans"] == [round(start + d, 1) for d in (15.0, -15.0, 30.0, -30.0)]
+    assert abs(fd.q["shoulder_pan"] - start) < 1e-6
+    assert f"pan restored to {start:.1f}" in a["reason"]
+
+
+def test_analyze_surveys_lower_at_same_xy_when_high_is_unreachable(sk, fd):
+    """Near the base a 12 cm top-down pose is unreachable; the old fallback moved x OUT to 24 cm,
+    away from the object. Now it lowers z above the same (x, y) and says so."""
+    sk.goto_xyz([0.15, 0.0, 0.08])
+    fd.object.update(x=0.15, y=0.0)
+    a = sk.analyze_object("carton", survey_z=0.13)
+    assert a["plan"] is not None
+    assert 0.08 <= a["survey_tool_z_m"] < 0.13 and "not top-down reachable" in a["survey_note"]
+    assert abs(a["card"]["seen_from_tool_xyz_m"][0] - 0.15) < 0.01
+
+
+def test_goto_refusal_names_the_reachable_height(sk):
+    r = sk.goto_xyz([0.15, 0.0, 0.13])
+    assert r["outcome"] == "refused" and r["reachable_z_m"] is not None and r["reachable_z_m"] < 0.13
+    assert "highest top-down reachable z is" in r["reason"]

@@ -163,3 +163,12 @@ def test_grab_descends_in_steps_below_approach(sk, fd):
     r = sk.grab(a["plan"])
     moves = [c for c in fd.calls if c[0] == "POST" and c[1] == "/move"]
     assert r["descent_steps"] >= 2 and len(moves) >= r["descent_steps"]
+
+
+def test_grasp_falls_back_to_jaws_when_detector_is_blind(sk, fd):
+    """YOLO-World does not see the carton from most heights. No detection at all is no evidence,
+    not evidence of a miss: the jaw reading decides, as it does without a label."""
+    fd.object = None
+    fd.object_width_pct = 8.0
+    r = sk.grasp(label="carton")
+    assert r["verdict"] == "held" and "vision" not in r["evidence"]

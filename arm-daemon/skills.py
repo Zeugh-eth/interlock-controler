@@ -23,6 +23,8 @@ IK_ERR_MAX = 0.006     # m
 SPEED = 20.0
 EMPTY_PCT = 3.0        # jaws closed to <= this: nothing between them
 SLIP_PCT = 2.0         # jaw opening change after a lift that means the object moved
+IK_SEED = {"shoulder_pan": 0.4, "shoulder_lift": -4.4, "elbow_flex": 7.5, "wrist_flex": 88.6, "wrist_roll": 0.0}   # look-down
+REACH_PROBE_Z = (0.12, 0.11, 0.10, 0.09, 0.08, 0.07, 0.06, 0.05)   # m, highest first: what a refusal reports as reachable
 
 
 class Skills:
@@ -78,20 +80,41 @@ class Skills:
 
     # --- base frame -----------------------------------------------------------------------------
     def _ik(self, xyz, cur, roll=None):
-        q, err = kin.ik(list(xyz), {j: cur[j] for j in kin.CHAIN})
-        tilt = math.degrees(math.acos(max(-1.0, min(1.0, -float(kin.tool_pose(q)[2, 2])))))
-        if err > IK_ERR_MAX or tilt > TILT_MAX:
-            return None, f"unreachable top-down: err {err*1000:.0f} mm, tilt {tilt:.0f} deg"
-        q["wrist_roll"] = cur["wrist_roll"] if roll is None else float(roll)
-        return {j: round(float(v), 2) for j, v in q.items()}, ""
+        """Top-down IK seeded from the current joints, then from the look-down pose when that fails:
+        a folded start pose (crouch-tight) can leave the solver in a bad local minimum for a point
+        that is reachable from look-down."""
+        best = None
+        for seed in ({j: cur[j] for j in kin.CHAIN}, {**IK_SEED, "wrist_roll": cur["wrist_roll"]}):
+            q, err = kin.ik(list(xyz), seed)
+            tilt = math.degrees(math.acos(max(-1.0, min(1.0, -float(kin.tool_pose(q)[2, 2])))))
+            if err <= IK_ERR_MAX and tilt <= TILT_MAX:
+                q["wrist_roll"] = cur["wrist_roll"] if roll is None else float(roll)
+                return {j: round(float(v), 2) for j, v in q.items()}, ""
+            if best is None or err < best[0]:
+                best = (err, tilt)
+        return None, f"unreachable top-down: err {best[0]*1000:.0f} mm, tilt {best[1]:.0f} deg"
+
+    def reachable_z(self, x, y, cur, zs=REACH_PROBE_Z) -> float | None:
+        """Highest top-down reachable z (m) above (x, y) among zs, or None."""
+        for z in zs:
+            q, _ = self._ik([x, y, z], cur)
+            if q is not None:
+                return z
+        return None
 
     def goto_xyz(self, xyz, roll=None, speed=SPEED, ignore_table=False) -> dict:
-        """Move the tool point (fingertips) to xyz in the base frame, gripper pointing down."""
+        """Move the tool point (fingertips) to xyz in the base frame, gripper pointing down.
+        A refusal says what IS reachable: the highest top-down z above the same (x, y)."""
         s = self.state()
         cur = self._joints(s)
         q, why = self._ik(xyz, cur, roll)
         if q is None:
-            return {"outcome": "refused", "reason": why, "tool_xyz_m": s["tool"]["xyz_m"]}
+            rz = self.reachable_z(xyz[0], xyz[1], cur)
+            if rz is not None and rz < float(xyz[2]):
+                why += f"; at x {xyz[0]*100:.1f} y {xyz[1]*100:.1f} cm the highest top-down reachable z is {rz*100:.1f} cm (near the base keep z at or below that)"
+            elif rz is None:
+                why += f"; nothing top-down reachable above x {xyz[0]*100:.1f} y {xyz[1]*100:.1f} cm between {REACH_PROBE_Z[-1]*100:.0f} and {REACH_PROBE_Z[0]*100:.0f} cm"
+            return {"outcome": "refused", "reason": why, "tool_xyz_m": s["tool"]["xyz_m"], "reachable_z_m": rz}
         body = {"joints": q, "speed": speed}
         if ignore_table:
             body["ignore_table"] = True
@@ -143,14 +166,16 @@ class Skills:
                 "outcome": back["outcome"], "tool_xyz_m": back["tool_xyz_m"]}
 
     def _object_at_jaws(self, label):
-        """Vision check: is `label` detected within VISION_HOLD_CM of the jaw target? (None = no view)"""
+        """Vision check: is `label` detected within VISION_HOLD_CM of the jaw target? None = the
+        detector sees no such object at all (no evidence either way, the jaw reading decides);
+        False = it sees the object somewhere else."""
         try:
             v = self._vision(label)
         except Exception:
             return None
         det = self._best_detection(v, label)
         if det is None or not det.get("offset_cm"):
-            return False
+            return None
         return abs(float(det["offset_cm"][0])) <= VISION_HOLD_CM and abs(float(det["offset_cm"][1])) <= VISION_HOLD_CM
 
     def grasp(self, close_pct=0.0, lift_cm=2.0, label: str | None = None) -> dict:
@@ -220,7 +245,9 @@ DESCENT_STEP_M = 0.015      # paced final approach: re-check alignment after eve
 VISION_HOLD_CM = 2.5        # object centre this close to the jaw target after a close = between the jaws
 EDGE_PX = 3
 MAX_ATTEMPTS = 3
-PAN_SCAN = (35.0, -40.0)
+MIN_PLAN_CONF = 0.15        # detections below this never drive a plan, an alignment or a hold verdict
+PAN_SCAN_DEG = (15.0, -15.0, 30.0, -30.0)   # RELATIVE to the pan the survey started at; restored when nothing is found
+SURVEY_FALLBACK_Z = (0.10, 0.09, 0.08)      # m: same (x, y), lower, when the requested survey height is unreachable
 
 
 def open_pct_for(width_cm: float) -> float:
@@ -244,40 +271,76 @@ class Skills(Skills):  # noqa: F811  (extends the class above; keeps one import 
         v = self._http("GET", "/vision")
         return v if isinstance(v, dict) else {"detections": []}
 
-    def _best_detection(self, v, label):
-        dets = [d for d in v.get("detections", []) if not label or label.lower() in str(d.get("label", "")).lower() or str(d.get("label", "")).lower() in label.lower()]
+    @staticmethod
+    def _label_matches(d, label) -> bool:
+        return not label or label.lower() in str(d.get("label", "")).lower() or str(d.get("label", "")).lower() in label.lower()
+
+    def _best_detection(self, v, label, min_conf: float = MIN_PLAN_CONF):
+        """Best detection of `label` at or above min_conf. The overlay hides low-confidence boxes
+        but used to let them drive plans: a 0.07 'carton' that was the leader arm's gripper got a
+        feasible plan on 23 Oct. Below the floor the detection is reported, never acted on."""
+        dets = [d for d in v.get("detections", []) if self._label_matches(d, label) and float(d.get("conf", 0)) >= min_conf]
+        return max(dets, key=lambda d: d.get("conf", 0)) if dets else None
+
+    def _low_conf_detection(self, v, label):
+        """The best match below the planning floor, for the report (None when there is none)."""
+        dets = [d for d in v.get("detections", []) if self._label_matches(d, label) and float(d.get("conf", 0)) < MIN_PLAN_CONF]
         return max(dets, key=lambda d: d.get("conf", 0)) if dets else None
 
     # --- analyze --------------------------------------------------------------------------------
     def analyze_object(self, label: str, survey_z: float = SURVEY_Z) -> dict:
         """Study the object before touching it: rise to a survey height, find it (panning if needed),
-        measure it, and derive a grasp plan: which side to close on (roll), jaw opening, heights."""
+        measure it, and derive a grasp plan: which side to close on (roll), jaw opening, heights.
+        Survey height: the requested z above the CURRENT (x, y), else lower steps at the same spot
+        (near the base 11 cm is not top-down reachable; moving x outward would move away from the
+        object). Pan scan: small relative steps around the start pan; the start pan is restored when
+        nothing is found, so the next look() shows the scene the caller had."""
         s = self.state()
         x, y = s["tool"]["xyz_m"][:2]
+        start_pan = self._joints(s)["shoulder_pan"]
+        survey_note = ""
         up = self.goto_xyz([x, y, survey_z])
-        for fx, fz in ((0.24, survey_z), (0.22, 0.09), (0.20, 0.08)):      # near the base a high top-down pose is unreachable
+        for fz in SURVEY_FALLBACK_Z:
             if up.get("outcome") == "ok":
                 break
-            up = self.goto_xyz([fx, y, fz])
+            if fz >= survey_z:
+                continue
+            up = self.goto_xyz([x, y, fz])
+            if up.get("outcome") == "ok":
+                survey_note = f"surveyed from {fz*100:.0f} cm: {survey_z*100:.0f} cm is not top-down reachable at x {x*100:.1f} cm"
+        if up.get("outcome") != "ok":
+            o = self.observe()
+            return {"card": None, "plan": None, "reason": f"could not reach a survey height above x {x*100:.1f} y {y*100:.1f} cm: {up.get('reason', '')}",
+                    "searched_pans": [], "survey_tool_z_m": o["tool_xyz_m"][2], "frame": o["frame"]}
         searched = []
-        det, v = None, self._vision(label)
+        v = self._vision(label)
         det = self._best_detection(v, label)
+        low = self._low_conf_detection(v, label)
         if det is None:
-            for pan in PAN_SCAN:
+            for dpan in PAN_SCAN_DEG:
+                pan = start_pan + dpan
                 self._http("POST", "/servo/shoulder_pan", {"deg": pan})
-                searched.append(pan)
+                searched.append(round(pan, 1))
                 v = self._vision(label)
                 det = self._best_detection(v, label)
+                low = low or self._low_conf_detection(v, label)
                 if det:
                     break
+            if det is None:
+                self._http("POST", "/servo/shoulder_pan", {"deg": start_pan})       # back to the caller's view
         if det is not None and not self._full_view(det) and float(self.state()["tool"]["xyz_m"][2]) < 0.14:
-            self.move_tool(dz=0.03)                      # half-identified object: back up once and look again
-            v = self._vision(label)
-            det = self._best_detection(v, label) or det
+            bk = self.move_tool(dz=0.03)                 # half-identified object: back up once and look again
+            if bk.get("outcome") == "ok":
+                v = self._vision(label)
+                det = self._best_detection(v, label) or det
         o = self.observe()
         if det is None:
-            return {"card": None, "plan": None, "reason": f"{label} not found from survey height (pans tried {searched})",
-                    "searched_pans": searched, "survey_tool_z_m": o["tool_xyz_m"][2], "frame": o["frame"]}
+            why = f"{label} not found from survey height {o['tool_xyz_m'][2]*100:.1f} cm (pans tried {searched}, pan restored to {start_pan:.1f})"
+            if low is not None:
+                why += f"; only a low-confidence hit ({low.get('label')} {float(low.get('conf', 0)):.2f} at offset {low.get('offset_cm')} cm), below the {MIN_PLAN_CONF} planning floor"
+            why += ". If you can see the object in the frame yourself, use align_to(label or a raw pixel) from here instead of surveying higher."
+            return {"card": None, "plan": None, "reason": why, "low_confidence": low, "searched_pans": searched,
+                    "survey_tool_z_m": o["tool_xyz_m"][2], "survey_note": survey_note, "frame": o["frame"]}
         full = self._full_view(det)
         w_cm, h_cm = (float(det["size_cm"][0]), float(det["size_cm"][1])) if det.get("size_cm") else (None, None)
         card = {"label": det.get("label", label), "conf": det.get("conf"),
@@ -289,9 +352,9 @@ class Skills(Skills):  # noqa: F811  (extends the class above; keeps one import 
                 "seen_from_tool_xyz_m": o["tool_xyz_m"], "assumes_table": det.get("assumes_table", True), "full_view": full}
         if not full:
             return {"card": card, "plan": None, "reason": f"{card['label']} partly out of view: its box touches the frame edge, so size and centre are unknown; move the arm over it or raise it and analyze again",
-                    "searched_pans": searched, "survey_tool_z_m": o["tool_xyz_m"][2], "frame": o["frame"]}
+                    "searched_pans": searched, "survey_tool_z_m": o["tool_xyz_m"][2], "survey_note": survey_note, "frame": o["frame"]}
         plan = self._plan_from_card(card)
-        return {"card": card, "plan": plan, "searched_pans": searched, "survey_tool_z_m": o["tool_xyz_m"][2], "frame": o["frame"]}
+        return {"card": card, "plan": plan, "searched_pans": searched, "survey_tool_z_m": o["tool_xyz_m"][2], "survey_note": survey_note, "frame": o["frame"]}
 
     @staticmethod
     def _full_view(det) -> bool:
