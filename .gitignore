@@ -1,0 +1,33 @@
+# Whitelist repo, created 23 Oct 2026 to register the arm-daemon agent-layer changes so they can be
+# reverted file by file (git log / git checkout <commit> -- <path>). Everything is ignored except
+# the code, tests, skill text and calibration JSON listed below; demos, weights, venvs, photos and
+# vendor trees stay out of git.
+*
+!.gitignore
+!arm-daemon/
+arm-daemon/*
+!arm-daemon/*.py
+!arm-daemon/*.md
+!arm-daemon/pytest.ini
+!arm-daemon/tests/
+arm-daemon/tests/*
+!arm-daemon/tests/*.py
+!.claude/
+.claude/*
+!.claude/skills/
+!.claude/skills/**
+!lab/
+lab/*
+!lab/arm-vision/
+lab/arm-vision/*
+!lab/arm-vision/*.json
+!reports/
+reports/*
+!reports/robot-ai-practices/
+reports/robot-ai-practices/*
+!reports/robot-ai-practices/*.html
+!docs/
+docs/*
+!docs/superpowers/
+!docs/superpowers/**
+!docs/*.md

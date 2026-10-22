@@ -1,0 +1,134 @@
+{
+ "_about": "What a good grasp looks like in the gripper camera, measured on the successful grab (vpick/grab4 frames 010-015) and checked against the failures (pad2, pad3, run1, grab3). Reference = the FIXED (left) jaw's fingertip, which never moves in the image: tip (250, 270).",
+ "fixed_tip_px": [
+  250,
+  270
+ ],
+ "ready_to_close": {
+  "box_left_edge_px": [
+   280,
+   360
+  ],
+  "box_right_edge_max_px": 560,
+  "box_fully_in_frame_horizontally": true,
+  "box_bottom_past_tip_row_min_px": 150,
+  "box_right_edge_max_px_by_opening": {
+   "50": 560,
+   "80": 610,
+   "95": 630
+  },
+  "_note_right_edge": "go3: at 95 % open the moving jaw sits beyond the frame's right edge, so the 560 px limit (measured at 50 % in grab4) refused a box that was between the jaws."
+ },
+ "steering_target": {
+  "box_left_edge_px": 330,
+  "box_bottom_px_min": 450
+ },
+ "evidence": {
+  "grab4 success": {
+   "x0": [
+    317,
+    329,
+    337,
+    338
+   ],
+   "x1": [
+    455,
+    487,
+    526,
+    535
+   ],
+   "bottom": [
+    449,
+    480,
+    480,
+    480
+   ]
+  },
+  "pad2 fail": {
+   "x0": 429,
+   "x1": 640,
+   "why": "box right of the jaw corridor"
+  },
+  "pad3 fail": {
+   "x0": 209,
+   "x1": 640,
+   "why": "flat box wider than the opening; fixed finger landed on it"
+  },
+  "run1 fail": {
+   "x0": 0,
+   "x1": 365,
+   "bottom": 261,
+   "why": "box beside the fixed finger, not under the jaws"
+  },
+  "grab3 fail": {
+   "why": "box not visible at grasp height"
+  }
+ },
+ "top_face": {
+  "_about": "go50-learn: for a box standing on edge the detector outline includes the tall front face, so 'past the tips' was true while the box was beyond the fingers. The maroon TOP face is the reliable feature. Measured on grab4 (success) vs go50 (stopped short).",
+  "trajectory_from_grab4": {
+   "0.05": [
+    397,
+    180
+   ],
+   "0.03": [
+    423,
+    236
+   ]
+  },
+  "targets_by_tool_z": {
+   "0.088": [
+    364,
+    149
+   ],
+   "0.081": [
+    374,
+    157
+   ],
+   "0.071": [
+    383,
+    161
+   ],
+   "0.059": [
+    394,
+    180
+   ],
+   "0.05": [
+    397,
+    180
+   ],
+   "0.039": [
+    405,
+    201
+   ],
+   "0.029": [
+    423,
+    236
+   ]
+  },
+  "ready_to_close": {
+   "top_face_bottom_min_px": 285,
+   "top_face_centre_x_px": [
+    360,
+    480
+   ]
+  },
+  "evidence": {
+   "grab4 grasp": {
+    "centre": [
+     423,
+     236
+    ],
+    "bottom": 308
+   },
+   "go50 short": {
+    "centre": [
+     279,
+     186
+    ],
+    "bottom": 234
+   }
+  },
+  "_targets_note": "go52: extrapolating above the measured heights put the arm behind the box. Only measured grab4 values now (8.8-2.9 cm); steering starts at 9 cm like grab4."
+ }
+}

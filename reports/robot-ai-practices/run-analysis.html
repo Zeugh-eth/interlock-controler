@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run analysis: what worked, what missed, what changed</title>
+<style>
+  :root { --paper:#f2eee3; --card:#f6f2e7; --line:#d9d2c0; --ink:#1a2230; --muted:#5b6673; --acc:#1f4e79;
+          --good:#1a6e4f; --good-bg:#dfeee6; --warn:#9a6200; --warn-bg:#f3e8cf; --bad:#a8342a; --bad-bg:#f2dcd8; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.55 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .wrap { max-width:1180px; margin:0 auto; padding:36px 28px 60px; }
+  .eyebrow { font:12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+  h1 { font-family: Georgia, "Times New Roman", serif; font-size:33px; line-height:1.15; margin:10px 0 12px; }
+  h2 { font-family: Georgia, serif; font-size:22px; margin:36px 0 12px; }
+  h3 { font-size:15px; margin:16px 0 6px; }
+  .stand { font-size:17px; color:#2c3a48; max-width:860px; }
+  .meta { font:12px ui-monospace, Menlo, monospace; color:var(--muted); margin:14px 0 26px; }
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin:18px 0 8px; }
+  .tile { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .tile b { display:block; font-family:Georgia, serif; font-size:26px; font-variant-numeric:tabular-nums; }
+  .tile span { font-size:12px; color:var(--muted); }
+  .pill { display:inline-block; padding:2px 9px; border-radius:999px; font:12px ui-monospace, Menlo, monospace; white-space:nowrap; }
+  .good { background:var(--good-bg); color:var(--good); } .warn { background:var(--warn-bg); color:var(--warn); } .bad { background:var(--bad-bg); color:var(--bad); } .na { background:#e6e1d4; color:var(--muted); }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; font-size:14px; }
+  th { font:12px ui-monospace, Menlo, monospace; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); background:#efeadc; position:sticky; top:0; }
+  tr:hover td { background:#f9f6ed; }
+  .tbl { overflow:auto; border-radius:10px; margin:10px 0 6px; max-height:720px; }
+  code { font:13px ui-monospace, Menlo, monospace; background:#ebe6d8; padding:1px 5px; border-radius:4px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:10px 0; }
+  .card h3 { margin-top:0; }
+  .num { font-variant-numeric:tabular-nums; font-family: ui-monospace, Menlo, monospace; font-size:13px; white-space:nowrap; }
+  .small { font-size:13px; color:var(--muted); }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; } @media (max-width:900px) { .grid2 { grid-template-columns:1fr; } }
+  ul li { margin:4px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">arm-daemon · 12 recorded runs · 23 October 2026, 03:48 to 05:36</div>
+  <h1>Every miss closed the jaws beside the object. Every success closed them with the whole object centred between the tips.</h1>
+  <p class="stand">Twelve episodes were reprocessed from their recordings: six human teleop runs and six agent runs. Seven succeeded, four failed outright, one is a thin-object case the data cannot settle. The human runs show the pattern that works: survey from above with the whole object in frame, settle the lateral alignment, descend slowly, close once. The agent misses share one mechanic: the jaws closed while the object was off to one side or half under a finger. The skills layer now refuses to do that.</p>
+  <div class="meta">data: arm-daemon/demos/*/frames.jsonl (state, action, tool pose, gripper frame per tick) · cards regenerated with demolib · keyframes inspected by eye · agent notes from reported_outcome/notes · no arm moved for this analysis</div>
+
+  <div class="tiles">
+    <div class="tile"><b>12</b><span>runs recorded</span></div>
+    <div class="tile"><b>7 <span class="pill good">success</span></b><span>object held and lifted</span></div>
+    <div class="tile"><b>4 <span class="pill bad">failed</span></b><span>jaws closed on nothing or object knocked</span></div>
+    <div class="tile"><b>1 <span class="pill warn">unclear</span></b><span>phone: too thin for the jaw sensor</span></div>
+    <div class="tile"><b>24</b><span>jaw closes in total</span></div>
+    <div class="tile"><b>9</b><span>empty closes by the agent before a hold</span></div>
+  </div>
+
+  <h2>The runs, labelled</h2>
+  <div class="tbl"><table>
+    <tr><th>time</th><th>task · driver</th><th>label</th><th>closes</th><th>what happened</th><th>the correct move / the mistake</th><th>skill it maps to</th></tr>
+    <tr><td class="num">03:48</td><td>pick up box · leader</td><td><span class="pill good">success</span></td><td class="num">1 + release</td><td>Opened at 6.4 cm with the whole carton in frame, 2.5 cm of lateral settling in the last 5 s, descended at 0.2 cm/s, closed at 3.7 cm, jaws 7.3 %, lifted to 45 cm, released on the box.</td><td><b>Correct:</b> full object view before descending; slow final approach; one close.</td><td>analyze_object, grab descent pacing</td></tr>
+    <tr><td class="num">03:51</td><td>pick up the carton · agent (this session)</td><td><span class="pill bad">failed</span></td><td class="num">1</td><td>Trusted the model height, straddled at 1.7 cm with 12.5 cm of lateral motion in the last 5 s, closed to 0.9 %, flipped the carton onto its side.</td><td><b>Mistake:</b> mismeasurement of height (carton sat 2 cm higher on the Seeed box) and closing without checking the object was between the tips.</td><td>descend_to_contact, grab alignment gate</td></tr>
+    <tr><td class="num">03:59</td><td>pick up box · leader</td><td><span class="pill na">no attempt</span></td><td class="num">0</td><td>20 s, gripper never opened. A false start.</td><td>none</td><td>none</td></tr>
+    <tr><td class="num">03:59</td><td>demo · leader</td><td><span class="pill good">success</span></td><td class="num">2</td><td>First close at 37 cm in the air (regrip), then closed at 4.8 cm, jaws 11 %, lifted 40 cm.</td><td><b>Correct:</b> human re-opened and re-approached instead of forcing it.</td><td>replan</td></tr>
+    <tr><td class="num">04:01</td><td>pickupbox-3 · leader</td><td><span class="pill good">success</span></td><td class="num">1</td><td>31 s run: descended straight onto the carton at 3.5 cm, jaws 7.3 %, lifted 33 cm.</td><td><b>Correct:</b> fastest clean pick; same height and jaw reading as 03:48, so the grasp numbers are repeatable.</td><td>find_demos (the card now gives these numbers)</td></tr>
+    <tr><td class="num">04:17</td><td>pick up the carton · agent (fork)</td><td><span class="pill good">success</span></td><td class="num">1</td><td>project + goto above the carton, 3 lateral corrections from observe, straddled to 0.6 cm, jaws settled at 4.6 %, held through an 8 cm lift.</td><td><b>Correct:</b> corrected laterally from fresh observations before closing. <b>Weak:</b> closed 3 cm lower than the human grasps (0.6 vs 3.5), gripping the carton's bottom edge; carried it dangling.</td><td>grab (grasp height from the card, not the model)</td></tr>
+    <tr><td class="num">04:38</td><td>place the carton on the white pad · agent (fork)</td><td><span class="pill good">success</span></td><td class="num">0 (release only)</td><td>Pan scan found the pad; projection 5 cm off, corrected with 3 move_tool steps; contact detection never fired; released at 3.2 cm; carton on the pad but tilted.</td><td><b>Mistake:</b> the pixel-to-table projection is biased (same 5 cm in two runs). <b>Correct:</b> each correction was checked with observe.</td><td>grab gain measurement, descend_to_contact threshold</td></tr>
+    <tr><td class="num">04:52</td><td>pick box, move it, put back · leader</td><td><span class="pill good">success</span></td><td class="num">1</td><td>Closed at 6.7 cm (carton standing on its side), jaws 9.5 %, carried 30 cm sideways and put back.</td><td><b>Correct:</b> grasped the narrow 3 cm side; the human chose the orientation that fits the jaws.</td><td>analyze_object (narrow side rule)</td></tr>
+    <tr><td class="num">04:57</td><td>pick carton from the pad, put it on the box · agent (fork)</td><td><span class="pill good">success, late</span></td><td class="num">6</td><td>Four empty closes (z 1.1 to 3.2 cm, jaws 0.9 %) with the carton beside or under one jaw each time; after surveying from 11 cm, one aligned attempt caught the carton by its edge (3.5 %) and placed it.</td><td><b>Mistake:</b> approached a half-identified object from a close-up: size, orientation and the rolled image axes were all misjudged. <b>Correct:</b> the survey fixed all three at once.</td><td>analyze_object full_view, grab alignment gate</td></tr>
+    <tr><td class="num">05:10</td><td>pickup the phone · leader</td><td><span class="pill warn">unclear</span></td><td class="num">2</td><td>First close at 2.3 cm settled at 9.4 % then reopened (regrip); second close at 1.5 cm read 1.1 %, the same as fully shut, with no lift inside 6 s. The frame shows the phone between the jaws.</td><td><b>Limit:</b> a 0.8 cm object is below what the jaw percent can report; only vision or the human's label can settle it.</td><td>grasp(label) vision verdict; demo_stop(reported_outcome)</td></tr>
+    <tr><td class="num">05:14</td><td>flip the box sideways · leader</td><td><span class="pill good">success</span></td><td class="num">3</td><td>Closed at 6.1 cm (10.6 %), lifted, re-gripped at 8.8 cm, set it down on its side, final close empty after release.</td><td><b>Correct:</b> regrips were deliberate; 41 cm of lateral motion before the last close is the human repositioning, not searching.</td><td>none (teleop)</td></tr>
+    <tr><td class="num">05:31</td><td>grab the box · agent (new session)</td><td><span class="pill good">success, late</span></td><td class="num">3</td><td>Two empty closes at 3.8 and 1.1 cm with the carton off to the right of the jaws (keyframe 000035), then a hold at 0.8 cm, jaws 5.9 %, lifted 8 cm.</td><td><b>Mistake:</b> same as 04:57: closed with the object beside a jaw, twice, after only 4 cm of lateral adjustment.</td><td>grab alignment gate</td></tr>
+  </table></div>
+  <p class="small">Leader runs also show a close after the release (e.g. 03:48 at 79 s, 22.9 cm, 1.1 %): the human shutting the jaws on the way home. The cards list every close; those post-release closes are not attempts.</p>
+
+  <h2>What the successes have in common</h2>
+  <div class="grid2">
+    <div class="card"><h3>Full object view before any descent</h3><p>Every human pick opened the jaws between 4.8 and 6.7 cm with the whole carton inside the frame, then descended. The agent's one clean pick (04:17) also corrected from a view that contained the whole carton. Both late agent successes came right after a survey from 11 cm.</p></div>
+    <div class="card"><h3>Lateral settling, then a paced descent</h3><p>Human last-5-seconds lateral motion before a successful close: 2.5 to 4.5 cm, descent 0.1 to 1.2 cm/s. Agent misses: 4 to 12.5 cm of lateral motion and a close straight after the last move, without re-checking.</p></div>
+    <div class="card"><h3>Repeatable grasp numbers</h3><p>Human carton grasps closed at 3.5 to 3.7 cm tool height with jaws stopping at 7.3 %. The agent's holds closed at 0.6 to 1.1 cm and stopped at 3.5 to 5.9 %: edge pinches that carried the carton dangling. The card's <code>grasp_tool_z_cm</code> now tells the next run where the human closed.</p></div>
+    <div class="card"><h3>Regrip instead of forcing</h3><p>Three human runs opened and re-approached after a bad first close. No human run ever closed twice at the same spot.</p></div>
+  </div>
+
+  <h2>What the misses have in common</h2>
+  <div class="grid2">
+    <div class="card"><h3>Closing beside the object</h3><p>Seven of the nine agent empty closes have the carton visible at the side of the frame or half under the fixed jaw in the keyframe (04:57 attempts 2 to 5, 05:31 attempts 1 and 2, 03:51). The jaws were commanded to close without any check that the object sat between the tips.</p></div>
+    <div class="card"><h3>Half-identified object</h3><p>04:57's first four attempts planned from close-up views where the carton's size, orientation and the rolled image axes were guessed. The fork's own note: "survey the whole object first".</p></div>
+    <div class="card"><h3>Mismeasurement</h3><p>The pixel-to-table projection was 5 cm off in both fork runs. 03:51 trusted the kinematic height and found the carton 2 cm higher than modelled.</p></div>
+    <div class="card"><h3>Wrong verdicts</h3><p>The jaw percent reads 0.9 to 1.1 % for both a miss (03:51) and a real hold on a thin edge (04:17 settled 4.6 % but the recording's later value was 1.5 %). The old cards called two successes failures and the skills' 3 % rule would have too.</p></div>
+  </div>
+
+  <h2>What changed in the skills (143 tests green)</h2>
+  <div class="tbl"><table>
+    <tr><th>skill</th><th>lesson</th><th>change</th><th>test that pins it</th></tr>
+    <tr><td><code>grab</code></td><td>never close beside the object</td><td>Returns <code>not_aligned</code> with the jaws untouched when the object is not within 1 cm of the jaw target after 3 corrections at approach height, or after 2 corrections at grasp height (then backs up to approach height).</td><td><code>test_grab_never_closes_when_not_aligned</code></td></tr>
+    <tr><td><code>grab</code></td><td>parallax moves the picture as you get low</td><td>Descends in 1.5 cm steps and re-checks the vision offset after each one; <code>low_corrections</code> and <code>aligned_at_grasp_height</code> are reported.</td><td><code>test_grab_realigns_at_grasp_height_before_closing</code>, <code>test_grab_descends_in_steps_below_approach</code></td></tr>
+    <tr><td><code>grab</code></td><td>verify the measurement</td><td>The first correction measures how many cm the object really moved per commanded cm (<code>measured_gain</code>, clamped 0.5 to 3) and scales the next corrections.</td><td><code>test_grab_measures_gain_from_first_correction</code></td></tr>
+    <tr><td><code>analyze_object</code></td><td>study the whole object</td><td>A detection whose box touches the frame edge is <code>full_view: false</code>; the skill backs up 3 cm once, and if still clipped returns no plan with the reason.</td><td><code>test_analyze_requires_full_view</code></td></tr>
+    <tr><td><code>grasp</code></td><td>jaw percent cannot tell held from empty</td><td>With a label, the vision overlay decides: the object still at the jaw target after a 2 to 3 cm lift means held, left behind means empty or slipped.</td><td><code>test_grasp_uses_vision_when_jaws_read_closed</code></td></tr>
+    <tr><td>skill cards</td><td>label by evidence, list every attempt</td><td>Each card lists every jaw close (height, xy, settle %, lift, lateral motion, descent speed, keyframe). Held = settled at 1.2 % or more and lifted 2 cm with the jaws closed. The human's <code>reported_outcome</code> and notes are carried and decide the success/failed tag.</td><td><code>test_card_lists_close_attempts_and_uses_lift_evidence</code>, <code>test_card_reported_outcome_wins_tags</code></td></tr>
+    <tr><td>MCP instructions</td><td>the seven rules</td><td>Study from 10 cm with full view; measure then verify; paced descent; never close on a half view; vision decides held; narrow stop is an edge pinch; three attempts then ask.</td><td>read by every new MCP connection</td></tr>
+  </table></div>
+
+  <h2>Not changed, and why</h2>
+  <ul>
+    <li><b>descend_to_contact threshold.</b> Needs real-arm data at low speed with a light object; the fork measured that 350 load units never fired on a carton. A lag-based trigger is the plan; untested on hardware, so not shipped tonight.</li>
+    <li><b>Projection bias.</b> The gain measurement compensates per run. A proper two-height calibration of the fingertip offset needs the arm and a marker.</li>
+    <li><b>Thin objects.</b> The phone case stays unclear in the cards. Label it on <code>demo_stop</code>.</li>
+    <li><b>Running session.</b> The session driving the arm now keeps the old skills until its MCP reconnects. My heads-up to it was held by its permission mode and expired, so it has not been told.</li>
+  </ul>
+
+  <h2>Method</h2>
+  <p class="small">Attempts were extracted as transitions of the gripper from above 15 % open to 15 % or below, with the settle value over the next 2 s, the lift while the jaws stayed closed in the following 6 s, the descent speed over the preceding 3 s and the lateral path over the preceding 5 s. Keyframes nearest each close were inspected. Agent notes come from <code>meta.json</code> as written by the sessions that drove. Leader runs have no notes; their labels are from the data and the frames.</p>
+</div>
+</body>
+</html>

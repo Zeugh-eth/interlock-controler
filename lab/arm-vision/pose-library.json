@@ -1,0 +1,447 @@
+{
+ "_about": "SO-101 named poses. Joints in LeRobot degrees (gripper %). Metrics from scripts/posture.py on the verified model. 'via' = pose to pass through first. Grow it with scripts/arm-go.py save.",
+ "poses": {
+  "ready": {
+   "joints": {
+    "shoulder_pan": 0.0,
+    "shoulder_lift": 0.0,
+    "elbow_flex": 0.0,
+    "wrist_flex": 0.0,
+    "wrist_roll": 0.0,
+    "gripper": 0.0
+   },
+   "shape": "upside-down L",
+   "description": "Calibration middle pose: upper arm up, forearm and gripper straight forward. Hub pose for routing.",
+   "aliases": [
+    "home",
+    "L",
+    "neutral",
+    "middle"
+   ],
+   "via": null,
+   "hold_after": true,
+   "verified_on_arm": true,
+   "evidence": "study/study2/001-ready-mac.jpg",
+   "steady_load": null,
+   "metrics": {
+    "footprint_radius_cm": 32.8,
+    "height_cm": 25.1,
+    "lowest_point_cm": 23.3,
+    "cylinder_volume_l": 85.0,
+    "gripper_points": "sideways"
+   },
+   "evidence_exists": true
+  },
+  "straight": {
+   "joints": {
+    "shoulder_pan": 0.0,
+    "shoulder_lift": -2.0,
+    "elbow_flex": -82.4,
+    "wrist_flex": -4.0,
+    "wrist_roll": 0.0,
+    "gripper": 0.0
+   },
+   "shape": "vertical column",
+   "description": "Every link stacked above the shoulder; tip 52.7 cm up, 0.2 cm off vertical. Slimmest pose by volume.",
+   "aliases": [
+    "straight up",
+    "candle",
+    "tall",
+    "fully extended up",
+    "stretch"
+   ],
+   "via": "ready",
+   "hold_after": true,
+   "verified_on_arm": true,
+   "evidence": "study/poses/straight-mac.jpg",
+   "steady_load": {
+    "shoulder_lift": -32,
+    "elbow_flex": 20,
+    "wrist_flex": 24
+   },
+   "metrics": {
+    "footprint_radius_cm": 3.6,
+    "height_cm": 52.7,
+    "lowest_point_cm": 23.3,
+    "cylinder_volume_l": 2.1,
+    "gripper_points": "up"
+   },
+   "evidence_exists": true
+  },
+  "crouch": {
+   "joints": {
+    "shoulder_pan": -0.1,
+    "shoulder_lift": -45.2,
+    "elbow_flex": 36.4,
+    "wrist_flex": 98.0,
+    "wrist_roll": 0.0,
+    "gripper": 1.2
+   },
+   "shape": "bowed ?",
+   "description": "Like crouch-tight, slightly more open (23.5 cm tall, 8.9 cm footprint).",
+   "aliases": [
+    "crouch",
+    "bowed"
+   ],
+   "via": "straight",
+   "hold_after": true,
+   "verified_on_arm": true,
+   "evidence": "explore/fold2/01-crouch-mac.jpg",
+   "steady_load": {
+    "shoulder_pan": -20,
+    "shoulder_lift": 48,
+    "elbow_flex": 24,
+    "wrist_flex": -44,
+    "wrist_roll": 0,
+    "gripper": 84
+   },
+   "metrics": {
+    "footprint_radius_cm": 8.9,
+    "height_cm": 23.5,
+    "lowest_point_cm": 7.6,
+    "cylinder_volume_l": 5.8,
+    "gripper_points": "down"
+   },
+   "evidence_exists": true
+  },
+  "crouch-tight": {
+   "joints": {
+    "shoulder_pan": 0.0,
+    "shoulder_lift": -60.0,
+    "elbow_flex": 52.0,
+    "wrist_flex": 98.0,
+    "wrist_roll": 0.0,
+    "gripper": 1.2
+   },
+   "shape": "bowed ?",
+   "description": "Upper arm leans far back, forearm arches forward, gripper hangs down beside the base. Smallest folded shape: 21 cm tall, 7 cm footprint.",
+   "aliases": [
+    "compact",
+    "standby",
+    "tucked",
+    "bow",
+    "crouch tight",
+    "waiting"
+   ],
+   "via": "straight",
+   "hold_after": true,
+   "verified_on_arm": true,
+   "evidence": "explore/fold2/02-crouch-tight-mac.jpg",
+   "steady_load": {
+    "shoulder_pan": 0,
+    "shoulder_lift": 32,
+    "elbow_flex": 0,
+    "wrist_flex": -44,
+    "wrist_roll": 0,
+    "gripper": 84
+   },
+   "metrics": {
+    "footprint_radius_cm": 7.0,
+    "height_cm": 21.0,
+    "lowest_point_cm": 5.1,
+    "cylinder_volume_l": 3.3,
+    "gripper_points": "down"
+   },
+   "evidence_exists": true
+  },
+  "side-tuck": {
+   "joints": {
+    "shoulder_pan": -0.1,
+    "shoulder_lift": -44.8,
+    "elbow_flex": 11.9,
+    "wrist_flex": -100.0,
+    "wrist_roll": -0.0,
+    "gripper": 1.2
+   },
+   "shape": "S-curve",
+   "description": "Upper arm back, forearm up, gripper folded sideways-up. Narrow (6 cm) but 40 cm tall.",
+   "aliases": [
+    "s-curve",
+    "narrow tall"
+   ],
+   "via": "straight",
+   "hold_after": true,
+   "verified_on_arm": true,
+   "evidence": "explore/fold2/03-side-tuck-mac.jpg",
+   "steady_load": {
+    "shoulder_pan": 0,
+    "shoulder_lift": 20,
+    "elbow_flex": 0,
+    "wrist_flex": 0,
+    "wrist_roll": 0,
+    "gripper": 84
+   },
+   "metrics": {
+    "footprint_radius_cm": 6.0,
+    "height_cm": 40.0,
+    "lowest_point_cm": 20.2,
+    "cylinder_volume_l": 4.5,
+    "gripper_points": "sideways"
+   },
+   "evidence_exists": true
+  },
+  "side-tuck-high": {
+   "joints": {
+    "shoulder_pan": -0.1,
+    "shoulder_lift": -29.9,
+    "elbow_flex": -20.1,
+    "wrist_flex": -81.9,
+    "wrist_roll": -0.1,
+    "gripper": 1.2
+   },
+   "shape": "S-curve",
+   "description": "Taller variant of side-tuck: 5.8 cm footprint, 44.6 cm tall.",
+   "aliases": [],
+   "via": "straight",
+   "hold_after": true,
+   "verified_on_arm": true,
+   "evidence": "explore/fold2/04-side-tuck-high-mac.jpg",
+   "steady_load": {
+    "shoulder_pan": 0,
+    "shoulder_lift": 20,
+    "elbow_flex": 0,
+    "wrist_flex": 0,
+    "wrist_roll": 0,
+    "gripper": 84
+   },
+   "metrics": {
+    "footprint_radius_cm": 5.8,
+    "height_cm": 44.6,
+    "lowest_point_cm": 21.9,
+    "cylinder_volume_l": 4.7,
+    "gripper_points": "sideways"
+   },
+   "evidence_exists": true
+  },
+  "zfold-narrow": {
+   "joints": {
+    "shoulder_pan": -0.1,
+    "shoulder_lift": -45.3,
+    "elbow_flex": 34.2,
+    "wrist_flex": -78.1,
+    "wrist_roll": -0.0,
+    "gripper": 1.2
+   },
+   "shape": "Z-fold",
+   "description": "Upper arm back 45 deg, forearm forward, gripper straight up. 40 cm tall, 8.2 cm footprint.",
+   "aliases": [
+    "z-fold",
+    "gripper up compact"
+   ],
+   "via": "straight",
+   "hold_after": true,
+   "verified_on_arm": true,
+   "evidence": "explore/fold1/01-zfold-narrow-mac.jpg",
+   "steady_load": {
+    "shoulder_pan": -20,
+    "shoulder_lift": 36,
+    "elbow_flex": 0,
+    "wrist_flex": 24,
+    "wrist_roll": 0,
+    "gripper": 84
+   },
+   "metrics": {
+    "footprint_radius_cm": 8.2,
+    "height_cm": 40.0,
+    "lowest_point_cm": 20.1,
+    "cylinder_volume_l": 8.5,
+    "gripper_points": "up"
+   },
+   "evidence_exists": true
+  },
+  "zfold-mid": {
+   "joints": {
+    "shoulder_pan": -0.1,
+    "shoulder_lift": -45.3,
+    "elbow_flex": 54.2,
+    "wrist_flex": -96.1,
+    "wrist_roll": -0.0,
+    "gripper": 1.2
+   },
+   "shape": "Z-fold",
+   "description": "Z-fold, 35 cm tall, 8.9 cm footprint, gripper up.",
+   "aliases": [],
+   "via": "straight",
+   "hold_after": true,
+   "verified_on_arm": true,
+   "evidence": "explore/fold1/02-zfold-mid-mac.jpg",
+   "steady_load": {
+    "shoulder_pan": -20,
+    "shoulder_lift": 44,
+    "elbow_flex": 0,
+    "wrist_flex": 20,
+    "wrist_roll": 0,
+    "gripper": 84
+   },
+   "metrics": {
+    "footprint_radius_cm": 8.9,
+    "height_cm": 35.3,
+    "lowest_point_cm": 19.4,
+    "cylinder_volume_l": 8.8,
+    "gripper_points": "up"
+   },
+   "evidence_exists": true
+  },
+  "zfold-upright": {
+   "joints": {
+    "shoulder_pan": -0.1,
+    "shoulder_lift": -40.2,
+    "elbow_flex": 42.2,
+    "wrist_flex": -89.8,
+    "wrist_roll": -0.0,
+    "gripper": 1.2
+   },
+   "shape": "Z-fold",
+   "description": "Z-fold, 37.6 cm tall, 9.5 cm footprint, gripper up.",
+   "aliases": [],
+   "via": "straight",
+   "hold_after": true,
+   "verified_on_arm": true,
+   "evidence": "explore/fold1/03-zfold-upright-mac.jpg",
+   "steady_load": {
+    "shoulder_pan": -20,
+    "shoulder_lift": 52,
+    "elbow_flex": 0,
+    "wrist_flex": 28,
+    "wrist_roll": 0,
+    "gripper": 84
+   },
+   "metrics": {
+    "footprint_radius_cm": 9.5,
+    "height_cm": 37.6,
+    "lowest_point_cm": 20.8,
+    "cylinder_volume_l": 10.7,
+    "gripper_points": "up"
+   },
+   "evidence_exists": true
+  },
+  "zfold-deep": {
+   "joints": {
+    "shoulder_pan": -0.1,
+    "shoulder_lift": -45.4,
+    "elbow_flex": 66.1,
+    "wrist_flex": -84.0,
+    "wrist_roll": -0.0,
+    "gripper": 1.2
+   },
+   "shape": "Z-fold",
+   "description": "Deeper Z-fold: 31 cm tall but 15 cm footprint.",
+   "aliases": [],
+   "via": "straight",
+   "hold_after": true,
+   "verified_on_arm": true,
+   "evidence": "explore/fold1/04-zfold-deep-mac.jpg",
+   "steady_load": {
+    "shoulder_pan": -20,
+    "shoulder_lift": 56,
+    "elbow_flex": 24,
+    "wrist_flex": 32,
+    "wrist_roll": 0,
+    "gripper": 84
+   },
+   "metrics": {
+    "footprint_radius_cm": 14.9,
+    "height_cm": 31.1,
+    "lowest_point_cm": 16.6,
+    "cylinder_volume_l": 21.6,
+    "gripper_points": "up"
+   },
+   "evidence_exists": true
+  },
+  "zfold-deepest": {
+   "joints": {
+    "shoulder_pan": -0.1,
+    "shoulder_lift": -45.2,
+    "elbow_flex": 78.0,
+    "wrist_flex": -96.4,
+    "wrist_roll": -0.0,
+    "gripper": 1.2
+   },
+   "shape": "Z-fold",
+   "description": "Deepest Z-fold tested: 28.5 cm tall, 13.8 cm footprint, gripper up.",
+   "aliases": [],
+   "via": "straight",
+   "hold_after": true,
+   "verified_on_arm": true,
+   "evidence": "explore/fold1/05-zfold-deepest-mac.jpg",
+   "steady_load": {
+    "shoulder_pan": -20,
+    "shoulder_lift": 48,
+    "elbow_flex": 0,
+    "wrist_flex": 28,
+    "wrist_roll": 0,
+    "gripper": 84
+   },
+   "metrics": {
+    "footprint_radius_cm": 13.8,
+    "height_cm": 28.5,
+    "lowest_point_cm": 14.0,
+    "cylinder_volume_l": 17.1,
+    "gripper_points": "up"
+   },
+   "evidence_exists": true
+  },
+  "rest": {
+   "joints": {
+    "shoulder_pan": -93.5,
+    "shoulder_lift": -104.1,
+    "elbow_flex": -95.6,
+    "wrist_flex": 55.2,
+    "wrist_roll": -73.8,
+    "gripper": 0.0
+   },
+   "shape": "lying on the table",
+   "description": "Power-off rest: arm laid back on the mat at its end stops, gripper closed. Torque is released here.",
+   "aliases": [
+    "sleep",
+    "off",
+    "power down",
+    "lie down",
+    "park"
+   ],
+   "via": "ready",
+   "hold_after": false,
+   "verified_on_arm": true,
+   "evidence": "study/poses/folded-mac.jpg",
+   "steady_load": null,
+   "metrics": {
+    "footprint_radius_cm": 34.0,
+    "height_cm": 11.8,
+    "lowest_point_cm": 3.4,
+    "cylinder_volume_l": 43.0,
+    "gripper_points": "sideways"
+   },
+   "evidence_exists": true
+  },
+  "look-down": {
+   "joints": {
+    "shoulder_pan": 0.4,
+    "shoulder_lift": -4.4,
+    "elbow_flex": 7.5,
+    "wrist_flex": 88.6,
+    "wrist_roll": 0.0,
+    "gripper": 30.0
+   },
+   "shape": "top-down hover",
+   "description": "Gripper vertical 8 cm above the table, 20 cm in front of the base; gripper camera sees the table from above.",
+   "aliases": [
+    "hover",
+    "look at table",
+    "survey"
+   ],
+   "via": "ready",
+   "hold_after": true,
+   "verified_on_arm": true,
+   "evidence": "study/study3/002-down_phi+0_r20_z8-mac.jpg",
+   "steady_load": null,
+   "metrics": {
+    "footprint_radius_cm": 16.4,
+    "height_cm": 23.9,
+    "lowest_point_cm": 7.9,
+    "cylinder_volume_l": 20.1,
+    "gripper_points": "down"
+   },
+   "evidence_exists": true
+  }
+ }
+}

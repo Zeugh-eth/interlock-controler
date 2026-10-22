@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Improvements to take from the practices report</title>
+<style>
+  :root { --paper:#f2eee3; --card:#f6f2e7; --line:#d9d2c0; --ink:#1a2230; --muted:#5b6673; --acc:#1f4e79;
+          --good:#1a6e4f; --good-bg:#dfeee6; --warn:#9a6200; --warn-bg:#f3e8cf; --bad:#a8342a; --bad-bg:#f2dcd8; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.55 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .wrap { max-width:1100px; margin:0 auto; padding:36px 28px 60px; }
+  .eyebrow { font:12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+  h1 { font-family: Georgia, "Times New Roman", serif; font-size:34px; line-height:1.15; margin:10px 0 12px; }
+  h2 { font-family: Georgia, serif; font-size:22px; margin:36px 0 12px; }
+  h3 { font-size:15px; margin:18px 0 6px; }
+  .stand { font-size:17px; color:#2c3a48; max-width:800px; }
+  .meta { font:12px ui-monospace, Menlo, monospace; color:var(--muted); margin:14px 0 26px; }
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin:18px 0 8px; }
+  .tile { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .tile b { display:block; font-family:Georgia, serif; font-size:26px; font-variant-numeric:tabular-nums; }
+  .tile span { font-size:12px; color:var(--muted); }
+  .pill { display:inline-block; padding:2px 9px; border-radius:999px; font:12px ui-monospace, Menlo, monospace; white-space:nowrap; }
+  .good { background:var(--good-bg); color:var(--good); } .warn { background:var(--warn-bg); color:var(--warn); } .bad { background:var(--bad-bg); color:var(--bad); } .na { background:#e6e1d4; color:var(--muted); }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  th, td { padding:9px 11px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  th { font:12px ui-monospace, Menlo, monospace; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); background:#efeadc; position:sticky; top:0; }
+  tr:hover td { background:#f9f6ed; }
+  .tbl { overflow:auto; border-radius:10px; margin:10px 0 6px; }
+  code { font:13px ui-monospace, Menlo, monospace; background:#ebe6d8; padding:1px 5px; border-radius:4px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:10px 0; }
+  .card h3 { margin-top:0; }
+  ol li, ul li { margin:5px 0; }
+  .num { font-variant-numeric:tabular-nums; font-family: ui-monospace, Menlo, monospace; font-size:13px; }
+  .small { font-size:13px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">arm-daemon · practices review · 23 October 2026</div>
+  <h1>Five of the report's ten practices are already in place. The next three are about evidence, not perception.</h1>
+  <p class="stand">The practices report recommends a belief store, object identities and a learned policy. Tonight's runs say the cheaper problems come first: grasp and place outcomes are still declared from a gripper percentage, the camera-to-table projection is 5 cm off, and the demo cards cannot tell a real pick from a miss. Fix those three, and the belief store becomes a data problem instead of a guess.</p>
+  <div class="meta">source: reports/robot-ai-practices/index.html · evidence: arm-daemon/demos (7 episodes), skills.py, demolib.py, two fork sessions' run notes · no arm moved for this study</div>
+
+  <div class="tiles">
+    <div class="tile"><b>10</b><span>practices in the report</span></div>
+    <div class="tile"><b>5 <span class="pill good">done</span></b><span>already enforced by the daemon or skills layer</span></div>
+    <div class="tile"><b>3 <span class="pill warn">partial</span></b><span>exist but proven wrong tonight</span></div>
+    <div class="tile"><b>2 <span class="pill bad">missing</span></b><span>belief store, instance matching</span></div>
+    <div class="tile"><b>2 / 7</b><span>demo cards whose inferred outcome contradicts what happened</span></div>
+  </div>
+
+  <h2>Take now (this week, in the skills layer)</h2>
+  <div class="card">
+    <h3>1. Verify "held" and "placed" by evidence, not by gripper percent</h3>
+    <p>The report's rule: after closing, do not declare held because the command completed; lift a little and check. Tonight shows why both heuristics in use are wrong.</p>
+    <ul>
+      <li>The fork's successful pick at 04:17 closed to <span class="num">1.5 %</span> and lifted at <span class="num">0.9 %</span>, below both <code>EMPTY_PCT = 3.0</code> in skills.py and the <span class="num">2.5 %</span> cut in demolib. The carton was held at the fingertips and later placed. Both layers would have called it a miss.</li>
+      <li>My 03:51 miss closed to <span class="num">1.0 %</span> and knocked the carton over. Same reading, opposite reality.</li>
+    </ul>
+    <p><b>Change:</b> <code>grasp()</code> lifts 2 cm, then compares two things: the fingertip region of the annotated frame before and after the lift (object pixels move with the jaws or stay on the table), and the gripper load. Return <code>held</code>, <code>empty</code> or <code>uncertain</code>; never a bare success. <code>release()</code> retreats and re-observes the drop point before reporting placed. The demo card uses the same verdict instead of the percent threshold.</p>
+    <p class="small">Cost: about 2 hours. Removes the single biggest false-claim path in the agent loop.</p>
+  </div>
+  <div class="card">
+    <h3>2. Calibrate the projection against the jaws, in cm, at two heights</h3>
+    <p><code>project()</code> landed the pad and the carton about 5 cm off in both fork runs, the same parallax bias each time. The report asks for a verified camera-to-gripper transform with error measured across the working area.</p>
+    <p><b>Change:</b> a 10-minute routine: place a marker, drive the jaw target onto it at 8 cm and 4 cm tool height, record pixel and tool xyz, fit the fingertip offset per height. Store it in <code>lab/arm-vision/gripper-camera-cal.json</code> with a version string, and write that version into every demo row (the report's "calibration version with each observation").</p>
+    <p class="small">Cost: 1 hour of code plus 10 minutes at the arm. Turns three correction moves per approach into one.</p>
+  </div>
+  <div class="card">
+    <h3>3. Make contact detection work on light objects, and make descent the default</h3>
+    <p><code>descend_to_contact()</code> never fired at 350 load units while a carton touched a pad. My miss came from trusting a model height instead of descending to contact. The report: keep stopping local and bound motion in one place.</p>
+    <p><b>Change:</b> contact = lag check (commanded minus measured on <code>shoulder_lift</code> and <code>elbow_flex</code>) with a 2° threshold at 0.5 cm steps, plus a load rise relative to the previous step rather than an absolute number. Back off 1 cm after contact, then grasp. Record the contact height in the demo card as <code>contact_z_cm</code> so the next run can start lower.</p>
+    <p class="small">Cost: 1 hour. Tested against the fake backend with a sag mode, which already exists in the test suite.</p>
+  </div>
+
+  <h2>Take next (after the three above hold up on five picks)</h2>
+  <div class="card">
+    <h3>4. Object records in the base frame, with last-seen and visibility</h3>
+    <p>The report's minimum record: id, label hypotheses, pose in base, uncertainty, last seen, visibility, relations, evidence. The vision worker already projects detections onto the table grid in cm. The missing piece is persistence: today a detection dies with the frame.</p>
+    <p><b>Change:</b> a small <code>beliefs.py</code> in the skills layer: each annotated frame updates records keyed by label plus position (within 4 cm = same object), stores <code>pose_base_cm</code>, <code>last_seen</code>, <code>visibility</code> (visible, outside view, held, lost) and the frame name as evidence. No merging across similar labels; two cartons stay two records until the agent inspects. Expose <code>GET /beliefs</code> and an MCP <code>objects()</code> tool. When <code>grasp()</code> returns held, the record's pose follows the tool transform; after release it is re-observed, not carried.</p>
+    <p class="small">Cost: half a day. Only worth it once item 1 produces trustworthy held/placed transitions to feed it.</p>
+  </div>
+  <div class="card">
+    <h3>5. Fix the demo cards for episodes that start held, and add the report's replay tests</h3>
+    <p>The place demo at 04:38 is labelled <code>never_closed</code> because the summariser assumes a pick shape. Episodes that start with the gripper closed on an object need a place shape: carry, descend, release, retreat.</p>
+    <p><b>Change:</b> detect the initial state (gripper between 3 and 20 % and a lift in the first seconds = held) and pick the template. Then build the report's six scenarios as recorded-sequence tests on the demos directory: hidden object, camera move, two similar objects, closes on air, slip during carry, stale frame. Four of the six already have real recordings from tonight.</p>
+  </div>
+  <div class="card">
+    <h3>6. Stamp every observation with age and pose, and refuse stale ones everywhere</h3>
+    <p><code>observe()</code> already rejects frames older than 0.5 s. The daemon's <code>/state</code> carries <code>t</code>, and the annotated view carries the joints it was drawn with. Two gaps: demo rows do not say how old the frame was when the row was written, and <code>look()</code> in the MCP does not refuse a stale frame, it only reports the age.</p>
+    <p><b>Change:</b> add <code>frame_age_s</code> and <code>cal_version</code> to each demo row; make <code>look()</code> return <code>stale: true</code> with the age and tell the model not to act on it. Ten lines.</p>
+  </div>
+
+  <h2>Skip for now, with the reason</h2>
+  <ul>
+    <li><b>Grounded SAM 2 / ConceptGraphs / FoundationPose.</b> The failures tonight were not recognition failures; YOLO-World found the carton and the pad every time. Identity persistence (item 4) can be built on the current detector first.</li>
+    <li><b>A learned policy (LeRobot, OpenPI, LingBot-VA).</b> Seven episodes, three of them failures. The report itself says to collect reliable demonstrations first. The teleop-through-daemon path and the cards are the collection pipeline; revisit at 30 clean episodes.</li>
+    <li><b>MoveIt 2 / ROS.</b> The daemon already is the single motion authority with clamp, load/lag freeze and a table check. A ROS migration buys nothing until there is a scene model to collide against.</li>
+    <li><b>Bounded video queues and async inference.</b> There is no inference queue: the agent polls one frame per decision. Not a problem yet.</li>
+  </ul>
+
+  <h2>Practice by practice</h2>
+  <div class="tbl"><table>
+    <tr><th>report practice</th><th>status</th><th>where it lives</th><th>evidence from tonight</th></tr>
+    <tr><td>Separate deliberation from execution; stopping independent of remote inference</td><td><span class="pill good">done</span></td><td>daemon guards, STOP file, human takeover freezes a move</td><td>Ctrl-C and takeover freeze tested; every write is one guarded call</td></tr>
+    <tr><td>Synchronize images with measured joints</td><td><span class="pill good">done</span></td><td>vision worker annotates each frame with the joints it was read with; demo rows store state, action, tool, frame</td><td>cards decode phases from the rows alone</td></tr>
+    <tr><td>Stable spatial frame (base/table), pixels only for servoing</td><td><span class="pill warn">partial</span></td><td><code>project()</code> maps pixels to table cm; <code>goto_xyz</code>, <code>move_tool</code></td><td>5 cm bias in both fork runs (item 2)</td></tr>
+    <tr><td>Persist identity, not certainty (last seen, visibility, uncertainty)</td><td><span class="pill bad">missing</span></td><td>none; detections live one frame</td><td>pan scans at +35 and -40 re-find the pad each time</td></tr>
+    <tr><td>Match instances across views, admit ambiguity</td><td><span class="pill bad">missing</span></td><td>none</td><td>not exercised yet; only one carton on the table</td></tr>
+    <tr><td>Predict → act briefly → observe → reconcile (held/placed by evidence)</td><td><span class="pill warn">partial</span></td><td><code>grasp()</code> lifts 2 cm and checks jaw opening; <code>release()</code> retreats</td><td>jaw-opening check failed in both directions (item 1)</td></tr>
+    <tr><td>Make inspection an action; preconditions, effects, success checks, recovery</td><td><span class="pill warn">partial</span></td><td><code>observe()</code>, pan scans by hand in the agent's reasoning</td><td>no encoded preconditions; the agent improvises the scan each time</td></tr>
+    <tr><td>Bounded queues, expire stale proposals</td><td><span class="pill good">done</span></td><td><code>observe()</code> refuses frames older than 0.5 s; cameras report age; MJPEG dedups</td><td>item 6 closes the last gap in <code>look()</code></td></tr>
+    <tr><td>Record failures as well as successes, with versions</td><td><span class="pill good">done</span></td><td>demos record every tick from teleop and agent writes; cards tag failed runs; reported and inferred outcomes kept apart</td><td>7 episodes, 3 failures on disk; missing calibration version per row (item 2)</td></tr>
+    <tr><td>One motion authority, concurrency refused</td><td><span class="pill good">done</span></td><td>daemon owns the port; <code>busy</code> refusal; holder token</td><td>two agent sessions were kept off the arm by the holder tonight</td></tr>
+  </table></div>
+
+  <h2>Acceptance tests from the report, mapped to what we can run</h2>
+  <div class="tbl"><table>
+    <tr><th>scenario</th><th>can run today</th><th>on what</th><th>pass measure to set</th></tr>
+    <tr><td>Gripper closes on air</td><td><span class="pill good">yes</span></td><td>demos 03:51 and 03:59 (misses) vs 03:48 and 04:17 (holds)</td><td>zero false "held" across the four; item 1's verdict</td></tr>
+    <tr><td>Object briefly hidden</td><td><span class="pill warn">after item 4</span></td><td>record one teleop pass of the carton behind the Seeed box</td><td>identity kept, reacquired within 2 frames</td></tr>
+    <tr><td>Wrist camera moves, object static</td><td><span class="pill good">yes</span></td><td>pan scans in the 04:38 place demo</td><td>pad position drift in base frame under 2 cm (item 2)</td></tr>
+    <tr><td>Two similar objects</td><td><span class="pill warn">after item 4</span></td><td>needs a second carton on the table</td><td>no wrong-object selection in 5 trials</td></tr>
+    <tr><td>Object slips during carry</td><td><span class="pill good">yes</span></td><td>04:38 carton held low, tilted on release</td><td>slip flagged before release</td></tr>
+    <tr><td>Delayed frames</td><td><span class="pill good">yes</span></td><td>kill the gripper ffmpeg (happened at 02:30 tonight, 69 min stale)</td><td>no write acts on a frame older than 0.5 s</td></tr>
+  </table></div>
+
+  <h2>Method and caveats</h2>
+  <p class="small">Statuses come from reading skills.py, demolib.py, vision_worker.py and the seven demo cards, plus the two fork sessions' own run notes (pick 04:17, place 04:38, vision fixes). No arm was moved for this study. "Done" means the behaviour is enforced in code and was exercised tonight, not that it is tested against the report's thresholds. The 5 cm projection bias is the forks' measurement, not re-measured here. Costs are my estimates for one person at the arm.</p>
+</div>
+</body>
+</html>
