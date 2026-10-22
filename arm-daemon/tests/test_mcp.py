@@ -145,3 +145,24 @@ def test_plan_tools_over_stateful_fake():
     p2 = m.replan(a["plan"], ev).structured_content
     assert p2["attempt"] == 2 and p2["shift_along_jaws_cm"] != 0
     fd.close()
+
+
+def test_align_tools_over_stateful_fake():
+    from tests.fake_daemon import StatefulFakeDaemon
+    import kin
+    fd = StatefulFakeDaemon()
+    T = kin.tool_pose({j: fd.q[j] for j in kin.CHAIN})
+    fd.object = {"label": "carton", "x": float(T[0, 3]) - 0.04, "y": float(T[1, 3]) + 0.03, "w_cm": 10.5, "h_cm": 3.0, "conf": 0.4, "top_z": 0.05}
+    fd.object_width_pct = 6.0
+    m = _mcp(fd.url)
+    names = {t.name for t in asyncio.run(m.server.list_tools())}
+    assert {"align_to", "grab_at", "measure_height"} <= names
+    r = m.look()
+    assert any(c.type == "image" for c in r.content) and "view" in r.structured_content
+    r = m.align_to(label="carton", descend=False)
+    assert r.structured_content["outcome"] == "aligned" and r.structured_content["at_grasp_height"] is False
+    r = m.grab_at(label="carton", width_cm=3.0)
+    assert r.structured_content["outcome"] == "ok" and r.structured_content["grasp"]["verdict"] == "held"
+    r = m.grasp(label="carton")
+    assert "verdict" in r.structured_content
+    fd.close()

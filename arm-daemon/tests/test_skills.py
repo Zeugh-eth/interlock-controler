@@ -172,3 +172,68 @@ def test_grasp_falls_back_to_jaws_when_detector_is_blind(sk, fd):
     fd.object_width_pct = 8.0
     r = sk.grasp(label="carton")
     assert r["verdict"] == "held" and "vision" not in r["evidence"]
+
+
+# --- align_to: the 06:28 grab as one closed loop on the raw frame ----------------------------------
+def _carton_near_base(fd, **extra):
+    """Carton standing on something (top 5 cm up), 4 cm toward the base and 3 cm left of the tool at
+    look-down: the 23 Oct 06:xx scene. 3 cm across x (what the jaws close on), 10.5 cm along y."""
+    import kin
+    T = kin.tool_pose({j: fd.q[j] for j in kin.CHAIN})
+    fd.object = {"label": "carton", "x": float(T[0, 3]) - 0.04, "y": float(T[1, 3]) + 0.03, "w_cm": 10.5, "h_cm": 3.0, "conf": 0.4, "top_z": 0.05, **extra}
+    return fd.object
+
+
+def test_align_to_with_detector_centres_and_descends(sk, fd):
+    import jawband
+    o = _carton_near_base(fd)
+    x0 = sk.observe()["tool_xyz_m"][0]
+    r = sk.align_to("carton", width_cm=3.0, open_pct=55, grasp_z_m=0.02)
+    assert r["outcome"] == "aligned" and r["at_grasp_height"] is True, r
+    assert r["final"]["where"] == "between the jaws" and r["final"]["method"] == "detector"
+    assert abs(r["tool_xyz_m"][2] - 0.02) < 0.004
+    assert fd.q["gripper"] == 55.0                                     # opened before any move
+    assert r["tool_xyz_m"][0] < x0 - 0.03                              # moved toward the base, where the carton was
+    assert r["px_per_cm_measured"] and r["px_per_cm_measured"] > 20    # measured at the carton's depth, above the table scale
+    bb = fd.raw_bbox()
+    assert jawband.where(bb, 55)["between_jaws"] is True
+    assert not [c for c in fd.calls if c[1] == "/gripper" and float(c[2]["pct"]) <= 0.0]   # never closed
+
+
+def test_align_to_tracks_a_pixel_when_the_detector_is_blind(sk, fd):
+    """YOLO-World did not see the carton from 8 cm; a Haiku that can see it in the frame only
+    needs to point at it."""
+    import jawband
+    _carton_near_base(fd, conf=0.05)              # below the planning floor: detector path unusable
+    fd.render_frames = True
+    bb = fd.raw_bbox()                            # where the fake draws it; a caller would read this off the frame
+    u, v = bb[0] + bb[2] / 2, bb[1] + bb[3] / 2
+    r = sk.align_to(u=u, v=v, width_cm=3.0, open_pct=55, grasp_z_m=0.02)
+    assert r["outcome"] == "aligned", r
+    assert r["final"]["method"] in ("blob-tracker", "patch-tracker") and abs(r["tool_xyz_m"][2] - 0.02) < 0.004
+    assert jawband.where(fd.raw_bbox(), 55)["between_jaws"] is True
+
+
+def test_align_to_refuses_without_a_target_and_reports_lost(sk, fd):
+    assert sk.align_to()["outcome"] == "refused"
+    fd.object = None
+    r = sk.align_to("carton")
+    assert r["outcome"] == "lost" and "not seen" in r["reason"]
+
+
+def test_grab_at_runs_align_then_grasp(sk, fd):
+    _carton_near_base(fd)
+    fd.object_width_pct = 6.0
+    r = sk.grab_at("carton", width_cm=3.0)
+    assert r["outcome"] == "ok" and r["grasp"]["verdict"] == "held" and r["evaluation"]["quality"] == "good"
+    assert r["align"]["outcome"] == "aligned"
+
+
+def test_measure_height_from_parallax(sk, fd):
+    _carton_near_base(fd, x=0.21, y=0.0)          # under the camera, top 5 cm up
+    fd.object["x"], fd.object["y"] = 0.21, 0.0
+    r = sk.measure_height("carton", rise_cm=3.0)
+    assert r["measured"] is True and abs(r["top_z_cm"] - 5.0) < 1.0, r
+    assert fd.heights["carton"] == r["height_above_table_cm"] and r["stored_as_vision_height"] is True
+    fd.object = None
+    assert sk.measure_height("carton")["measured"] is False
