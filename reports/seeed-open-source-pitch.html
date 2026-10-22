@@ -127,18 +127,20 @@ footer{color:var(--ink2);font-size:13px}
   </div>
 
   <div class="card">
-    <div class="n">4 · Heat performance analysis <span class="pill warn">partly built</span></div>
-    <h3>Make servo thermal behaviour visible, then measurable</h3>
+    <div class="n">4 · Heat performance analysis <span class="pill good">analysis done</span><span class="pill warn">logging fix not merged</span></div>
+    <h3>We found a 71 °C elbow reading, traced it, and fixed what hid it</h3>
     <div class="cols">
       <div><h4>Today</h4><ul>
-        <li>Temperature of each servo is read from the bus and shown live: servo colour on the 3D model runs 32 to 60 °C, and a joint is flagged hot at 55 °C or load above 85% of the guard.</li>
-        <li>The firmware alarm is 70 °C, so the display warns well before the servo trips itself.</li>
-        <li>Temperature is part of the API state, so any client can read it.</li>
+        <li>A servo health report covers about 14 h of use on 22 to 23 Oct (1,250 agent calls, 340 daemon commands, 17 demos): load, tracking and travel for all six STS3215 servos.</li>
+        <li>Finding: the dashboard showed the elbow at 71 °C, above the 70 °C limit set in every servo's EEPROM. It was a stale value: the daemon stopped re-reading temperature while the leader arm drove. A fresh read showed 36 °C.</li>
+        <li>Pattern: the two warmest servos, elbow and shoulder lift, are the ones holding the folded arm against gravity (10 to 19% load), not the ones that move most. This is a hypothesis, not a proven cause.</li>
+        <li>Fix: temperature now refreshes every 2.5 s in every mode, and a per-servo health row (temperature, load, position, torque) is written every 10 s to <code>logs/health/</code>.</li>
+        <li>Live view: servo colour on the 3D model runs 32 to 60 °C; a joint is flagged hot at 55 °C.</li>
       </ul></div>
-      <div><h4>Not built yet (the contribution)</h4><ul>
-        <li>Temperature is not written to the command logs or demo files, so there is no thermal history to analyse.</li>
-        <li>Plan: log temperature and load per joint, report heat per task type (carry, hold, long reach), and publish a duty-cycle guide for SO-101 builds.</li>
-        <li>Plan: a temperature guard next to the load guard, so a hot servo slows or refuses before the firmware cuts out.</li>
+      <div><h4>Next (the contribution)</h4><ul>
+        <li>Merge and run the logging fix, then collect a real temperature history per task (hold, carry, long reach).</li>
+        <li>A temperature guard next to the load guard, so a hot servo slows or parks before the firmware unloads it.</li>
+        <li>A duty-cycle guide for SO-101 builds, using Seeed's servo data (see the ask).</li>
       </ul></div>
     </div>
   </div>
@@ -173,7 +175,7 @@ footer{color:var(--ink2);font-size:13px}
       <tr><td>Daemon</td><td>No port collisions; a documented API</td><td><span class="pill good">working</span></td></tr>
       <tr><td>MCP</td><td>Any model can drive the arm with honest outcomes</td><td><span class="pill good">working</span></td></tr>
       <tr><td>Dashboard</td><td>Live 3D, camera, loads, STOP</td><td><span class="pill good">working</span></td></tr>
-      <tr><td>Heat</td><td>Live temperature today; history and a guard next</td><td><span class="pill warn">partly built</span></td></tr>
+      <tr><td>Heat</td><td>Health report done; temperature logging fixed on a branch; guard next</td><td><span class="pill warn">fix not merged</span></td></tr>
       <tr><td>Guardrails</td><td>Human-first control, STOP, load/table/limit guards</td><td><span class="pill good">working</span></td></tr>
     </tbody>
   </table></div>
@@ -184,7 +186,7 @@ footer{color:var(--ink2);font-size:13px}
   <h2>Three things we want from Seeed</h2>
   <ol style="padding-left:20px;margin:8px 0 0">
     <li><b>A home.</b> A place in the SO-ARM100/101 ecosystem (a repo under Seeed or a link from the docs) so owners find this layer on day one.</li>
-    <li><b>Servo facts.</b> Seeed's numbers on ST3215 thermal limits and duty cycle, so the heat guard uses vendor data rather than our guesses.</li>
+    <li><b>Servo facts.</b> Which STS3215 datasheet applies to the 12 V follower, what exactly happens at 70 °C, and whether a steady 10 to 20% holding load is within duty cycle. The heat guard should use vendor data, not our guesses.</li>
     <li><b>Review.</b> An engineer to check the guard set before we call it a safety profile.</li>
   </ol>
   <p style="margin:14px 0 0;color:#d6e3f1">In return: MIT-style licence, tests that run without hardware, and a maintainer for the first six months.</p>
@@ -196,7 +198,7 @@ footer{color:var(--ink2);font-size:13px}
   <p><b>30 s</b> "You opened the arm. Thank you: we built on it in a day. What we hit next was not hardware. It was the layer above."</p>
   <p><b>60 s</b> "Four problems: port collisions, no visibility, an AI with no brakes, no memory of what happened. We solved them once. One daemon owns the bus. Everything else is a client."</p>
   <p><b>60 s</b> Live: open the dashboard, show the 3D model and temperature colours. Ask the agent to pick the carton. Hit STOP mid-move. "It froze where it was. The agent cannot take control back; only I can."</p>
-  <p><b>45 s</b> "Heat is the youngest piece. We show temperature live. We do not yet log it. That is where we want your servo data."</p>
+  <p><b>45 s</b> "Our dashboard showed the elbow at 71 degrees, over the limit. We traced it: the reading was stale, and the real heat sits in the servos that hold the arm up, not the ones that move most. We fixed the logging. Now we want your servo data to set the guard."</p>
   <p><b>45 s</b> The ask: a home, servo facts, a reviewer. "We would rather this be yours than ours."</p>
 </section>
 
@@ -205,8 +207,9 @@ footer{color:var(--ink2);font-size:13px}
   <h2>Method and caveats</h2>
   <ul>
     <li>Figures come from the repo at commit <code>15d3a6d</code>: 164 test functions across the daemon tests, 31 MCP tool names, 17 demo folders in the main checkout.</li>
-    <li>Heat: the colour ramp and 55 °C flag are in <code>static/arm3d.js</code>; temperature is polled about every 2.5 s (every 50th poll). No temperature appears in <code>logs/20261023.jsonl</code>, so no heat analysis exists yet. Do not present it as done.</li>
-    <li>The 70 °C firmware alarm is a comment in our code; confirm it against the ST3215 datasheet before quoting it to Seeed.</li>
+    <li>Heat: figures come from <code>reports/servo-health/servo-health-report.html</code> on branch <code>claude/servo-health-report-2f4a19</code>. The logging fix is commit <code>335ca88</code> on that branch, not merged to main, so the running daemon does not log temperature yet (it also needs a human restart). Its tests could not run in that worktree because <code>scripts/kin.py</code> is not tracked in git.</li>
+    <li>The 70 °C over-temperature limit is read from our servos' EEPROM backup (address 13). Only the 7.4 V datasheet was available; our follower reads about 12 V.</li>
+    <li>No hand or person detection exists in the code yet; guardrails are bus-level (load, lag, table, limits, STOP, human-first control).</li>
     <li>Guards are advisory in one case: table clearance depends on a model that is wrong when the arm rests on something.</li>
     <li>"Licence" and "maintainer for six months" are offers to confirm with the team, not yet decided.</li>
     <li>Vision uses YOLO-World and is imperfect for small objects above 6 cm; the pitch claims one successful carton pick and a documented set of failures.</li>
