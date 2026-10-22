@@ -83,3 +83,52 @@ def test_grid_spacing_option():
     assert info["grid"]["spacing_cm"] == 1
     _, info = camview.annotate(blank(), LOOK_DOWN, None, grid_cm=5)
     assert info["grid"]["spacing_cm"] == 5
+
+
+# --- 23 Oct: height-aware offsets and the raw view with the jaw band ------------------------------
+def test_declared_height_shrinks_size_and_offset():
+    """An object standing on something reads too large and too far on the table plane; with its
+    top height declared the overlay measures on that plane instead."""
+    _, flat = camview.annotate(blank(), LOOK_DOWN, FakeDet(), prompts=["box"])
+    _, tall = camview.annotate(blank(), LOOK_DOWN, FakeDet(), prompts=["box"], heights={"box": 6.0})
+    f, t = flat["detections"][0], tall["detections"][0]
+    assert f["assumes_table"] is True and t["assumes_table"] is False and t["assumed_height_cm"] == 6.0
+    assert t["size_cm"][0] < f["size_cm"][0] and t["size_cm"][1] < f["size_cm"][1]
+    assert t["dist_cm"] < f["dist_cm"]
+    assert tall["heights_cm"] == {"box": 6.0}
+
+
+def test_raw_view_draws_band_and_judges_detections():
+    import jawband
+    _, info = camview.annotate(blank(), LOOK_DOWN, FakeDet(), prompts=["box"])
+    jpg, info = camview.annotate_raw(blank(), LOOK_DOWN, info, 55.0)
+    img = cv2.imdecode(np.frombuffer(jpg, np.uint8), cv2.IMREAD_COLOR)
+    assert img.shape[:2] == (480, 640)                     # raw orientation, not rotated
+    b = info["jaw_band"]
+    assert b["open_pct"] == 55.0 and b["moving_tip_in_frame"] is False and b["x0"] < b["x1"]
+    d = info["detections"][0]                              # box at x 300..400, y 320..420: left edge 50 px right of the fixed tip, crosses the row? no: starts below it
+    assert "between_jaws" in d and "where" in d and "dx_px" in d
+    assert "raw_axes" in info and "toward the base" in info["raw_axes"]
+    # a box that crosses the row with its left edge ~70 px right of the fixed jaw tip is between the jaws
+    good = {"detections": [{"label": "box", "conf": 0.5, "bbox_raw": [jawband.FIXED_TIP[0] + 70, jawband.ROW_Y - 150, 120, 330]}]}
+    _, good = camview.annotate_raw(blank(), LOOK_DOWN, good, 55.0)
+    assert good["detections"][0]["between_jaws"] is True and good["detections"][0]["where"] == "between the jaws"
+    under = {"detections": [{"label": "box", "conf": 0.5, "bbox_raw": [jawband.FIXED_TIP[0] - 40, jawband.ROW_Y - 150, 120, 330]}]}
+    _, under = camview.annotate_raw(blank(), LOOK_DOWN, under, 55.0)
+    assert under["detections"][0]["between_jaws"] is False and "under the fixed jaw" in under["detections"][0]["where"]
+    assert under["detections"][0]["dx_px"] > 0                # must move right in the frame
+
+
+def test_jawband_geometry_and_tool_move_sign():
+    import jawband
+    assert jawband.moving_tip_x(30) == jawband.MOVING_TIP_30[0]
+    assert jawband.moving_tip_x(0) == jawband.FIXED_TIP[0]
+    b30, b55 = jawband.band(30), jawband.band(55)
+    assert b30["moving_tip_in_frame"] is True and b30["x1"] < b55["x1"]
+    # object must move 100 px right and 50 px down -> tool toward the base and to the left (23 Oct 06:28 grab)
+    dx, dy = jawband.tool_move_for(100, 50, 25.0)
+    assert dx < 0 and dy > 0 and abs(dx) == 0.04 and dy == 0.02
+    w = jawband.where([jawband.FIXED_TIP[0] + 200, jawband.ROW_Y - 150, 120, 330], 55)
+    assert w["between_jaws"] is False and "too far from the fixed jaw" in w["where"] and w["dx_px"] < 0
+    w = jawband.where([jawband.FIXED_TIP[0] + 70, jawband.ROW_Y + 60, 120, 200], 55)
+    assert w["between_jaws"] is False and "below the jaw row" in w["where"]

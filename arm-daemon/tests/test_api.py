@@ -285,6 +285,19 @@ async def test_static_three_served(client):
 
 async def test_vision_settings_endpoint(client_v):
     r = await client_v.post("/vision/settings", json={"grid_cm": 1, "min_conf": 0.3})
-    assert r.status == 200 and (await r.json()) == {"grid_cm": 1, "min_conf": 0.3}
+    j = await r.json()
+    assert r.status == 200 and j["grid_cm"] == 1 and j["min_conf"] == 0.3 and j["heights"] == {}
     await asyncio.sleep(0.1)
     assert (await (await client_v.get("/vision")).json())["grid"]["spacing_cm"] == 1
+
+
+async def test_vision_raw_view_and_heights(client_v):
+    r = await client_v.get("/vision/raw.jpg")
+    assert r.status == 200 and r.headers["Content-Type"] == "image/jpeg" and "X-Frame-Age" in r.headers
+    j = await (await client_v.get("/vision")).json()
+    assert "jaw_band" in j and "raw_axes" in j and "between_jaws" in j["detections"][0]
+    r = await client_v.post("/vision/settings", json={"heights": {"box": 5}})
+    assert (await r.json())["heights"] == {"box": 5.0}
+    await asyncio.sleep(0.3)
+    j = await (await client_v.get("/vision")).json()
+    assert j["heights_cm"] == {"box": 5.0}              # (this fixture's arm is not looking down, so no plane metrics to re-measure)

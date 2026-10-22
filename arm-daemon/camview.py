@@ -20,6 +20,7 @@ import numpy as np
 import guards                      # puts scripts/ on sys.path and pins kin.LIMITS
 from guards import kin, ROOT
 import camcal                      # scripts/camcal.py
+import jawband                     # jaw tips and the "between the fingers" band in the raw frame
 
 CAL = camcal.load()
 JAWS_30 = json.loads((ROOT / "lab/arm-vision/jaws-30.json").read_text())
@@ -73,8 +74,25 @@ def display_pt(pt, shape):
     return (float(pt[1]), w - 1 - float(pt[0]))
 
 
-def _on_plane(q, px):
-    return camcal.locate_on_plane(CAL, q, px, PLANE_Z)
+def _on_plane(q, px, z=None):
+    return camcal.locate_on_plane(CAL, q, px, PLANE_Z if z is None else float(z))
+
+
+def _height_for(label, heights) -> float | None:
+    """Object-top height (cm above the table plane) the client declared for this label, if any."""
+    if not heights:
+        return None
+    lab = str(label).lower()
+    for k, v in heights.items():
+        k = str(k).lower()
+        if k == lab or k in lab or lab in k:
+            try:
+                h = float(v)
+            except (TypeError, ValueError):
+                continue
+            if h > 0:
+                return h
+    return None
 
 
 def table_geometry(q):
@@ -133,8 +151,12 @@ def _label(img, text, org, color, scale=0.5):
     cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, scale, color, 1, cv2.LINE_AA)
 
 
-def annotate(frame, q, detector, prompts=None, conf=0.05, holder=None, grid_cm=GRID_CM, min_conf=MIN_CONF):
-    """prompts=None -> detector defaults and detections under min_conf are hidden; explicit prompts show all."""
+def annotate(frame, q, detector, prompts=None, conf=0.05, holder=None, grid_cm=GRID_CM, min_conf=MIN_CONF, heights=None):
+    """prompts=None -> detector defaults and detections under min_conf are hidden; explicit prompts show all.
+    heights: {label: cm} object-top heights above the table; a detection whose label has one is
+    measured on that plane instead of the table (an object standing on something reads 1.5-2x too
+    large and too far on the table plane: the 23 Oct look-down overlay said 7.6 cm back for a carton
+    that was 4 cm back)."""
     q = _q(q)
     t0 = time.time()
     raw = frame.copy()
@@ -163,17 +185,23 @@ def annotate(frame, q, detector, prompts=None, conf=0.05, holder=None, grid_cm=G
     for d in dets:
         x, y, w, h = d["bbox"]
         cx, cy = x + w / 2, y + h / 2
+        hcm = _height_for(d["label"], heights)
         e = {"label": d["label"], "conf": d["conf"], "bbox_raw": [x, y, w, h],
-             "center_display_px": [round(v) for v in display_pt((cx, cy), frame.shape)], "assumes_table": P0 is not None}
+             "center_display_px": [round(v) for v in display_pt((cx, cy), frame.shape)],
+             "assumes_table": P0 is not None and hcm is None}
         if P0 is not None:
-            Pc = _on_plane(q, (cx, cy))
-            l, r = _on_plane(q, (x, cy)), _on_plane(q, (x + w, cy))
-            t, b = _on_plane(q, (cx, y)), _on_plane(q, (cx, y + h))
+            z = None if hcm is None else PLANE_Z + hcm / 100          # measure on the object's top plane when known
+            P0h = P0 if hcm is None else _on_plane(q, geo["jaw_target_px"], z)
+            Pc = _on_plane(q, (cx, cy), z)
+            l, r = _on_plane(q, (x, cy), z), _on_plane(q, (x + w, cy), z)
+            t, b = _on_plane(q, (cx, y), z), _on_plane(q, (cx, y + h), z)
             e["size_cm"] = [round(float(np.linalg.norm(r - l)) * 100, 1), round(float(np.linalg.norm(b - t)) * 100, 1)]
-            off = (Pc - P0)[:2] * 100
+            off = (Pc - P0h)[:2] * 100
             e["offset_cm"] = [round(float(off[0]), 1), round(float(off[1]), 1)]        # +forward, +left of the jaw target
             e["table_xy_cm"] = [round(float(v) * 100, 1) for v in Pc[:2]]
             e["dist_cm"] = round(float(np.linalg.norm(off)), 1)
+            if hcm is not None:
+                e["assumed_height_cm"] = hcm
         out.append(e)
         cv2.rectangle(raw, (int(x), int(y)), (int(x + w), int(y + h)), C_DET, 2)
     disp = cv2.rotate(raw, cv2.ROTATE_90_COUNTERCLOCKWISE)
@@ -191,7 +219,8 @@ def annotate(frame, q, detector, prompts=None, conf=0.05, holder=None, grid_cm=G
         px = e["center_display_px"]
         txt = f'{e["label"]} {e["conf"]:.2f}'
         if "size_cm" in e:
-            txt += f'  {e["size_cm"][0]}x{e["size_cm"][1]}cm  fwd {e["offset_cm"][0]:+}  left {e["offset_cm"][1]:+} (on table)'
+            plane = f'(top at {e["assumed_height_cm"]:g} cm)' if "assumed_height_cm" in e else "(on table)"
+            txt += f'  {e["size_cm"][0]}x{e["size_cm"][1]}cm  fwd {e["offset_cm"][0]:+}  left {e["offset_cm"][1]:+} {plane}'
         _label(disp, txt, (max(2, px[0] - 60), max(14, px[1] - 8)), C_DET, 0.45)
     hud = f'tool z {geo["tool_z_cm"]} cm'
     if geo["px_per_cm"]:
@@ -217,4 +246,65 @@ def annotate(frame, q, detector, prompts=None, conf=0.05, holder=None, grid_cm=G
             "detections": out}
     if "detector_error" in geo:
         info["detector_error"] = geo["detector_error"]
+    if heights:
+        info["heights_cm"] = {str(k): float(v) for k, v in heights.items() if isinstance(v, (int, float))}
+    return buf.tobytes(), info
+
+
+# ---------- raw view with the jaw band ---------------------------------------------------------
+C_BAND, C_FIXED, C_MOVING, C_OK, C_BAD = (80, 200, 80), (60, 60, 230), (230, 160, 40), (80, 220, 80), (60, 60, 230)
+
+
+def annotate_raw(frame, q, info, gripper_pct, holder=None):
+    """The RAW frame (no rotation) with the jaw geometry drawn on it: the fixed jaw tip, the moving
+    jaw tip for the current opening, the jaw-tip row and the green band an object must occupy to be
+    between the fingers. Each detection from `info` (bbox_raw) gets a verdict: between_jaws, where,
+    and the pixel shift to the ideal spot. This is the view that decided the 23 Oct grabs: a small
+    model answers "is the box inside the green band?" instead of estimating centimetres."""
+    img = frame.copy()
+    pct = 30.0 if gripper_pct is None else float(gripper_pct)
+    b = jawband.band(pct)
+    # band (only when the jaws are open enough for something to fit between them)
+    if b["usable"]:
+        ov = img.copy()
+        cv2.rectangle(ov, (int(b["x0"]), int(b["y0"])), (int(b["x1"]), int(b["y1"])), C_BAND, -1)
+        cv2.addWeighted(ov, 0.18, img, 0.82, 0, img)
+        cv2.rectangle(img, (int(b["x0"]), int(b["y0"])), (int(b["x1"]), int(b["y1"])), C_BAND, 2, cv2.LINE_AA)
+    else:
+        _label(img, f"jaws closed ({pct:.0f} %): open them (>= {b['min_open_pct_for_3cm']:.0f} % for a 3 cm side) to see the band", (8, 54), C_BAD, 0.42)
+    cv2.line(img, (0, int(b["row_y"])), (W - 1, int(b["row_y"])), C_BAND, 1, cv2.LINE_AA)
+    _label(img, "jaw-tip row", (W - 110, int(b["row_y"]) - 6), C_BAND, 0.42)
+    # jaws
+    ft = tuple(int(v) for v in b["fixed_tip_px"])
+    cv2.drawMarker(img, ft, C_FIXED, cv2.MARKER_TILTED_CROSS, 22, 2, cv2.LINE_AA)
+    _label(img, "fixed jaw (base side)", (max(2, ft[0] - 150), ft[1] + 22), C_FIXED, 0.42)
+    mx, my = b["moving_tip_px"]
+    if b["moving_tip_in_frame"]:
+        cv2.drawMarker(img, (int(mx), int(my)), C_MOVING, cv2.MARKER_TILTED_CROSS, 22, 2, cv2.LINE_AA)
+        _label(img, f"moving jaw {pct:.0f} %", (min(W - 150, int(mx) - 40), int(my) + 22), C_MOVING, 0.42)
+    else:
+        cv2.arrowedLine(img, (W - 60, int(my)), (W - 8, int(my)), C_MOVING, 2, cv2.LINE_AA, tipLength=0.4)
+        _label(img, f"moving jaw {pct:.0f} % (off frame)", (W - 215, int(my) + 22), C_MOVING, 0.42)
+    # detections
+    dets = info.get("detections", []) if isinstance(info, dict) else []
+    for e in dets:
+        bb = e.get("bbox_raw")
+        if not bb:
+            continue
+        wv = jawband.where(bb, pct)
+        e["between_jaws"], e["where"], e["dx_px"], e["dy_px"] = wv["between_jaws"], wv["where"], wv["dx_px"], wv["dy_px"]
+        col = C_OK if wv["between_jaws"] else C_BAD
+        x, y, w, h = (int(v) for v in bb)
+        cv2.rectangle(img, (x, y), (x + w, y + h), col, 2)
+        ly = y - 6 if y > 70 else min(H - 6, y + h + 16)             # keep the verdict clear of the HUD lines and the frame edge
+        _label(img, f'{e.get("label")} {float(e.get("conf", 0)):.2f}: {wv["where"]}', (max(2, min(x, W - 330)), ly), col, 0.42)
+    hud = f"RAW view   open {pct:.0f} %   left = toward base   top = world left"
+    if holder:
+        hud += f"   holder {holder}"
+    _label(img, hud, (8, 18), C_TEXT, 0.5)
+    _label(img, "object must cross the row inside the green band, just right of the fixed jaw", (8, 36), C_TEXT, 0.42)
+    ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 80])
+    if isinstance(info, dict):
+        info["jaw_band"] = b
+        info["raw_axes"] = "raw image-left = toward the base (-x), raw image-top = world left (+y); to move an object right in the frame move the tool toward the base (dx<0), to move it down move the tool left (dy>0)"
     return buf.tobytes(), info

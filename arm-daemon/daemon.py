@@ -84,8 +84,12 @@ def main():
         except Exception as e:
             print(f"vision: YOLO-World unavailable ({e}); grid only", file=sys.stderr)
     JOINTS5 = ["shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll"]
-    vis = VisionWorker(frame_fn=lambda: cams.frame("gripper"),
-                       joints_fn=lambda: {j: bus.snapshot()["servos"].get(j, {}).get("deg", 0.0) for j in JOINTS5},
+    def _vision_joints():
+        servos = bus.snapshot()["servos"]
+        q = {j: servos.get(j, {}).get("deg", 0.0) for j in JOINTS5}
+        q["gripper"] = servos.get("gripper", {}).get("pct", 30.0)        # the raw view draws the moving jaw for this opening
+        return q
+    vis = VisionWorker(frame_fn=lambda: cams.frame("gripper"), joints_fn=_vision_joints,
                        holder_fn=lambda: control.holder, detector=detector, hz=a.vision_hz)
     vis.start()
     app = build_app(control, bus, cams, human_key=key, vision=vis)

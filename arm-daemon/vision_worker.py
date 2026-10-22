@@ -16,16 +16,22 @@ class VisionWorker(threading.Thread):
         self.detector = detector
         self.hz = hz
         self._prompts = list(prompts or [])
-        self._settings = {"grid_cm": camview.GRID_CM, "min_conf": camview.MIN_CONF}
+        self._settings = {"grid_cm": camview.GRID_CM, "min_conf": camview.MIN_CONF, "heights": {}}
         self._exit = threading.Event()
         self._lock = threading.Lock()
         self._jpg = None
+        self._raw_jpg = None
         self._t = None
         self._info = {"detections": [], "prompts": self._prompts, "error": "starting"}
 
     def frame(self):
         with self._lock:
             return (self._jpg, round(time.time() - self._t, 3)) if self._jpg else None
+
+    def raw_frame(self):
+        """The raw (unrotated) frame with the jaw band drawn on it, same age as frame()."""
+        with self._lock:
+            return (self._raw_jpg, round(time.time() - self._t, 3)) if self._raw_jpg else None
 
     def frame_time(self):
         with self._lock:
@@ -51,6 +57,21 @@ class VisionWorker(threading.Thread):
                     self._settings["min_conf"] = m
             except (KeyError, TypeError, ValueError):
                 pass
+            h = d.get("heights")
+            if isinstance(h, dict):                 # {label: cm above the table}; {} clears, a 0/None value removes one label
+                cur = dict(self._settings["heights"])
+                if not h:
+                    cur = {}
+                for k, v in h.items():
+                    try:
+                        fv = float(v) if v is not None else 0.0
+                    except (TypeError, ValueError):
+                        continue
+                    if fv > 0:
+                        cur[str(k).strip().lower()] = fv
+                    else:
+                        cur.pop(str(k).strip().lower(), None)
+                self._settings["heights"] = cur
             return dict(self._settings)
 
     def settings(self) -> dict:
@@ -74,15 +95,18 @@ class VisionWorker(threading.Thread):
                     with self._lock:
                         self._info = {"t": time.time(), "detections": [], "prompts": self._prompts, "error": "no camera frame"}
                         self._jpg = None
+                        self._raw_jpg = None
                 else:
                     raw = cv2.imdecode(np.frombuffer(f[0], np.uint8), cv2.IMREAD_COLOR)
                     q = self.joints_fn()
                     st = self.settings()
-                    jpg, info = camview.annotate(raw, q, self.detector, prompts=self.prompts() or None, holder=self.holder_fn(),
-                                                 grid_cm=st["grid_cm"], min_conf=st["min_conf"])
+                    holder = self.holder_fn()
+                    jpg, info = camview.annotate(raw, q, self.detector, prompts=self.prompts() or None, holder=holder,
+                                                 grid_cm=st["grid_cm"], min_conf=st["min_conf"], heights=st.get("heights") or None)
+                    raw_jpg, info = camview.annotate_raw(raw, q, info, q.get("gripper") if isinstance(q, dict) else None, holder=holder)
                     info["frame_age_s"] = f[1]
                     with self._lock:
-                        self._jpg, self._t, self._info = jpg, time.time(), info
+                        self._jpg, self._raw_jpg, self._t, self._info = jpg, raw_jpg, time.time(), info
             except Exception as e:
                 with self._lock:
                     self._info = {"t": time.time(), "detections": [], "prompts": self._prompts, "error": f"{type(e).__name__}: {e}"}

@@ -189,6 +189,15 @@ def build_app(control, bus, cams, human_key: str | None = None, vision=None) -> 
             return _refused(503, vision.info().get("error", "no frame"))
         return web.Response(body=f[0], content_type="image/jpeg", headers={"X-Frame-Age": str(f[1]), "Cache-Control": "no-store"})
 
+    async def get_vision_raw(request):
+        """Raw (unrotated) gripper frame with the jaw tips and the between-the-fingers band drawn."""
+        if vision is None:
+            return _refused(503, "vision not configured")
+        f = vision.raw_frame() if hasattr(vision, "raw_frame") else None
+        if f is None:
+            return _refused(503, vision.info().get("error", "no frame"))
+        return web.Response(body=f[0], content_type="image/jpeg", headers={"X-Frame-Age": str(f[1]), "Cache-Control": "no-store"})
+
     async def get_vision_stream(request):
         if vision is None:
             return _refused(503, "vision not configured")
@@ -337,7 +346,7 @@ def build_app(control, bus, cams, human_key: str | None = None, vision=None) -> 
         web.post("/move", post_move), web.post("/gripper", post_gripper), web.post("/pose", post_pose),
         web.get("/poses", get_poses), web.post("/torque", post_torque), web.get("/kinematics", get_kinematics),
         web.post("/control", post_control), web.post("/stop", post_stop), web.post("/resume", post_resume),
-        web.get("/vision", get_vision), web.get("/vision/frame.jpg", get_vision_frame),
+        web.get("/vision", get_vision), web.get("/vision/frame.jpg", get_vision_frame), web.get("/vision/raw.jpg", get_vision_raw),
         web.get("/vision/stream", get_vision_stream), web.post("/vision/prompts", post_vision_prompts),
         web.post("/vision/settings", post_vision_settings),
         web.post("/demo/start", post_demo_start), web.post("/demo/stop", post_demo_stop),
