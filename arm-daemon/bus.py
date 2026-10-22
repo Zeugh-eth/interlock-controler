@@ -23,6 +23,8 @@ TORQUE_OFF_MAX_Z = 0.05
 TELEOP_HZ = 30
 TELEOP_STEP_MAX = 15.0      # deg per tick toward the leader (LeRobot's max_relative_target)
 REPLAY_EVERY = 10           # one waypoint per N recorded rows
+TEMP_EVERY_S = 2.5          # servo temperature refresh, in every mode (idle, teleop, between moves)
+HEALTH_LOG_EVERY_S = 10.0   # one servo-health row per interval in logs/health/<day>.jsonl
 
 
 class Backend(Protocol):
@@ -121,7 +123,8 @@ class _Stop(Exception):
 
 class BusWorker(threading.Thread):
     def __init__(self, backend: Backend, control, poses_path: Path, hz: float = 20.0, log_dir: Path | None = None,
-                 leader: Leader | None = None, frame_fn: Callable | None = None, demo_dir: Path | None = None):
+                 leader: Leader | None = None, frame_fn: Callable | None = None, demo_dir: Path | None = None,
+                 temp_every_s: float = TEMP_EVERY_S, health_every_s: float = HEALTH_LOG_EVERY_S):
         super().__init__(name="bus", daemon=True)
         self.backend, self.control = backend, control
         self.leader, self.frame_fn = leader, frame_fn
@@ -139,7 +142,8 @@ class BusWorker(threading.Thread):
         self._next_id = 1
         self._callbacks: list[Callable[[MotionResult], None]] = []
         self._temps: dict = {}
-        self._poll_n = 0
+        self.temp_every_s, self.health_every_s = temp_every_s, health_every_s
+        self._temp_t = self._health_t = float("-inf")
         self._connected = False
         self._fatal = ""            # set when the bus cannot be used (connect failed): writes refused
         self._state = {"t": 0.0, "bus": "starting", "servos": {}, "tool": {}, "motion": {"id": 0, "state": "idle", "result": None}}
@@ -263,6 +267,7 @@ class BusWorker(threading.Thread):
         self._connect()
         while not self._exit.is_set():
             self._sync_release()
+            self._health_tick()
             if self._leader_on:
                 self._teleop_tick()
                 try:
@@ -331,13 +336,42 @@ class BusWorker(threading.Thread):
             q = self.backend.read()
             load = self.backend.read_load()
             torque = self.backend.torque_on()
-            self._poll_n += 1
-            if self._poll_n % 50 == 1:
-                self._temps = self.backend.read_temp()
         except Exception as e:
             self._set_bus(f"error:{e}")
             return
         self._update(q, load, torque)
+
+    def _health_tick(self):
+        """Refresh servo temperatures (the poll alone skips them while the leader drives or a move
+        runs, which left a stale value on show) and append one health row to logs/health/<day>.jsonl
+        so temperature can be compared across sessions."""
+        if not self._connected or not self._state["servos"]:    # nothing polled yet
+            return
+        now = time.monotonic()
+        if now - self._temp_t < self.temp_every_s:
+            return
+        self._temp_t = now
+        try:
+            self._temps = self.backend.read_temp()
+        except Exception:
+            self._temps = {}
+        with self._lock:
+            for j, e in self._state["servos"].items():
+                e["temp_c"] = self._temps.get(j)
+            servos = {j: {"temp_c": e["temp_c"], "load": e.get("load"), "pos": e.get("deg", e.get("pct")),
+                          "torque": e.get("torque")} for j, e in self._state["servos"].items()}
+            motion = self._state["motion"]["state"]
+        if not self.log_dir or now - self._health_t < self.health_every_s:
+            return
+        self._health_t = now
+        try:
+            d = self.log_dir / "health"
+            d.mkdir(parents=True, exist_ok=True)
+            row = {"t": time.time(), "holder": self.control.holder, "motion": motion, "servos": servos}
+            with open(d / (time.strftime("%Y%m%d") + ".jsonl"), "a") as f:
+                f.write(json.dumps(row) + "\n")
+        except Exception:
+            pass
 
     def _update(self, q, load=None, torque=None, goal=None):
         with self._lock:

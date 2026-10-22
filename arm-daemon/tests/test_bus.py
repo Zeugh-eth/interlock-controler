@@ -249,3 +249,29 @@ def test_speed_validated(worker):
 def test_requested_is_normalised_on_refusal(worker):
     r = worker.submit({"op": "servo", "servo": "elbow_flex", "value": 5.0}, human=False)
     assert r.requested == {"elbow_flex": 5.0}
+
+
+def test_health_log_records_temperature_in_every_mode(backend, control, tmp_path):
+    from bus import BusWorker
+    backend.temp["elbow_flex"] = 61
+    w = BusWorker(backend, control, POSE_LIB, hz=200, log_dir=tmp_path, temp_every_s=0.01, health_every_s=0.05)
+    w.start()
+    time.sleep(0.4)
+    w.stop()
+    import json
+    rows = [json.loads(l) for f in (tmp_path / "health").glob("*.jsonl") for l in f.read_text().splitlines()]
+    assert len(rows) >= 2 and rows[0]["servos"]["elbow_flex"]["temp_c"] == 61
+    assert set(rows[0]["servos"]) == set(JOINTS) and {"temp_c", "load", "pos", "torque"} <= set(rows[0]["servos"]["gripper"])
+    assert w.snapshot()["servos"]["elbow_flex"]["temp_c"] == 61
+
+
+def test_temperature_refreshes_during_leader_teleop(backend, control, leader, tmp_path):
+    from bus import BusWorker
+    w = BusWorker(backend, control, POSE_LIB, hz=200, leader=leader, log_dir=tmp_path, temp_every_s=0.01)
+    w.start()
+    control.set_holder("leader", True)
+    time.sleep(0.2)
+    backend.temp["elbow_flex"] = 66
+    time.sleep(0.3)
+    assert w.snapshot()["leader"]["active"] and w.snapshot()["servos"]["elbow_flex"]["temp_c"] == 66
+    w.stop()
