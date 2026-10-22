@@ -73,6 +73,25 @@ A pick, the intended way (manual tools): `observe` -> `project` the target pixel
 `demo_stop(reported_outcome=...)`.
 
 
+### Align tools (23 Oct 06:xx: what a small model needs when the detector cannot see the object)
+
+Two Haiku runs stalled with zero jaw closes: YOLO-World never saw the carton above 6 cm, so
+`analyze_object` had no detection to plan from, and the survey pose it wanted was unreachable near
+the base. These tools are the manual sequence that then grabbed the carton, as one closed loop.
+
+| Tool | Does | Returns |
+|---|---|---|
+| `align_to(label, u, v, width_cm, open_pct, grasp_z_m, descend)` | opens the jaws, slides the tool at the current height until the object crosses the jaw-tip row inside the band (raw view), then descends in 1.5 cm steps re-centering after each; never closes. Follows the detector box when it sees the object (conf >= 0.15), else tracks the blob at raw pixel (u, v) (flood fill, patch-match fallback). Measures px/cm at the object's own depth from the first move. | `outcome` aligned / not_aligned / lost / touch / refused, `moves`, `px_per_cm_measured`, `final.where`, raw view |
+| `grab_at(...)` | `align_to` then `grasp(label)` then `evaluate_grasp` against `width_cm` | align, grasp verdict, evaluation |
+| `measure_height(label, rise_cm)` | rises `rise_cm`, reads how much the detector box shrank, computes the object-top height and stores it as the vision height for that label | `top_z_cm`, `height_above_table_cm`, or `measured: false` with the reason |
+
+`analyze_object` changes of the same night: plans only from detections >= `MIN_PLAN_CONF` (0.15, a
+0.07 hit is reported under `low_confidence`); the pan scan is relative (+-15, +-30 deg) and the start
+pan is restored when nothing is found; when the survey height is unreachable it lowers z above the
+same (x, y) (`survey_note`) instead of moving x out; `goto_xyz`/`move_tool` refusals carry
+`reachable_z_m` and name it; the IK retries from the look-down seed. `grasp(label)` with no
+detection at all falls back to the jaw reading (no evidence is not evidence of a miss).
+
 ### Grab rules learned 23 Oct (skills.py)
 
 `grab(plan)` returns `outcome: not_aligned` with the jaws untouched when the object is not within
@@ -228,11 +247,15 @@ view (tilt > 60° from down) there is no grid.
 | `GET /vision/frame.jpg` | annotated JPEG (503 while there is no camera frame) |
 | `GET /vision/stream` | MJPEG of the annotated view |
 | `POST /vision/prompts` | `{"prompts": ["box", "cup"]}` or `"box, cup"`; empty = detector defaults. Anyone may set them. With explicit prompts every detection is shown; with defaults, detections under `min_conf` (0.15) are hidden (`hidden_low_conf` counts them). |
-| `POST /vision/settings` | `{"grid_cm": 5 or 1, "min_conf": 0.15}`; returns the settings in force. Default grid is 5 cm lines. |
+| `POST /vision/settings` | `{"grid_cm": 5 or 1, "min_conf": 0.15, "heights": {"carton": 7}}`; returns the settings in force. Default grid is 5 cm lines. `heights` = object-top height above the table per label (cm): such detections are measured on that plane (`assumed_height_cm`, `assumes_table: false`, label "(top at 7 cm)"); `{}` clears, a 0 removes one label. |
+| `GET /vision/raw.jpg` | the RAW (unrotated) frame with the jaw geometry drawn: fixed-jaw tip (left finger, base side), moving-jaw tip for the current opening, the jaw-tip row and the green band an object must occupy to be between the fingers. Added 23 Oct after two runs stalled on the rotated overlay. |
+
+`GET /vision` also carries `jaw_band` (`x0, x1, y0, y1, row_y, target_left_x, fixed_tip_px, moving_tip_px, open_pct`), `raw_axes`, and per detection `between_jaws`, `where` (a phrase such as "under the fixed jaw (move the tool toward the base)") and `dx_px, dy_px` (shift to the ideal spot). Geometry: `arm-daemon/jawband.py` over `lab/arm-vision/jaws-30.json`.
 
 `state.vision` carries the detections, tool numbers, prompts and any error, so WebSocket clients
 get them for free. The dashboard shows the annotated stream by default (toggle raw) with a
-detection table; the MCP `look()` returns the annotated frame plus `vision`.
+detection table; the MCP `look()` returns the raw band view by default (`overlay=True` for the
+rotated table view, `raw=True` for the plain frame, `height_cm=` to declare a height) plus `vision`.
 
 ## Demonstrations (recording what a human or an agent did, for the agent to learn from)
 

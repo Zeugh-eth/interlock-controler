@@ -1,51 +1,83 @@
 ---
 name: driving-the-arm
-description: Use when the user asks the HackAIWoo SO-101 arm to do something through the arm MCP tools (mcp__arm__*) - look, find or describe objects, scan the table, take a posture, open or close the gripper, pick or place - when the user says stop or wait while the arm is working, or when an arm tool result says refused, frozen, an outcome other than grasped/placed/locked, or shows a fixture or synthetic frame.
+description: Use when the user asks the HackAIWoo SO-101 arm to do something through the arm-daemon MCP tools (mcp__arm-daemon__*) - look, find or describe objects, grab, pick or place, take a posture, open or close the gripper - when the user says stop or wait while the arm is working, or when a tool result says refused, frozen, lost, not_aligned, touch, or any outcome other than held, aligned or placed.
 ---
 
-# Driving the arm (arm MCP)
+# Driving the arm (arm-daemon MCP)
 
-The `arm` MCP server (arm-agent/) is the only way to move or see. **Decide from the gripper camera only.**
+The `arm-daemon` MCP (`mcp__arm-daemon__*`) is the only way to move or see: the daemon on :8800 owns
+the bus. (The older `arm` MCP from arm-agent/ runs a simulator unless its own runtime is up; do not
+use it for the real arm.) **Decide from the gripper camera.** `look()` shows the RAW frame with the
+jaw band drawn on it: an object is between the fingers when it crosses the jaw-tip row inside the
+green band, just right of the fixed jaw. Every detection in `vision.detections` says `between_jaws`
+and `where`.
 
-## Every mission
-1. `status()`: `backend` (sim: say so in the reply), `stop.set`, `holding`, `skills` (can select/pick/place run?).
-2. `begin_task("<the user's words, verbatim>")`.
-3. See: `look()` here, `scan(area)` to search. Name things by `object_id`.
-4. Act: `go_pose`, `gripper`, or `select(object_id)` → `pick(target_id)` → `select(place object)` → `place(target_id)`.
-5. End in `go_pose("standby")` unless the user asked for `rest`. `scan` ends in `ready`, so this applies after it too.
+## Before anything
+1. `state()`: `control.holder` must be `agent` (otherwise ask the user to click **agent** on the
+   dashboard at http://127.0.0.1:8800/), `stop.set` false, `bus` ok.
+2. `find_demos("<task words>")`: the best success card gives the grasp z, open % and jaw stop %.
+3. `demo_start("<the user's words, verbatim>")`. End with `demo_stop(reported_outcome, notes)` and
+   say what you saw, not what you assumed.
 
-## Reading images
-- `camera_matches_pose: false` or `frame_source: fixture:…`: not a view from this pose. With a live
-  camera and a sim arm, **every scan view is the same frame**, so its candidates are one scene seen N
-  times. Describe it once and say the views do not follow the arm; never plan motion from it.
-- `frame_source: synthetic`: a rendered sim scene, not the real table.
-- `scan.objects` counts candidates per view. Overlapping boxes (`red box` + `pink/red object`) and the
-  same thing in neighbouring views are usually one object: check the image.
+## Grab or pick: the decision tree
+Start from `pose("look-down")` (tool z 8 cm) and `look()`.
 
-## Skill outcomes
+- **A. The object is not in the frame** → `analyze_object(label)`. It surveys as high as is
+  reachable above the current spot, scans ±15° and ±30° around the current pan and restores the
+  pan when it finds nothing. A card with `plan.feasible` → `grab(plan)`. No card → describe what is
+  in the frame and ask; do not wander.
+- **B. You can see the object but the detector does not list it** (no detection with conf ≥ 0.15,
+  or only one big merged box) → `align_to(label=..., u=..., v=...)` with a RAW-frame pixel on the
+  object's body (give both label and pixel when unsure) and `width_cm` = the side the jaws will
+  close across. On `aligned` → `grasp(label=...)`. `grab_at(...)` does both in one call.
+- **C. The detector lists it with conf ≥ 0.15** → `align_to(label)` then `grasp(label)`, or
+  `analyze_object(label)` → `grab(plan)` when the whole object is in frame from 8 cm or higher.
+- **Place** → `move_tool` above the spot, lower to the pick height, `release()`. The frame after the
+  retreat is the proof.
+- End in `pose("standby")` unless the user asked for `rest`.
+
+## Outcomes
 | Result | Do |
 |---|---|
-| `skills.pick` "needs a camera that follows the arm", or select/pick/place `refused` | say it cannot pick with this setup; **never fake a pick with go_pose + gripper** |
-| `grasped` / `placed` (+ `on_target`) | report; continue the plan |
-| `target_lost` | `look()`/`scan()` again, re-`select`, try once more |
-| `missed` / `not_ready` (jaws stayed open: view did not match the grasp signature) | re-`select` and retry once, then ask |
-| `touch` | `look()`, report what it hit; do not retry the same approach |
-| `timeout` / `unreachable` | report with `error_trace_z_cm_ex_ey`; ask before another try |
-| `refused: true` (motion) | report `error`; never retry a variant to get around it |
+| `aligned` | `grasp(label)` |
+| `not_aligned` | read `final.where`; one more `align_to`; then ask |
+| `lost` | `look()`; the object left the view: point at it again (u, v) and retry once |
+| `touch` / `frozen` | `look()`; something was hit, say what; never repeat the same move |
+| `held` | report; keep holding unless told to place |
+| `empty` / `slipped` | `release()`; re-align once; then ask |
+| `edge` | `replan` or shift along the closing axis; never carry an edge pinch |
+| `refused` | read `reason`: holder, stop, busy, or unreachable. Unreachable names the highest reachable z: go lower. Never pass `ignore_table` unless the user agrees |
+
+**Budget.** An attempt is a jaw close: three closes, then stop and ask. Exploration: twelve moves
+without the object getting closer to the band → stop and report what you saw.
+
+## Facts (every success kept these; every miss broke one)
+- The fixed jaw is the LEFT finger in the raw view (base side). The moving jaw is the right one and
+  is out of frame when the opening is 46 % or more.
+- Raw axes: image-left = toward the base, image-top = world left. Object left of the band →
+  `move_tool(dx<0)` (tool toward the base). Object above the jaw row → `move_tool(dy>0)` (tool left).
+- Open the jaws (55 % for a 3 cm side, `open_pct` in `align_to`) BEFORE sliding sideways or descending.
+- Keep tool z at or below 9 cm when x is under 18 cm: nearer the base a higher top-down pose is
+  unreachable. 8 cm works everywhere the arm works.
+- An object standing on something reads 1.5 to 2 times too large and too far in the overlay numbers.
+  `measure_height(label)` or `look(height_cm=...)` fixes them; `align_to` does not need them.
+- The detector often misses small objects above 6 cm. No detection is not evidence of absence; your
+  eyes on the raw frame are evidence.
+- The jaw percent alone cannot tell a thin hold (1.5 %) from a miss (1 %): `grasp(label)` checks
+  with vision after the lift when the detector can see the object.
+- Descend in 1.5 cm steps and look between steps: parallax moves the picture as you get low.
+- Postures: compact/standby = `crouch-tight`, home = `ready`, `straight`, sleep/rest = `rest`
+  (torque off), `look-down`. Other shapes: the arm-posture skill explains the words; its scripts open
+  the bus, so propose them to the user instead of running them while the daemon is up.
 
 ## STOP
-- User says stop / wait / no / careful → `stop()` first, then talk.
-- A tool call blocks until it returns: a "stop!" typed during `go_pose`, `scan` or `pick` reaches you
-  only after that motion finished. To stop **during** a motion the user runs `touch arm-agent/STOP`.
-- `stop()` writes `arm-agent/STOP`: it survives restarts and blocks every runtime until `resume()`.
-  After a stop (or `frozen`): `status()`, report the pose, `resume()` only when the user says it is clear.
-
-## Postures
-compact/standby/waiting = `crouch-tight`, home/neutral = `ready`, straight/candle = `straight`,
-sleep/rest = `rest` (torque off), look at the table = `look-down`. Other shapes: **REQUIRED SUB-SKILL:**
-arm-posture for the meaning only; its `arm-go.py`/`arm-explore.py` runs open the bus, so propose them
-to the user instead of running them while a runtime is up.
+- User says stop / wait / no / careful → `stop()` first, then talk. A tool call blocks until its
+  motion ends; to stop DURING a motion the user clicks stop on the dashboard.
+- After a stop or a `frozen` result: `state()`, report the pose. Only a human clears STOP on the
+  dashboard; `resume()` only reports the refusal.
 
 ## Never
-- Run arm-moving `scripts/*.py` or open `/dev/cu.usbmodem*` while a runtime is up.
-- Start `--backend real` yourself; the user switches to hardware (arm-agent/README.md).
+- Run arm-moving `scripts/*.py`, open `/dev/cu.usbmodem*`, or start any runtime while the daemon is up.
+- Close the jaws on an object that is not between them in the raw view.
+- Fake a pick with open-loop `move_tool` + `gripper` calls when `align_to` says `not_aligned`.
+- Plan from a detection below 0.15 confidence, or from the overlay cross alone (it was 4 cm off on 23 Oct).
