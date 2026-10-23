@@ -19,6 +19,30 @@ and `where`.
 3. `demo_start("<the user's words, verbatim>")`. End with `demo_stop(reported_outcome, notes)` and
    say what you saw, not what you assumed.
 
+## Space setup: after a daemon restart, a scene change, or anything you can't explain
+Run this before the first grab, and again whenever the frame shows something you can't account for.
+1. **Health**: `state()` twice. A frozen `t`, `temp_c: null` or a `bus` error means the daemon is
+   wedged (23 Oct: a USB dropout froze the poll loop and the gripper's ffmpeg in cam-server.py).
+   `gripper.ok:false` with a fresh daemon → cam-server `/health` frame age; a hung ffmpeg is restarted
+   by killing it (cam-server respawns it). Torque comes back on with the first pose.
+2. **Survey** from `pose("look-down")`, then from z 11-12 cm (the top-down maximum there) with
+   `look(overlay=True)`. Note the surface, the light, every object, where the target is and how it stands.
+3. **Something unexplained → test it before engaging.** Pick a test that tells the hypotheses apart:
+   - Dark shape: move the camera 4 cm sideways. A shadow stays put in the frame (it travels with the
+     arm); a real object shifts by the move (~75 px at z 11).
+   - Size or height doubtful: `measure_height(label)`; if the detector drops out, judge the base edge
+     in the raw frame or `project(u, v)` it to the table.
+   - Do not engage until one explanation is left. If none is, describe the frame and ask.
+4. **Pick the alignment method from what the light allows**, checked on two or three frames:
+   - Detector steady at ≥ 0.15 → `align_to(label)`.
+   - Detector flickering (strong side light, 23 Oct: 0.06-0.70 frame to frame) or hard shadow
+     edges → do not use the `u, v` blob tracker (it locks onto shadow edges and the white fixed jaw
+     and walks the arm away). Use the manual servo instead: move the tool until the object crosses the
+     jaw row 40-70 px right of the fixed tip, open to 60 %, descend in 1.5 cm steps with `look()`
+     after each, `grasp(label)` at tool z ≈ 2.2 cm.
+5. Write what you found into the demo notes (`demo_start("space setup ...")`) so the next run starts
+   from it.
+
 ## Grab or pick: the decision tree
 Start from `pose("look-down")` (tool z 8 cm) and `look()`.
 
@@ -56,6 +80,10 @@ without the object getting closer to the band → stop and report what you saw.
   is out of frame when the opening is 46 % or more.
 - Raw axes: image-left = toward the base, image-top = world left. Object left of the band →
   `move_tool(dx<0)` (tool toward the base). Object above the jaw row → `move_tool(dy>0)` (tool left).
+  These hold near pan 0. The camera turns with the pan, so off-centre (e.g. pan −25°) image-left is
+  *radially* toward the base: split the correction along the arm's direction, not base x/y.
+- **Frames lag ~0.5 s even when `stale: false`.** Decide from an observe pair: wait 0.6 s,
+  `observe()`, wait 0.4 s, `observe()`; act only when both frames agree.
 - Open the jaws (55 % for a 3 cm side, `open_pct` in `align_to`) BEFORE sliding sideways or descending.
 - Keep tool z at or below 9 cm when x is under 18 cm: nearer the base a higher top-down pose is
   unreachable. 8 cm works everywhere the arm works.
@@ -64,7 +92,14 @@ without the object getting closer to the band → stop and report what you saw.
 - The detector often misses small objects above 6 cm. No detection is not evidence of absence; your
   eyes on the raw frame are evidence.
 - The jaw percent alone cannot tell a thin hold (1.5 %) from a miss (1 %): `grasp(label)` checks
-  with vision after the lift when the detector can see the object.
+  with vision after the lift when the detector can see the object. When it cannot, the verdict can
+  be wrong both ways (23 Oct: "empty" at 2.9 % on a held carton; "held" on a box that slid out, the
+  opening shrinking during the lift). Confirm with a 3 cm lift and an observe pair: held means the
+  object stays put in the frame while the table recedes.
+- The table guard keeps the tool at ≥1.5 cm, so an object needs to stand clearly taller than that to
+  be gripped from above. A box lying flat (~1 cm) can't be; ask the user to stand it on edge.
+- Send any big move (a raise, a carry) alone and read its outcome before the next call: calls
+  batched after it still run even when it comes back `frozen`. Carrying a load, raise at speed ≤25.
 - Descend in 1.5 cm steps and look between steps: parallax moves the picture as you get low.
 - Postures: compact/standby = `crouch-tight`, home = `ready`, `straight`, sleep/rest = `rest`
   (torque off), `look-down`. Other shapes: the arm-posture skill explains the words; its scripts open
