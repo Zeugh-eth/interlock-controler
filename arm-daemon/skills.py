@@ -28,8 +28,9 @@ REACH_PROBE_Z = (0.12, 0.11, 0.10, 0.09, 0.08, 0.07, 0.06, 0.05)   # m, highest 
 
 
 class Skills:
-    def __init__(self, base_url: str = "http://127.0.0.1:8800", timeout: float = 120):
+    def __init__(self, base_url: str = "http://127.0.0.1:8800", timeout: float = 120, headers: dict | None = None):
         self.base = base_url.rstrip("/")
+        self.headers = dict(headers or {})      # e.g. X-Arm-Agent: remote
         self.timeout = timeout
         self._open = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         self._cal = None
@@ -38,7 +39,7 @@ class Skills:
     def _http(self, method, path, body=None):
         data = json.dumps(body or {}).encode() if method == "POST" else None
         req = urllib.request.Request(self.base + path, data=data, method=method,
-                                     headers={"Content-Type": "application/json"} if data is not None else {})
+                                     headers={**self.headers, **({"Content-Type": "application/json"} if data is not None else {})})
         try:
             with self._open.open(req, timeout=self.timeout) as r:
                 raw, ctype = r.read(), r.headers.get("Content-Type", "")

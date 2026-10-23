@@ -301,3 +301,21 @@ async def test_vision_raw_view_and_heights(client_v):
     await asyncio.sleep(0.3)
     j = await (await client_v.get("/vision")).json()
     assert j["heights_cm"] == {"box": 5.0}              # (this fixture's arm is not looking down, so no plane metrics to re-measure)
+
+
+async def test_remote_agent_header_and_toggle(client, key):
+    R = {"X-Arm-Agent": "remote"}
+    await client.post("/control", json={"holder": "agent"}, headers={H: key})
+    r = await client.post("/servo/elbow", json={"deg": 5}, headers=R)
+    assert r.status == 200 and (await r.json())["agent"] == "remote"
+    assert (await client.post("/control", json={"remote_allowed": False})).status == 403
+    r = await client.post("/control", json={"remote_allowed": False}, headers={H: key})
+    assert r.status == 200 and (await r.json())["agents"]["remote_allowed"] is False
+    r = await client.post("/servo/elbow", json={"deg": 6}, headers=R)
+    assert r.status == 409 and (await r.json())["reason"] == "remote agent blocked on the dashboard"
+    r = await client.post("/servo/elbow", json={"deg": 6})
+    assert r.status == 200 and (await r.json())["agent"] == "local"
+    s = await (await client.get("/state")).json()
+    assert s["control"]["holder"] == "agent" and s["control"]["agents"]["local"]["active"] is True
+    r = await client.post("/servo/elbow", json={"deg": 7}, headers=R)
+    assert r.status == 409

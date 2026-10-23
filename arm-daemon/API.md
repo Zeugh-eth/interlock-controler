@@ -34,6 +34,23 @@ camera server. Everything else (dashboard, MCP servers, arm-agent) is a client o
   `state`, `look`, `poses`, `set_servo`, `nudge`, `move`, `gripper`, `pose`, `stop`, `resume`,
   `find_demos`, `demo_summary`, `list_demos`, `read_demo`, `replay_demo`, `demo_start`, `demo_stop`. It never sends the key, so
   its writes work only while the holder is `agent`. `uv run python mcp_server.py --list`.
+- **MCP over HTTP** (agents on other machines, e.g. Hermes on the Pi): double-click
+  `arm-daemon/mcp-http.command` (= `mcp_server.py --http`). Same tools and instructions as the stdio
+  server, served as streamable HTTP on `0.0.0.0:8811/mcp`; it runs beside the local stdio MCP and talks to
+  the daemon like any other agent client, so the bus, the dashboard and Claude's own MCP are untouched.
+  Every request needs `Authorization: Bearer <token>`; the token is generated on first start into
+  `arm-daemon/agent-http.key` (not in git; delete it to rotate) and printed with the URLs at startup.
+  Use `http://zeughs-MacBook-Pro.local:8811/mcp` (survives DHCP changes) or the LAN / Tailscale IP.
+  Hermes `~/.hermes/config.yaml`:
+  ```yaml
+  mcp_servers:
+    arm-daemon:
+      url: "http://zeughs-MacBook-Pro.local:8811/mcp"
+      headers:
+        Authorization: "Bearer <token from agent-http.key>"
+  ```
+  Its daemon calls carry `X-Arm-Agent: remote`, so it is the remote agent of Control model item 8:
+  it drives under holder `agent`, yields to the local agent, and can be blocked from the dashboard.
 
 
 ## Agent skills (MCP only, the daemon stays plain)
@@ -126,6 +143,20 @@ with z, xy, settle %, lifted cm, held, descent speed, lateral motion, keyframe),
    `lerobot-teleoperate` / `lerobot-record`): the daemon freezes any move, disconnects (torque
    untouched), stops polling and reports `bus: "released"`; writes are refused with `bus released`.
    Setting the holder back reconnects. `arm-daemon/teleop.command` wraps LeRobot teleop this way.
+8. **Local vs remote agent.** An agent request with header `X-Arm-Agent: remote` is the **remote**
+   agent (`mcp_server.py --http`, e.g. Hermes on the Pi); any other agent request is the **local**
+   agent (Claude on this Mac). The daemon only listens on 127.0.0.1, so only processes on this Mac
+   can say which they are. While the holder is `agent` both may write, the local one first:
+   - a remote write is refused with `local agent has control` for 20 s (`LOCAL_LEASE_S`) after the
+     local agent last asked to write;
+   - a local write that finds a remote move running stops it (`frozen` / `control taken by local
+     agent`) and runs as soon as the slot frees (waits up to 5 s); a remote write that finds a local
+     move running gets `busy` as usual;
+   - the human can block the remote agent: `POST /control {"remote_allowed": false}` (human key) →
+     remote writes get `remote agent blocked on the dashboard`. It resets to allowed on daemon start.
+   `state.control.agents` = `{"remote_allowed", "lease_s", "local": {"last_t", "active"}, "remote": {...}}`;
+   every motion result carries `agent` (`human` | `local` | `remote`). Both dashboards show the two
+   agents, a remote allowed/blocked button, and tag each log line with who asked.
 
 Reads never need control. Writes run one at a time: a write arriving while one runs is refused
 with `busy` (not queued).

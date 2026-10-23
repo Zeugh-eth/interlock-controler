@@ -24,6 +24,7 @@ TELEOP_HZ = 30
 TELEOP_STEP_MAX = 15.0      # deg per tick toward the leader (LeRobot's max_relative_target)
 REPLAY_EVERY = 10           # one waypoint per N recorded rows
 TEMP_EVERY_S = 2.5          # servo temperature refresh, in every mode (idle, teleop, between moves)
+PREEMPT_WAIT_S = 5.0        # how long a local agent request waits for a remote move it stopped
 HEALTH_LOG_EVERY_S = 10.0   # one servo-health row per interval in logs/health/<day>.jsonl
 
 
@@ -139,6 +140,8 @@ class BusWorker(threading.Thread):
         self._exit = threading.Event()
         self._lock = threading.Lock()
         self._moving = False
+        self._running_agent = ""         # who reserved the motion slot: human | local | remote
+        self._preempt = threading.Event()   # set by a local agent waiting on a remote move
         self._next_id = 1
         self._callbacks: list[Callable[[MotionResult], None]] = []
         self._temps: dict = {}
@@ -152,31 +155,47 @@ class BusWorker(threading.Thread):
     def snapshot(self) -> dict:
         with self._lock:
             s = json.loads(json.dumps(self._state))
-        s["control"] = {"holder": self.control.holder, "since": self.control.since}
+        s["control"] = {"holder": self.control.holder, "since": self.control.since, "agents": self.control.agents_state()}
         s["stop"] = self.control.stop_state()
         s["leader"] = {"configured": self.leader is not None, "active": self._leader_on}
         s["demo"] = self.demo_active()
         return s
 
-    def submit(self, cmd: dict, human: bool) -> MotionResult:
+    def submit(self, cmd: dict, human: bool, agent: str = "local") -> MotionResult:
+        """agent = local | remote (ignored for human requests). A local agent request that finds a
+        remote move running stops that move (frozen, 'control taken by local agent') and takes the slot."""
         req = self._describe(cmd)
+        who = "human" if human else agent
+        if not human:
+            self.control.touch(agent)
+        deadline = time.time() + PREEMPT_WAIT_S
         with self._lock:
             mid = self._next_id
             self._next_id += 1
-            if self._exit.is_set():
-                why = "daemon stopping"
-            elif self._fatal:
-                why = f"bus error: {self._fatal}"
-            elif self._moving:
-                why = "busy"
-            else:
-                why = ""
-                self._moving = True          # reserve the slot here, under the lock
+        while True:
+            with self._lock:
+                if self._exit.is_set():
+                    why = "daemon stopping"
+                elif self._fatal:
+                    why = f"bus error: {self._fatal}"
+                elif self._moving:
+                    why = "busy"
+                    if who == "local" and self._running_agent == "remote" and time.time() < deadline:
+                        self._preempt.set()
+                        why = "wait"
+                else:
+                    why = ""
+                    self._moving = True          # reserve the slot here, under the lock
+                    self._running_agent = who
+                    self._preempt.clear()
+            if why != "wait":
+                break
+            time.sleep(0.02)
         if why:
-            return self._finish(MotionResult(mid, "refused", why, req, {}, None, False, self._last_pose(), 0, 0.0), cmd)
+            return self._finish(MotionResult(mid, "refused", why, req, {}, None, False, self._last_pose(), 0, 0.0, who), cmd)
         done = threading.Event()
         box = {}
-        self._q.put((mid, cmd, human, done, box))
+        self._q.put((mid, cmd, human, done, box, agent))
         if not done.wait(timeout=600):
             box["r"] = MotionResult(mid, "frozen", "error: command timed out", req, {}, None, False, self._last_pose(), 0, 0.0)
         return box["r"]
@@ -281,12 +300,12 @@ class BusWorker(threading.Thread):
                     if self._connected:
                         self._poll()
                     continue
-            mid, cmd, human, done, box = item
+            mid, cmd, human, done, box, agent = item
             with self._lock:
                 self._state["motion"] = {"id": mid, "state": "moving", "result": None}
             t0 = time.time()
             try:
-                r = self._run(mid, cmd, human)
+                r = self._run(mid, cmd, human, agent)
             except Exception as e:
                 try:
                     self.backend.freeze()
@@ -295,6 +314,7 @@ class BusWorker(threading.Thread):
                 r = MotionResult(mid, "frozen", f"error: {e}", cmd, {}, None, False, self._safe_read(), 0, 0.0)
             r.duration_s = round(time.time() - t0, 2)
             r.requested = r.requested or self._describe(cmd)
+            r.agent = "human" if human else agent
             with self._lock:
                 self._moving = False
                 self._state["motion"] = {"id": mid, "state": "frozen" if r.outcome == "frozen" else "idle", "result": r.to_dict()}
@@ -303,7 +323,7 @@ class BusWorker(threading.Thread):
             self._finish(r, cmd)
         while True:                      # nothing queued may wait forever on a thread that is gone
             try:
-                mid, cmd, human, done, box = self._q.get_nowait()
+                mid, cmd, human, done, box, _ = self._q.get_nowait()
             except queue.Empty:
                 break
             box["r"] = MotionResult(mid, "refused", "daemon stopping", self._describe(cmd), {}, None, False, self._last_pose(), 0, 0.0)
@@ -552,10 +572,10 @@ class BusWorker(threading.Thread):
         return MotionResult(mid, "ok", f"{len(wps)} waypoints", req, {}, None, ignored, final, peak_all, 0.0)
 
     # --- commands -------------------------------------------------------------------------------
-    def _run(self, mid, cmd, human) -> MotionResult:
+    def _run(self, mid, cmd, human, agent="local") -> MotionResult:
         op = cmd.get("op")
         req = self._describe(cmd)
-        ok, why = self.control.can_write(human)
+        ok, why = self.control.can_write(human, agent)
         if not ok:
             return MotionResult(mid, "refused", why, req, {}, None, False, self._safe_read(), 0, 0.0)
         if op == "torque":
@@ -645,6 +665,8 @@ class BusWorker(threading.Thread):
             raise _Stop("leader has control")
         if not human and self.control.holder == "human":
             raise _Stop("control taken by human")
+        if self._preempt.is_set():
+            raise _Stop("control taken by local agent")
 
     def _watched_move(self, goal, speed, load_max, lag_max, human, guard=True):
         """grasp.move_watch's eased move with the state refreshed every tick and stop/takeover

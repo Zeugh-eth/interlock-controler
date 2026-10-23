@@ -78,3 +78,27 @@ def test_leader_holder_blocks_writes(tmp_path):
     assert c.set_holder("leader", human=True) == (True, "")
     assert c.can_write(True) == (False, "leader has control")
     assert c.can_write(False) == (False, "leader has control")
+
+
+def test_local_agent_goes_before_remote(tmp_path):
+    c = ControlState("k", tmp_path / "STOP")
+    c.set_holder("agent", True)
+    assert c.can_write(False, "remote") == (True, "")
+    c.touch("local")
+    assert c.can_write(False, "remote") == (False, "local agent has control")
+    assert c.can_write(False, "local") == (True, "")
+    c._agent_t["local"] -= 60                      # lease ran out
+    assert c.can_write(False, "remote") == (True, "")
+    a = c.agents_state()
+    assert a["remote_allowed"] is True and a["local"]["active"] is False
+
+
+def test_human_can_block_the_remote_agent(tmp_path):
+    c = ControlState("k", tmp_path / "STOP")
+    c.set_holder("agent", True)
+    assert c.set_remote_allowed(False, human=False) == (False, "human key required")
+    assert c.set_remote_allowed(False, human=True) == (True, "")
+    assert c.can_write(False, "remote") == (False, "remote agent blocked on the dashboard")
+    assert c.can_write(False, "local") == (True, "")
+    c.set_holder("human", True)
+    assert c.can_write(False, "remote") == (False, "human has control")

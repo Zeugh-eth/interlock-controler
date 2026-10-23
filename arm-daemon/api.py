@@ -10,6 +10,7 @@ from aiohttp import web
 import guards
 
 HUMAN_HEADER = "X-Arm-Human-Key"
+AGENT_HEADER = "X-Arm-Agent"      # "remote" = mcp_server --http; anything else is the local agent
 WS_HZ = 20.0
 
 
@@ -59,6 +60,9 @@ def build_app(control, bus, cams, human_key: str | None = None, vision=None) -> 
     def human(request):
         return control.is_human(request.headers.get(HUMAN_HEADER))
 
+    def agent(request):
+        return "remote" if request.headers.get(AGENT_HEADER, "").strip().lower() == "remote" else "local"
+
     def state():
         s = bus.snapshot()
         s["cameras"] = cams.health()
@@ -70,7 +74,7 @@ def build_app(control, bus, cams, human_key: str | None = None, vision=None) -> 
 
     async def submit(request, cmd):
         loop = asyncio.get_running_loop()
-        r = await loop.run_in_executor(None, bus.submit, cmd, human(request))
+        r = await loop.run_in_executor(None, bus.submit, cmd, human(request), agent(request))
         return web.json_response(r.to_dict(), status=409 if r.outcome == "refused" else 200)
 
     # --- dashboard -----------------------------------------------------------------------------
@@ -291,15 +295,19 @@ def build_app(control, bus, cams, human_key: str | None = None, vision=None) -> 
     # --- control -------------------------------------------------------------------------------
     async def post_control(request):
         b = await _body(request)
-        holder = b.get("holder")
-        ok, why = control.set_holder(holder, human(request))
-        if not ok:
-            return _refused(400 if why == "unknown holder" else 403, why)
-        return web.json_response({"holder": control.holder, "since": control.since})
+        if "remote_allowed" in b:
+            ok, why = control.set_remote_allowed(bool(b["remote_allowed"]), human(request))
+            if not ok:
+                return _refused(403, why)
+        if "holder" in b or "remote_allowed" not in b:
+            ok, why = control.set_holder(b.get("holder"), human(request))
+            if not ok:
+                return _refused(400 if why == "unknown holder" else 403, why)
+        return web.json_response({"holder": control.holder, "since": control.since, "agents": control.agents_state()})
 
     async def post_stop(request):
         b = await _body(request)
-        control.stop(str(b.get("reason", "")), by="human" if human(request) else "agent")
+        control.stop(str(b.get("reason", "")), by="human" if human(request) else ("remote agent" if agent(request) == "remote" else "agent"))
         return web.json_response({"stop": control.stop_state(), "motion": bus.snapshot()["motion"]})
 
     async def post_resume(request):

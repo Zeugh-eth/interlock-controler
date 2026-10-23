@@ -235,6 +235,10 @@
         </span>
       </div>
       <div class="row">
+        <span class="lbl">Agents</span><span id="agents" class="chips"></span>
+        <button id="btnRemote" title="allow or block the remote agent (mcp_server --http)">remote: allowed</button>
+      </div>
+      <div class="row">
         <span class="lbl">Pose</span><span id="poses" class="chips"></span>
       </div>
       <div class="row">
@@ -273,13 +277,25 @@ async function post(path, body) {
   if (j.outcome || j.refused) logLine(j, path);
   return j;
 }
+/* local agent (this machine) vs remote agent (mcp_server --http): both drive while holder = agent, local first */
+function agentsHtml(a, cls) {
+  if (!a) return "";
+  const ago = t => t ? Math.round(Date.now() / 1000 - t) + " s ago" : "never";
+  const one = (n, e, note) => `<span class="${cls} ${e.active ? "warn" : ""}" title="last request ${ago(e.last_t)}">${n} · ${e.active ? "active" : "idle"}${note}</span>`;
+  return one("local", a.local, " · first") + " " + one("remote", a.remote, a.remote_allowed ? "" : " · blocked");
+}
+async function toggleRemote() {
+  const a = state && state.control.agents; if (!a) return;
+  const j = await post("/control", {remote_allowed: !a.remote_allowed}); if (j.refused) alert(j.refused);
+}
 function logLine(j, path) {
   const d = document.createElement("div");
   const cls = j.outcome || "refused";
   d.className = cls;
   const t = new Date().toLocaleTimeString();
-  d.textContent = `${t}  ${path} → ${j.outcome || "refused"} ${j.reason || j.refused || ""}`;
-  if (j.final) d.textContent = `${t}  ${path} → ${j.outcome} ${j.reason || ""}  ${J.map(k => (j.final[k] ?? "?")).join(" / ")}`;
+  const who = j.agent ? `[${j.agent}] ` : "";
+  d.textContent = `${t}  ${who}${path} → ${j.outcome || "refused"} ${j.reason || j.refused || ""}`;
+  if (j.final) d.textContent = `${t}  ${who}${path} → ${j.outcome} ${j.reason || ""}  ${J.map(k => (j.final[k] ?? "?")).join(" / ")}`;
   const log = $("#log"); log.prepend(d); while (log.children.length > 200) log.lastChild.remove();
 }
 function pill(id, text, cls) { const e = $(id); e.textContent = text; e.className = "pill " + (cls||""); }
@@ -320,6 +336,8 @@ function render(s) {
   pill("#pTorque", tOn ? "torque on" : (tOff ? "torque OFF (limp)" : "torque mixed"), tOn ? "ok" : "warn");
   $("#btnTorqueOn").classList.toggle("on", tOn); $("#btnTorqueOff").classList.toggle("on", tOff);
   document.querySelectorAll("button[data-holder]").forEach(b => b.classList.toggle("on", b.dataset.holder === s.control.holder));
+  $("#agents").innerHTML = agentsHtml(s.control.agents, "pill");
+  if (s.control.agents) $("#btnRemote").textContent = "remote: " + (s.control.agents.remote_allowed ? "allowed" : "blocked");
   for (const j of J) {
     const e = s.servos[j]; if (!e) continue;
     const row = $("#s-"+j); const r = row.querySelector("input");
@@ -375,6 +393,7 @@ document.querySelectorAll("button[data-holder]").forEach(b => b.onclick = async 
   const j = await post("/control", {holder: b.dataset.holder});
   if (j.refused) alert(j.refused);
 });
+$("#btnRemote").onclick = toggleRemote;
 $("#btnStop").onclick = () => post("/stop", {reason: "dashboard"});
 $("#btnResume").onclick = () => post("/resume", {});
 $("#btnDemoStart").onclick = async () => { const j = await post("/demo/start", {task: $("#demoTask").value}); if (j.refused) alert(j.refused); };

@@ -121,6 +121,7 @@ class MotionResult:
     final: dict
     peak_load: int
     duration_s: float
+    agent: str = ""         # human | local | remote: who asked
 
     def to_dict(self) -> dict:
         return asdict(self)

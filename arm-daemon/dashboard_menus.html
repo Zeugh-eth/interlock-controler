@@ -371,7 +371,9 @@
             <div class="ch"><h2>Holder</h2><span class="r" id="holderNow"></span></div>
             <div class="cb"><span class="seg vert" style="width:100%">
               <button data-holder="human">human</button><button data-holder="agent">agent</button><button data-holder="leader">leader · teleop</button><button data-holder="released">released · bus free</button>
-            </span><div class="hint" style="margin-top:10px">Only the holder can move the arm. Hand it to <b>agent</b> before an MCP client drives it.</div></div>
+            </span><div class="hint" style="margin-top:10px">Only the holder can move the arm. Hand it to <b>agent</b> before an MCP client drives it.</div>
+            <div class="row" style="margin-top:12px;align-items:center"><span class="overline">Agents</span><span id="agents"></span><button id="btnRemote" title="allow or block the remote agent (mcp_server --http)">remote: allowed</button></div>
+            <div class="hint">Local = this Mac, remote = mcp_server --http (Hermes). Both drive under <b>agent</b>; the local one goes first and stops a remote move.</div></div>
           </div>
           <div class="card">
             <div class="ch"><h2>Pose</h2></div>
@@ -426,11 +428,23 @@ async function post(path, body) {
   if (j.outcome || j.refused) logLine(j, path);
   return j;
 }
+/* local agent (this machine) vs remote agent (mcp_server --http): both drive while holder = agent, local first */
+function agentsHtml(a, cls) {
+  if (!a) return "";
+  const ago = t => t ? Math.round(Date.now() / 1000 - t) + " s ago" : "never";
+  const one = (n, e, note) => `<span class="${cls} ${e.active ? "warn" : ""}" title="last request ${ago(e.last_t)}">${n} · ${e.active ? "active" : "idle"}${note}</span>`;
+  return one("local", a.local, " · first") + " " + one("remote", a.remote, a.remote_allowed ? "" : " · blocked");
+}
+async function toggleRemote() {
+  const a = state && state.control.agents; if (!a) return;
+  const j = await post("/control", {remote_allowed: !a.remote_allowed}); if (j.refused) alert(j.refused);
+}
 function logLine(j, path) {
   const cls = j.outcome || "refused";
   const t = new Date().toLocaleTimeString();
-  let text = `${t}  ${path} → ${j.outcome || "refused"} ${j.reason || j.refused || ""}`;
-  if (j.final) text = `${t}  ${path} → ${j.outcome} ${j.reason || ""}  ${J.map(k => (j.final[k] ?? "?")).join(" / ")}`;
+  const who = j.agent ? `[${j.agent}] ` : "";
+  let text = `${t}  ${who}${path} → ${j.outcome || "refused"} ${j.reason || j.refused || ""}`;
+  if (j.final) text = `${t}  ${who}${path} → ${j.outcome} ${j.reason || ""}  ${J.map(k => (j.final[k] ?? "?")).join(" / ")}`;
   logs.unshift({cls, text}); if (logs.length > 300) logs.pop();
   renderLogs();
 }
@@ -481,12 +495,15 @@ function render(s) {
   for (const id of ["", "2", "3"]) { $("#btnTorqueOn" + id).classList.toggle("on", tOn); $("#btnTorqueOff" + id).classList.toggle("on", tOff); }
   $$("button[data-holder]").forEach(b => b.classList.toggle("on", b.dataset.holder === s.control.holder));
   $("#holderNow").innerHTML = `<span class="badge ${s.control.holder === "human" ? "ok" : "warn"}">${s.control.holder}</span>`;
+  $("#agents").innerHTML = agentsHtml(s.control.agents, "badge");
+  if (s.control.agents) $("#btnRemote").textContent = "remote: " + (s.control.agents.remote_allowed ? "allowed" : "blocked");
   $("#demoNow").innerHTML = s.demo ? `<span class="badge bad">recording · ${s.demo.rows} rows</span>` : "";
 
   // overview KPIs
   const t = s.tool || {}, lz = t.lowest_link_z_m, age = Date.now()/1000 - s.t;
   const kv = (id, v, cls, note) => { $("#" + id).textContent = v; $("#" + id).className = "v " + (cls || ""); $("#" + id + "N").textContent = note || ""; };
-  kv("kHolder", s.control.holder, s.control.holder === "human" ? "ok" : "warn", s.leader ? (s.leader.active ? "leader active" : (s.leader.configured ? "leader idle" : "leader not configured")) : "");
+  const ag = s.control.agents, agNote = ag && s.control.holder === "agent" ? (ag.local.active ? "local agent driving" : (ag.remote.active ? "remote agent driving" : "agents idle")) : "";
+  kv("kHolder", s.control.holder, s.control.holder === "human" ? "ok" : "warn", agNote || (s.leader ? (s.leader.active ? "leader active" : (s.leader.configured ? "leader idle" : "leader not configured")) : ""));
   kv("kMotion", s.motion.state, s.motion.state === "frozen" ? "warn" : (s.motion.state === "moving" ? "ok" : ""), s.motion.result && s.motion.result.peak_load != null ? `peak load ${s.motion.result.peak_load}` : `state age ${age.toFixed(2)} s`);
   kv("kTorque", tOn ? "on" : (tOff ? "OFF · limp" : "mixed"), tOn ? "ok" : "warn", "all six servos");
   kv("kTool", t.xyz_m ? (t.xyz_m[2]*100).toFixed(1) + " cm" : "?", lz != null && lz < 0.04 ? "bad" : "", `tilt ${t.tilt_from_down_deg ?? "?"}° · lowest link ${lz != null ? (lz*100).toFixed(1) : "?"} cm`);
@@ -602,6 +619,7 @@ try { if (localStorage.getItem("armMenusRail")) document.body.classList.add("rai
 
 /* ---------- actions ---------- */
 $$("button[data-holder]").forEach(b => b.onclick = async () => { const j = await post("/control", {holder: b.dataset.holder}); if (j.refused) alert(j.refused); });
+$("#btnRemote").onclick = toggleRemote;
 $("#btnStop").onclick = () => post("/stop", {reason: "dashboard"});
 $("#btnResume").onclick = () => post("/resume", {});
 $("#btnDemoStart").onclick = async () => { const j = await post("/demo/start", {task: $("#demoTask").value}); if (j.refused) alert(j.refused); };
