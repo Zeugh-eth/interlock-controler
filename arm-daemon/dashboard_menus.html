@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arm · menus</title>
+<style>
+  /* Same palette as the classic dashboard (/dashboard); layout language borrowed from the Anticapture
+     app: icon sidebar, sticky page header, underline tabs, square cards, pill badges, overline labels. */
+  :root {
+    --bg:#f4f6f8; --panel:#ffffff; --panel2:#f9fafb; --line:#dde3e9; --line2:#c9d1d9;
+    --fg:#1c2530; --dim:#5f6b78; --mute:#8a95a1;
+    --blue:#3b8fd0; --blue-l:#8ec5ea; --blue-bg:#eaf4fb; --blue-line:#b9dcf2;
+    --warn:#d99a1e; --bad:#d64545;
+    --warn-bg:#fdf3e0; --bad-bg:#fdeaea; --warn-fg:#9a6a0a;
+    --mono:"SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    --sans:-apple-system, "Helvetica Neue", Inter, "Segoe UI", Arial, sans-serif;
+    --side:224px; --hdr:56px;
+  }
+  body.rail { --side:68px; }
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:13px/1.45 var(--sans); -webkit-font-smoothing:antialiased; overflow:hidden; }
+  button, input, select { font:inherit; color:inherit; }
+  [hidden] { display:none !important; }
+  .mono { font-family:var(--mono); }
+  small, .hint { color:var(--mute); font-size:11px; }
+  .overline { font:600 11px/16px var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--mute); }
+
+  /* ---------- shell ---------- */
+  .shell { display:grid; grid-template-columns:var(--side) minmax(0,1fr); height:100vh; transition:grid-template-columns .18s ease; }
+  aside#side { background:var(--panel); border-right:1px solid var(--line); display:flex; flex-direction:column; min-height:0; }
+  .side-brand { height:var(--hdr); display:flex; align-items:center; gap:10px; padding:0 18px; border-bottom:1px solid var(--line); flex:none; }
+  .logo { width:28px; height:28px; background:var(--fg); color:#fff; display:grid; place-items:center; flex:none; }
+  .logo svg { width:16px; height:16px; }
+  .side-brand b { font-size:14px; font-weight:600; letter-spacing:.01em; white-space:nowrap; }
+  .side-brand small { display:block; font:10.5px var(--mono); margin-top:-2px; }
+  nav#nav { display:flex; flex-direction:column; gap:4px; padding:12px 10px; flex:1; overflow:auto; }
+  nav .grp { padding:10px 8px 4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; height:34px; padding:0 10px; border:0; background:transparent; color:var(--dim); cursor:pointer; text-align:left; width:100%;
+    font-size:14px; font-weight:500; transition:background .12s, color .12s; text-decoration:none; position:relative; }
+  .nav-item svg { width:16px; height:16px; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .nav-item:hover { background:var(--bg); color:var(--fg); }
+  .nav-item.on { background:var(--fg); color:#fff; }
+  .nav-item .lab { flex:1; white-space:nowrap; }
+  .nav-item .cnt { font:600 10.5px/16px var(--mono); padding:0 6px; border-radius:99px; background:var(--bg); color:var(--dim); }
+  .nav-item.on .cnt { background:rgba(255,255,255,.18); color:#fff; }
+  .nav-item .cnt.bad { background:var(--bad-bg); color:var(--bad); }
+  body.rail .nav-item { justify-content:center; padding:0; }
+  body.rail .nav-item .lab, body.rail .side-brand > div:last-child, body.rail nav .grp, body.rail .nav-item .cnt { display:none; }
+  body.rail .side-brand { justify-content:center; padding:0; }
+  body.rail .nav-item .dot { display:block; }
+  .nav-item .dot { display:none; position:absolute; top:6px; right:16px; width:6px; height:6px; border-radius:50%; background:var(--bad); }
+  .side-foot { border-top:1px solid var(--line); padding:10px; display:flex; flex-direction:column; gap:4px; flex:none; }
+
+  .col { display:flex; flex-direction:column; min-width:0; min-height:0; }
+  header#top { height:var(--hdr); flex:none; display:flex; align-items:center; gap:16px; padding:0 24px; background:var(--panel); border-bottom:1px solid var(--line); }
+  .ttl h1 { margin:0; font-size:16px; font-weight:600; letter-spacing:-.005em; line-height:20px; }
+  .ttl small { display:block; line-height:14px; }
+  .badges { display:flex; gap:6px; align-items:center; overflow-x:auto; scrollbar-width:none; min-width:0; } .badges::-webkit-scrollbar { display:none; }
+  .spacer { flex:1; }
+  .estop { display:flex; gap:8px; align-items:center; flex:none; }
+
+  main#page { flex:1; min-height:0; overflow:auto; padding:24px; }
+  .page { display:flex; flex-direction:column; gap:16px; max-width:1480px; margin:0 auto; animation:slide .22s ease-out; }
+  .page.fill { height:100%; } .page.fill > .grow { flex:1; min-height:0; }
+  @keyframes slide { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+  /* ---------- primitives ---------- */
+  .badge { display:inline-flex; align-items:center; gap:6px; height:20px; padding:0 8px; border-radius:99px; font:500 11.5px/1 var(--sans); white-space:nowrap; background:rgba(95,107,120,.1); color:var(--dim); }
+  .badge::before { content:""; width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.7; }
+  .badge.plain::before { display:none; }
+  .badge.ok { background:var(--blue-bg); color:var(--blue); } .badge.warn { background:var(--warn-bg); color:var(--warn-fg); } .badge.bad { background:var(--bad-bg); color:var(--bad); }
+  .badge.solid { background:var(--fg); color:#fff; }
+
+  button { background:var(--panel); border:1px solid var(--line2); padding:0 12px; height:32px; cursor:pointer; font-size:13px; font-weight:500; transition:border-color .12s, color .12s, background .12s; }
+  button:hover { border-color:var(--blue); color:var(--blue); }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  button.pri { background:var(--fg); color:#fff; border-color:var(--fg); } button.pri:hover { background:#2c3846; color:#fff; border-color:#2c3846; }
+  button.sm { height:26px; padding:0 9px; font-size:12px; }
+  button.stop { background:var(--bad); border-color:#b83a3a; color:#fff; font-weight:700; letter-spacing:.12em; padding:0 22px; } button.stop:hover { background:#c23c3c; color:#fff; border-color:#b83a3a; }
+  button.danger { color:var(--bad); } button.danger.on { background:var(--bad-bg); border-color:var(--bad); color:var(--bad); }
+  button.ico { width:32px; padding:0; display:grid; place-items:center; } button.ico svg { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  input[type=text], select { background:var(--panel); border:1px solid var(--line2); height:32px; padding:0 10px; font-size:13px; min-width:0; border-radius:0; }
+  input[type=text]:focus, select:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 2px var(--blue-bg); }
+  input[type=range] { -webkit-appearance:none; appearance:none; width:100%; height:18px; background:transparent; cursor:pointer; margin:0; }
+  input[type=range]::-webkit-slider-runnable-track { height:2px; background:var(--line2); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:12px; height:12px; margin-top:-5px; border-radius:50%; background:#fff; border:2px solid var(--blue); }
+
+  .seg { display:inline-flex; background:var(--bg); border:1px solid var(--line); padding:2px; gap:2px; }
+  .seg button { border:0; height:26px; background:transparent; color:var(--dim); padding:0 12px; }
+  .seg button:hover { color:var(--fg); } .seg button.on { background:var(--panel); color:var(--fg); box-shadow:0 0 0 1px var(--line2); }
+  .seg.danger button.on.off { background:var(--bad-bg); color:var(--bad); box-shadow:0 0 0 1px var(--bad); }
+  .seg.vert { display:flex; flex-direction:column; } .seg.vert button { text-align:left; height:34px; }
+
+  .tabs { display:flex; gap:20px; border-bottom:1px solid var(--line); flex:none; }
+  .tab { background:transparent; border:0; border-bottom:2px solid transparent; margin-bottom:-1px; height:36px; padding:0 2px; color:var(--dim); font-size:14px; font-weight:400; }
+  .tab:hover { color:var(--fg); border-color:transparent; } .tab.on { color:var(--blue); border-bottom-color:var(--blue); }
+
+  .card { background:var(--panel); border:1px solid var(--line); display:flex; flex-direction:column; min-width:0; min-height:0; }
+  .card > .ch { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--line); flex:none; }
+  .card > .ch h2 { margin:0; font-size:14px; font-weight:600; letter-spacing:-.003em; }
+  .card > .ch .r { margin-left:auto; display:flex; gap:8px; align-items:center; color:var(--mute); font:11px var(--mono); }
+  .card > .cb { padding:16px; flex:1; min-height:0; overflow:auto; }
+  .card > .cb.flush { padding:0; }
+  .grid { display:grid; gap:16px; }
+  .g4 { grid-template-columns:repeat(4, minmax(0,1fr)); } .g2 { grid-template-columns:repeat(2, minmax(0,1fr)); } .g32 { grid-template-columns:minmax(0,3fr) minmax(0,2fr); }
+  .field { display:flex; flex-direction:column; gap:6px; } .field + .field { margin-top:18px; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; } .chips button { height:28px; font:12px var(--mono); }
+
+  .kpi { padding:16px; display:flex; flex-direction:column; gap:6px; }
+  .kpi .v { font:500 20px/28px var(--mono); letter-spacing:-.01em; }
+  .kpi .v.ok { color:var(--blue); } .kpi .v.warn { color:var(--warn-fg); } .kpi .v.bad { color:var(--bad); }
+  .kpi small { font-size:11.5px; }
+
+  .stats { display:grid; grid-template-columns:repeat(2, 1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
+  .stat { background:var(--panel); padding:10px 12px; min-width:0; }
+  .stat b { display:block; font:600 10.5px var(--sans); text-transform:uppercase; letter-spacing:.08em; color:var(--mute); margin-bottom:2px; }
+  .stat span { font:500 14px/20px var(--mono); font-variant-numeric:tabular-nums; word-break:break-word; }
+  .stat span.ok { color:var(--blue); } .stat span.warn { color:var(--warn-fg); } .stat span.bad { color:var(--bad); }
+
+  table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+  td, th { padding:8px 14px; border-bottom:1px solid var(--line); text-align:right; font:12px var(--mono); }
+  th { color:var(--mute); font:600 10.5px var(--sans); text-transform:uppercase; letter-spacing:.08em; background:var(--panel2); position:sticky; top:0; }
+  td:first-child, th:first-child { text-align:left; } td:first-child { font:500 13px var(--sans); }
+  td.empty { text-align:center !important; color:var(--mute); font:12px var(--sans) !important; padding:18px; }
+  .camchip { cursor:pointer; border:0; height:20px; padding:0 8px; } .camchip.sel { box-shadow:0 0 0 1px currentColor; font-weight:600; }
+
+  .bar { height:4px; background:var(--line); overflow:hidden; } .bar i { display:block; height:100%; background:var(--blue-l); transition:width .15s; }
+  .bar i.warm { background:var(--warn); } .bar i.hot { background:var(--bad); }
+
+  /* ---------- overview ---------- */
+  .mini-servo { display:grid; grid-template-columns:120px 62px 1fr 74px; gap:12px; align-items:center; padding:9px 16px; border-bottom:1px solid var(--line); }
+  .mini-servo:last-child { border-bottom:0; }
+  .mini-servo b { font-weight:500; text-transform:capitalize; }
+  .mini-servo .v { font:500 13px var(--mono); text-align:right; }
+  .mini-servo .t { font:11px var(--mono); color:var(--mute); text-align:right; }
+  .mini-servo .t.warm { color:var(--warn-fg); } .mini-servo .t.hot { color:var(--bad); }
+  .thumb { background:#111; aspect-ratio:4/3; max-height:380px; width:100%; display:flex; } .thumb img { width:100%; height:100%; object-fit:contain; display:block; }
+
+  /* ---------- log ---------- */
+  .logl { font:12px/1.5 var(--mono); color:var(--dim); }
+  .logl div { padding:7px 16px; border-left:3px solid var(--line2); border-bottom:1px solid var(--line); white-space:pre-wrap; word-break:break-word; }
+  .logl .ok { border-left-color:var(--blue); } .logl .frozen { border-left-color:var(--warn); color:var(--warn-fg); } .logl .refused { border-left-color:var(--bad); color:var(--bad); }
+  .logl:empty::after { content:"motion results from every client appear here"; display:block; padding:16px; color:var(--mute); }
+
+  /* ---------- servos ---------- */
+  .scard { padding:16px; display:flex; flex-direction:column; gap:12px; background:var(--panel); border:1px solid var(--line); }
+  .scard .top { display:flex; align-items:center; gap:10px; }
+  .scard .top b { font-weight:600; font-size:14px; text-transform:capitalize; }
+  .scard .big { font:500 28px/32px var(--mono); letter-spacing:-.02em; } .scard .big em { font-style:normal; font-size:13px; color:var(--mute); margin-left:2px; }
+  .scard .lim { display:flex; justify-content:space-between; font:10.5px var(--mono); color:var(--mute); margin-top:-2px; }
+  .scard .nudges { display:flex; gap:6px; } .scard .nudges button { flex:1; font-family:var(--mono); }
+  .scard .meta { display:flex; justify-content:space-between; align-items:center; font:11px var(--mono); color:var(--mute); }
+
+  /* ---------- 3D model ---------- */
+  .modelgrid { display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:16px; }
+  .vp { position:relative; background:#fbfcfd; flex:1; min-height:320px; overflow:hidden; }
+  .vp canvas { display:block; }
+  .vp-bar { position:absolute; left:12px; top:12px; display:flex; gap:8px; z-index:2; flex-wrap:wrap; max-width:calc(100% - 24px); }
+  .vp-bar .seg { box-shadow:0 1px 2px rgba(28,37,48,.06); background:rgba(255,255,255,.94); }
+  .vp-foot { position:absolute; left:12px; bottom:10px; z-index:2; font:10.5px var(--mono); color:var(--mute); pointer-events:none; }
+  .arm3d-labels, .arm3d-leaders { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .arm3d-leaders line { stroke:#8a95a1; stroke-width:1; opacity:.7; } .arm3d-leaders circle { fill:#3b8fd0; }
+  .arm3d-label { position:absolute; transform:translate(-100%, 0); font:10.5px/1.25 var(--mono); color:var(--fg);
+    background:rgba(255,255,255,.92); border:1px solid var(--line2); border-left-width:3px; padding:2px 6px; white-space:nowrap; }
+  .arm3d-label b { display:block; color:var(--mute); font-weight:500; font-size:9.5px; text-transform:uppercase; letter-spacing:.06em; }
+  .arm3d-label.tool { border-color:var(--blue) !important; } .arm3d-label.hot { background:var(--bad-bg); }
+  .jcard { display:grid; grid-template-columns:1fr auto; gap:2px 10px; padding:10px 16px; border-bottom:1px solid var(--line); cursor:pointer; background:transparent; border-left:0; border-right:0; border-top:0; height:auto; text-align:left; width:100%; }
+  .jcard:hover { background:var(--panel2); border-bottom-color:var(--line); color:inherit; }
+  .jcard b { font-weight:500; text-transform:capitalize; } .jcard .v { font:500 14px var(--mono); text-align:right; }
+  .jcard .bar { grid-column:1 / -1; margin-top:6px; } .jcard small { font:10.5px var(--mono); grid-column:1 / -1; }
+  .legend { display:flex; gap:14px; flex-wrap:wrap; font:11px var(--mono); color:var(--mute); } .legend i { display:inline-block; width:8px; height:8px; margin-right:5px; vertical-align:-1px; }
+
+  /* ---------- cameras ---------- */
+  .feeds { display:grid; gap:12px; flex:1; min-height:0; } .feeds.one { grid-template-columns:1fr; } .feeds.two { grid-template-columns:1fr 1fr; }
+  .feed { position:relative; background:#111; min-height:240px; display:flex; min-width:0; }
+  .feed img { display:block; width:100%; height:100%; object-fit:contain; background:#111; }
+  .feed .tag { position:absolute; left:10px; top:10px; }
+  .feed .tag .badge { background:rgba(255,255,255,.92); }
+  .opgrid { display:grid; gap:16px; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; grid-template-areas:"model c1" "c2 ctl";
+    width:min(100%, calc(100vh - 104px)); aspect-ratio:1; margin:0 auto; flex:none !important; }
+  .opslot { flex:1; min-height:0; display:flex; flex-direction:column; } .opslot .vp { flex:1; min-height:0; }
+  .fillfeed { flex:1; min-height:0; height:100%; } .card > .cb.flush:has(.fillfeed) { display:flex; }
+  .opctl { display:flex; flex-direction:column; gap:16px; } .opctl .field + .field { margin-top:0; } .opctl { gap:12px; } .opctl .chips { gap:4px; } .opctl .chips button { height:24px; font-size:11px; padding:0 7px; }
+  .camgrid { display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:16px; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 1100px) { .opgrid { width:100%; aspect-ratio:auto; grid-template-columns:1fr; grid-template-rows:none; grid-template-areas:"model" "c1" "c2" "ctl"; } .opgrid > .card { aspect-ratio:1; } .opslot .vp { min-height:420px; } .fillfeed { min-height:260px; } .g4 { grid-template-columns:repeat(2,1fr); } .g32, .modelgrid, .camgrid { grid-template-columns:1fr; } .vp { min-height:420px; } }
+  @media (max-width: 760px) {
+    body { overflow:auto; } .shell { display:block; height:auto; }
+    aside#side { position:fixed; left:0; right:0; bottom:0; top:auto; z-index:20; flex-direction:row; border-right:0; border-top:1px solid var(--line); }
+    .side-brand, .side-foot, nav .grp { display:none; } nav#nav { flex-direction:row; padding:6px; width:100%; justify-content:space-around; overflow-x:auto; }
+    .nav-item { width:auto; justify-content:center; padding:0 12px; } .nav-item .lab { display:none; } .nav-item .cnt { display:none; }
+    header#top { flex-wrap:wrap; height:auto; padding:10px 14px; gap:8px; position:sticky; top:0; z-index:10; } .badges { order:3; width:100%; }
+    main#page { padding:14px 14px 76px; overflow:visible; } .g2 { grid-template-columns:1fr; } .feeds.two { grid-template-columns:1fr; }
+    .mini-servo { grid-template-columns:90px 54px 1fr; } .mini-servo .t { display:none; }
+  }
+  ::-webkit-scrollbar { width:8px; height:8px; } ::-webkit-scrollbar-thumb { background:var(--line2); border-radius:4px; } ::-webkit-scrollbar-track { background:transparent; }
+</style>
+<script type="importmap">{"imports": {"three": "/static/three.module.min.js"}}</script>
+</head>
+<body>
+<div class="shell">
+  <aside id="side">
+    <div class="side-brand">
+      <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="19" r="2"/><circle cx="12" cy="9" r="2"/><circle cx="19" cy="4" r="2"/><path d="M6.2 17.4 10.8 10.6M13.7 8.4 17.3 5.3"/></svg></div>
+      <div><b>SO-101</b><small>arm-daemon</small></div>
+    </div>
+    <nav id="nav">
+      <div class="grp overline">Cockpit</div>
+      <button class="nav-item" data-route="operator"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg><span class="lab">Operator</span></button>
+      <div class="grp overline">Monitor</div>
+      <button class="nav-item" data-route="overview"><svg viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg><span class="lab">Overview</span></button>
+      <button class="nav-item" data-route="model"><svg viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span class="lab">3D model</span></button>
+      <button class="nav-item" data-route="cameras"><svg viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg><span class="lab">Cameras</span></button>
+      <div class="grp overline">Operate</div>
+      <button class="nav-item" data-route="servos"><svg viewBox="0 0 24 24"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></svg><span class="lab">Servos</span></button>
+      <button class="nav-item" data-route="control"><svg viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/></svg><span class="lab">Control</span></button>
+      <button class="nav-item" data-route="log"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="lab">Results</span><span class="cnt" id="logCnt">0</span><i class="dot" id="logDot" hidden></i></button>
+    </nav>
+    <div class="side-foot">
+      <a class="nav-item" href="/dashboard"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg><span class="lab">Classic dashboard</span></a>
+      <button class="nav-item" id="btnRail" title="collapse sidebar"><svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg><span class="lab">Collapse</span></button>
+    </div>
+  </aside>
+
+  <div class="col">
+    <header id="top">
+      <div class="ttl"><h1 id="pageTitle">Overview</h1><small id="pageSub"></small></div>
+      <div class="badges">
+        <span id="pBus" class="badge">bus</span><span id="pHolder" class="badge">holder</span><span id="pStop" class="badge">stop</span>
+        <span id="pMotion" class="badge">motion</span><span id="pDemo" class="badge">demo</span><span id="pWs" class="badge">ws</span>
+      </div>
+      <span class="spacer"></span>
+      <div class="estop"><button id="btnResume">Resume</button><button id="btnStop" class="stop">STOP</button></div>
+    </header>
+
+    <main id="page">
+      <!-- ============ operator: two cameras, 3D model, controls on one screen ============ -->
+      <section class="page fill" data-page="operator" hidden>
+        <div class="opgrid grow">
+          <div class="card" style="grid-area:model"><div class="ch"><h2>Arm model</h2><span class="r" id="opNote"></span></div><div class="opslot" id="opSlot"></div></div>
+          <div class="card" style="grid-area:c1"><div class="ch"><h2>Annotated</h2><span class="r" id="opCamAge"></span></div><div class="cb flush"><div class="feed fillfeed"><img id="opCamA" alt="annotated gripper camera"></div></div></div>
+          <div class="card" style="grid-area:c2"><div class="ch"><h2>Raw</h2><span class="r">gripper</span></div><div class="cb flush"><div class="feed fillfeed"><img id="opCamB" alt="raw gripper camera"></div></div></div>
+          <div class="card" style="grid-area:ctl">
+            <div class="ch"><h2>Controls</h2><span class="r" id="opTool">–</span></div>
+            <div class="cb opctl">
+              <div class="field"><span class="overline">Holder</span><span class="seg"><button data-holder="human">human</button><button data-holder="agent">agent</button><button data-holder="leader">leader</button><button data-holder="released">released</button></span></div>
+              <div class="field"><span class="overline">Torque</span><span class="seg danger"><button id="btnTorqueOn3">on · hold</button><button id="btnTorqueOff3" class="off">off · limp</button></span></div>
+              <div class="field"><span class="overline">Pose</span><div class="chips" id="poses2"></div></div>
+              <div class="hint" id="torqueNote3" style="margin:0"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ overview ============ -->
+      <section class="page" data-page="overview" hidden>
+        <div class="grid g4">
+          <div class="card kpi"><span class="overline">Holder</span><span class="v" id="kHolder">–</span><small id="kHolderN"></small></div>
+          <div class="card kpi"><span class="overline">Motion</span><span class="v" id="kMotion">–</span><small id="kMotionN"></small></div>
+          <div class="card kpi"><span class="overline">Torque</span><span class="v" id="kTorque">–</span><small id="kTorqueN"></small></div>
+          <div class="card kpi"><span class="overline">Tool z</span><span class="v" id="kTool">–</span><small id="kToolN"></small></div>
+        </div>
+        <div class="grid g32">
+          <div class="card">
+            <div class="ch"><h2>Gripper camera</h2><span class="r"><span id="ovCamAge"></span><button class="sm" data-go="cameras">Open</button></span></div>
+            <div class="cb flush"><div class="thumb"><img id="ovCam" alt="gripper camera"></div></div>
+          </div>
+          <div class="card">
+            <div class="ch"><h2>Tool</h2><span class="r"><button class="sm" data-go="model">3D model</button></span></div>
+            <div class="cb flush"><div class="stats" id="tool" style="border:0"></div></div>
+          </div>
+        </div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="ch"><h2>Servos</h2><span class="r"><button class="sm" data-go="servos">Open</button></span></div>
+            <div class="cb flush" id="miniServos"></div>
+          </div>
+          <div class="card">
+            <div class="ch"><h2>Latest results</h2><span class="r"><button class="sm" data-go="log">All</button></span></div>
+            <div class="cb flush" style="max-height:340px"><div class="logl" id="ovLog"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 3D model ============ -->
+      <section class="page fill" data-page="model" hidden>
+        <div class="modelgrid grow" style="min-height:0">
+          <div class="card" style="min-height:0">
+            <div class="ch"><h2>Arm model</h2><span class="r" id="arm3dNote">loading…</span></div>
+            <div class="vp" id="arm3d">
+              <div class="vp-bar">
+                <span class="seg" id="vpViews">
+                  <button data-view="iso" class="on">Iso</button><button data-view="top">Top</button><button data-view="front">Front</button><button data-view="side">Side</button><button data-view="back">Back</button>
+                </span>
+                <span class="seg" id="vpToggles">
+                  <button data-tg="follow" title="camera tracks the tool">Follow tool</button><button data-tg="labels" class="on">Labels</button><button data-tg="ghost" class="on">Goal</button><button data-tg="grid" class="on">Grid</button><button data-tg="trail" title="path the tool has traced">Trail</button>
+                </span>
+                <button class="ico" id="vpFull" title="fullscreen"><svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+              </div>
+              <div class="vp-foot">drag orbit · wheel zoom · right-drag pan</div>
+            </div>
+            <div class="ch" style="border-top:1px solid var(--line);border-bottom:0">
+              <div class="legend">
+                <span><i style="background:var(--blue-l)"></i>cool</span><span><i style="background:var(--warn)"></i>warm</span><span><i style="background:var(--bad)"></i>hot ≥55 °C</span>
+                <span><i style="background:var(--warn);border-radius:50%"></i>halo = load</span><span><i style="background:var(--blue)"></i>goal while moving</span>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="min-height:0">
+            <div class="ch"><h2>Joints</h2><span class="r">click to focus</span></div>
+            <div class="cb flush" id="joints"></div>
+            <div class="cb" style="flex:none;border-top:1px solid var(--line);padding:0"><div class="stats" id="tool2" style="border:0"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ cameras ============ -->
+      <section class="page fill" data-page="cameras" hidden>
+        <div class="row" style="justify-content:space-between;flex:none">
+          <div class="tabs" id="camTabs" style="border:0">
+            <button class="tab on" data-cam="annot">Annotated</button><button class="tab" data-cam="raw">Raw</button><button class="tab" data-cam="both">Side by side</button>
+          </div>
+          <div class="row">
+            <span id="camHealth" class="row" style="gap:6px"></span>
+            <select id="gridSel" title="table grid spacing"><option value="1">1 cm grid</option><option value="2">2 cm grid</option><option value="5">5 cm grid</option></select>
+            <button class="ico" id="camFull" title="fullscreen"><svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+          </div>
+        </div>
+        <div class="camgrid grow" style="min-height:0">
+          <div class="card" style="min-height:0">
+            <div class="ch"><h2>Gripper camera</h2><span class="r" id="camAge"></span></div>
+            <div class="cb" style="display:flex;flex-direction:column;gap:10px">
+              <div class="feeds one" id="feeds">
+                <div class="feed" id="feedA"><img id="camA" alt="gripper camera"><span class="tag"><span class="badge plain" id="tagA">annotated</span></span></div>
+                <div class="feed" id="feedB" hidden><img id="camB" alt="gripper camera raw"><span class="tag"><span class="badge plain" id="tagB">raw</span></span></div>
+              </div>
+              <div class="hint" id="visionNote"></div>
+            </div>
+          </div>
+          <div class="col" style="gap:16px;min-height:0">
+            <div class="card">
+              <div class="ch"><h2>Detect</h2></div>
+              <div class="cb"><div class="row" style="flex-wrap:nowrap"><input id="prompts" type="text" placeholder="YOLO prompts: box, cup, bottle" style="flex:1"><button class="pri" id="btnPrompts">Detect</button></div>
+                <div class="hint" style="margin-top:8px">Annotated view is rotated: up = forward (+x), left = +y. 1 cm grid on the table plane, bold every 5 cm; sizes assume the object lies on the table.</div></div>
+            </div>
+            <div class="card" style="flex:1;min-height:0">
+              <div class="ch"><h2>Detections</h2><span class="r" id="detCnt"></span></div>
+              <div class="cb flush"><table id="dets"><thead><tr><th>object</th><th>conf</th><th>size cm</th><th>fwd</th><th>left</th><th>dist</th></tr></thead><tbody></tbody></table></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ servos ============ -->
+      <section class="page" data-page="servos" hidden>
+        <div class="row" style="justify-content:space-between">
+          <span class="hint">Slider = absolute target on release · nudges are relative, in degrees (gripper: percent).</span>
+          <span class="row"><span class="overline">Torque</span><span class="seg danger"><button id="btnTorqueOn2">on · hold</button><button id="btnTorqueOff2" class="off">off · limp</button></span></span>
+        </div>
+        <div class="grid g2" id="servos" style="grid-template-columns:repeat(auto-fill, minmax(340px, 1fr))"></div>
+      </section>
+
+      <!-- ============ control ============ -->
+      <section class="page" data-page="control" hidden>
+        <div class="grid g2" style="align-items:start">
+          <div class="card">
+            <div class="ch"><h2>Holder</h2><span class="r" id="holderNow"></span></div>
+            <div class="cb"><span class="seg vert" style="width:100%">
+              <button data-holder="human">human</button><button data-holder="agent">agent</button><button data-holder="leader">leader · teleop</button><button data-holder="released">released · bus free</button>
+            </span><div class="hint" style="margin-top:10px">Only the holder can move the arm. Hand it to <b>agent</b> before an MCP client drives it.</div></div>
+          </div>
+          <div class="card">
+            <div class="ch"><h2>Pose</h2></div>
+            <div class="cb"><div class="chips" id="poses"></div></div>
+          </div>
+          <div class="card">
+            <div class="ch"><h2>Torque</h2></div>
+            <div class="cb"><span class="seg danger"><button id="btnTorqueOn">on · hold</button><button id="btnTorqueOff" class="off">off · limp</button></span>
+              <div class="hint" id="torqueNote" style="margin-top:10px">Releasing torque makes the arm limp: hold it, then click twice within 5 s.</div></div>
+          </div>
+          <div class="card">
+            <div class="ch"><h2>Demo recording</h2><span class="r" id="demoNow"></span></div>
+            <div class="cb"><div class="row" style="flex-wrap:nowrap"><input id="demoTask" type="text" placeholder="task, e.g. pick up the carton" style="flex:1"><button class="pri" id="btnDemoStart">Record</button><button id="btnDemoStop">Stop</button></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ results ============ -->
+      <section class="page fill" data-page="log" hidden>
+        <div class="row" style="justify-content:space-between;flex:none">
+          <span class="seg" id="logFilter"><button data-f="all" class="on">All</button><button data-f="ok">ok</button><button data-f="frozen">frozen</button><button data-f="refused">refused</button></span>
+          <button class="sm" id="btnClearLog">Clear</button>
+        </div>
+        <div class="card grow"><div class="ch"><h2>Results</h2><span class="r">newest first · all clients</span></div><div class="cb flush"><div class="logl" id="log"></div></div></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+const KEY = window.__ARM_KEY__ || "";
+const J = ["shoulder_pan","shoulder_lift","elbow_flex","wrist_flex","wrist_roll","gripper"];
+const H = {"Content-Type":"application/json","X-Arm-Human-Key":KEY};
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+let state = null, poses = {}, route = "overview", camMode = "annot", rawCam = "gripper";
+const logs = [];            // {t, cls, text}, newest first
+let logFilter = "all";
+
+const ROUTES = {
+  operator: ["Operator", "annotated and raw gripper camera, 3D model and controls"],
+  overview: ["Overview", "live state of the arm, camera and servos"],
+  model:    ["3D model", "URDF chain with live pose, load and temperature"],
+  cameras:  ["Cameras", "gripper camera with the vision overlay"],
+  servos:   ["Servos", "per-joint position, load and temperature"],
+  control:  ["Control", "who holds the arm, poses, torque and demos"],
+  log:      ["Results", "motion results from every client"],
+};
+
+async function post(path, body) {
+  const r = await fetch(path, {method:"POST", headers:H, body: JSON.stringify(body||{})});
+  let j = {}; try { j = await r.json(); } catch(e) {}
+  if (j.outcome || j.refused) logLine(j, path);
+  return j;
+}
+function logLine(j, path) {
+  const cls = j.outcome || "refused";
+  const t = new Date().toLocaleTimeString();
+  let text = `${t}  ${path} → ${j.outcome || "refused"} ${j.reason || j.refused || ""}`;
+  if (j.final) text = `${t}  ${path} → ${j.outcome} ${j.reason || ""}  ${J.map(k => (j.final[k] ?? "?")).join(" / ")}`;
+  logs.unshift({cls, text}); if (logs.length > 300) logs.pop();
+  renderLogs();
+}
+function lineEl(l) { const d = document.createElement("div"); d.className = l.cls; d.textContent = l.text; return d; }
+function renderLogs() {
+  const box = $("#log"); box.replaceChildren(...logs.filter(l => logFilter === "all" || l.cls === logFilter).map(lineEl));
+  $("#ovLog").replaceChildren(...logs.slice(0, 8).map(lineEl));
+  $("#logCnt").textContent = logs.length;
+  const bad = logs.filter(l => l.cls !== "ok").length;
+  $("#logCnt").classList.toggle("bad", bad > 0); $("#logDot").hidden = !(bad > 0 && route !== "log");
+}
+function badge(id, text, cls) { const e = $(id); e.textContent = text; e.className = "badge " + (cls||""); }
+function tempClass(t) { return t == null ? "" : (t >= 55 ? "hot" : (t >= 45 ? "warm" : "cool")); }
+const unit = j => j === "gripper" ? "%" : "°";
+const fmtName = j => j.replace("_", " ");
+
+/* ---------- servos page ---------- */
+function buildServos() {
+  const box = $("#servos"); box.innerHTML = "";
+  for (const j of J) {
+    const c = document.createElement("div"); c.className = "scard"; c.id = "s-"+j;
+    c.innerHTML = `<div class="top"><b>${fmtName(j)}</b><span class="badge plain" data-r="temp">–</span><span class="spacer"></span><span data-r="limp"></span></div>
+      <div class="big"><span data-r="v">–</span><em>${unit(j)}</em></div>
+      <div><input type="range" step="0.5"><div class="lim"><span data-r="min"></span><span data-r="goal"></span><span data-r="max"></span></div></div>
+      <div class="meta"><span data-r="lv">load –</span><div class="bar" style="width:55%"><i></i></div></div>
+      <div class="nudges"><button data-nudge="${j}" data-d="-10">−10</button><button data-nudge="${j}" data-d="-2">−2</button><button data-nudge="${j}" data-d="2">+2</button><button data-nudge="${j}" data-d="10">+10</button></div>`;
+    box.appendChild(c);
+    const r = c.querySelector("input");
+    r.addEventListener("input", () => { c.querySelector('[data-r="v"]').textContent = (+r.value).toFixed(1); c.dataset.dragging = "1"; });
+    r.addEventListener("change", () => { post(`/servo/${j}`, {[j === "gripper" ? "pct" : "deg"]: parseFloat(r.value)}); delete c.dataset.dragging; });
+  }
+  box.addEventListener("click", e => { const b = e.target.closest("button[data-nudge]"); if (b) post(`/servo/${b.dataset.nudge}/nudge`, {delta: parseFloat(b.dataset.d)}); });
+  // overview mini rows + 3D page joint cards
+  $("#miniServos").innerHTML = J.map(j => `<div class="mini-servo" id="m-${j}"><b>${fmtName(j)}</b><span class="v">–</span><div class="bar"><i></i></div><span class="t">–</span></div>`).join("");
+  $("#joints").innerHTML = J.map(j => `<button class="jcard" id="j-${j}" data-focus="${j}"><b>${fmtName(j)}</b><span class="v">–</span><div class="bar"><i></i></div><small>–</small></button>`).join("");
+  $("#joints").addEventListener("click", e => { const b = e.target.closest("[data-focus]"); if (b && window.armView) window.armView.ext.focus(b.dataset.focus); });
+}
+
+function render(s) {
+  state = window.__state = s;
+  badge("#pBus", "bus " + s.bus, s.bus === "ok" ? "ok" : (s.bus === "released" ? "warn" : "bad"));
+  badge("#pHolder", "holder " + s.control.holder, s.control.holder === "human" ? "ok" : "warn");
+  badge("#pStop", s.stop.set ? "STOP " + (s.stop.by||"") : "stop clear", s.stop.set ? "bad" : "ok");
+  badge("#pMotion", "motion " + s.motion.state + (s.motion.id ? " #" + s.motion.id : ""), s.motion.state === "frozen" ? "warn" : (s.motion.state === "moving" ? "ok" : ""));
+  badge("#pDemo", s.demo ? `rec ${s.demo.id.slice(16)} · ${s.demo.rows} rows` : "no demo", s.demo ? "bad" : "");
+  const tq = J.map(j => s.servos[j] && s.servos[j].torque);
+  const tOn = tq.every(Boolean), tOff = tq.every(v => v === false);
+  for (const id of ["", "2", "3"]) { $("#btnTorqueOn" + id).classList.toggle("on", tOn); $("#btnTorqueOff" + id).classList.toggle("on", tOff); }
+  $$("button[data-holder]").forEach(b => b.classList.toggle("on", b.dataset.holder === s.control.holder));
+  $("#holderNow").innerHTML = `<span class="badge ${s.control.holder === "human" ? "ok" : "warn"}">${s.control.holder}</span>`;
+  $("#demoNow").innerHTML = s.demo ? `<span class="badge bad">recording · ${s.demo.rows} rows</span>` : "";
+
+  // overview KPIs
+  const t = s.tool || {}, lz = t.lowest_link_z_m, age = Date.now()/1000 - s.t;
+  const kv = (id, v, cls, note) => { $("#" + id).textContent = v; $("#" + id).className = "v " + (cls || ""); $("#" + id + "N").textContent = note || ""; };
+  kv("kHolder", s.control.holder, s.control.holder === "human" ? "ok" : "warn", s.leader ? (s.leader.active ? "leader active" : (s.leader.configured ? "leader idle" : "leader not configured")) : "");
+  kv("kMotion", s.motion.state, s.motion.state === "frozen" ? "warn" : (s.motion.state === "moving" ? "ok" : ""), s.motion.result && s.motion.result.peak_load != null ? `peak load ${s.motion.result.peak_load}` : `state age ${age.toFixed(2)} s`);
+  kv("kTorque", tOn ? "on" : (tOff ? "OFF · limp" : "mixed"), tOn ? "ok" : "warn", "all six servos");
+  kv("kTool", t.xyz_m ? (t.xyz_m[2]*100).toFixed(1) + " cm" : "?", lz != null && lz < 0.04 ? "bad" : "", `tilt ${t.tilt_from_down_deg ?? "?"}° · lowest link ${lz != null ? (lz*100).toFixed(1) : "?"} cm`);
+
+  for (const j of J) {
+    const e = s.servos[j]; if (!e) continue;
+    const g = j === "gripper", v = g ? e.pct : e.deg, load = Math.min(100, Math.abs(e.load) / 3.5), lc = Math.abs(e.load) > 300 ? "hot" : (Math.abs(e.load) > 150 ? "warm" : "");
+    const tc = tempClass(e.temp_c), tt = e.temp_c == null ? "– °C" : e.temp_c + " °C";
+    const c = $("#s-"+j), r = c.querySelector("input");
+    r.min = g ? e.min_pct : e.min_deg; r.max = g ? e.max_pct : e.max_deg;
+    if (!c.dataset.dragging && document.activeElement !== r) { r.value = v; c.querySelector('[data-r="v"]').textContent = v.toFixed(1); }
+    c.querySelector('[data-r="min"]').textContent = r.min; c.querySelector('[data-r="max"]').textContent = r.max;
+    c.querySelector('[data-r="goal"]').textContent = "goal " + ((g ? e.goal_pct : e.goal_deg) ?? "–");
+    c.querySelector('[data-r="temp"]').textContent = tt; c.querySelector('[data-r="temp"]').className = "badge " + (tc === "hot" ? "bad" : tc === "warm" ? "warn" : "plain");
+    c.querySelector('[data-r="limp"]').innerHTML = e.torque === false ? '<span class="badge warn">limp</span>' : "";
+    c.querySelector('[data-r="lv"]').textContent = `load ${e.load}`;
+    const b = c.querySelector(".bar i"); b.style.width = load + "%"; b.className = lc;
+    const m = $("#m-"+j); m.querySelector(".v").textContent = v.toFixed(1) + unit(j);
+    const mb = m.querySelector(".bar i"); mb.style.width = load + "%"; mb.className = lc;
+    const mt = m.querySelector(".t"); mt.textContent = tt; mt.className = "t " + tc;
+    const jc = $("#j-"+j); jc.querySelector(".v").textContent = v.toFixed(1) + unit(j);
+    const jb = jc.querySelector(".bar i"); jb.style.width = load + "%"; jb.className = lc;
+    jc.querySelector("small").textContent = `load ${e.load} · ${tt}${e.torque === false ? " · limp" : ""}`;
+  }
+  const stat = (k, v, cls) => `<div class="stat"><b>${k}</b><span class="${cls||""}">${v}</span></div>`;
+  const statsHtml = stat("tool xyz (cm)", (t.xyz_m||[]).map(v => (v*100).toFixed(1)).join(" / ") || "?")
+    + stat("tilt from down", (t.tilt_from_down_deg ?? "?") + "°")
+    + stat("lowest link", lz != null ? (lz*100).toFixed(1) + " cm" : "?", lz != null && lz < 0.04 ? "bad" : "")
+    + stat("leader", s.leader ? (s.leader.active ? "active" : (s.leader.configured ? "idle" : "not configured")) : "?", s.leader && s.leader.active ? "warn" : "")
+    + stat("state age", age.toFixed(2) + " s", age > 1 ? "warn" : "")
+    + stat("motion", s.motion.state + (s.motion.result && s.motion.result.peak_load != null ? ` · peak ${s.motion.result.peak_load}` : ""), s.motion.state === "frozen" ? "warn" : "");
+  $("#opTool").textContent = "tool " + ((t.xyz_m||[]).map(v => (v*100).toFixed(1)).join(" / ") || "?") + " cm";
+  $("#tool").innerHTML = statsHtml; $("#tool2").innerHTML = statsHtml;
+
+  const cams = s.cameras || {}, g = cams.gripper;
+  const ageTxt = g ? (g.ok ? `live · ${g.age_s}s` : "no frame") : "";
+  $("#camAge").textContent = ageTxt; $("#ovCamAge").textContent = ageTxt; $("#opCamAge").textContent = ageTxt;
+  $("#camHealth").innerHTML = Object.entries(cams).map(([n, c]) => `<button class="badge camchip ${c.ok ? "ok" : "bad"} ${n === rawCam ? "sel" : ""}" data-camsel="${n}" title="use as the raw source">${n}${c.ok ? "" : " · no frame"}</button>`).join("");
+  if (window.armView) window.armView.update(s);
+  if (s.vision) {
+    const v = s.vision, tb = $("#dets tbody"); tb.innerHTML = "";
+    for (const d of (v.detections || [])) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${d.label}</td><td>${d.conf.toFixed(2)}</td><td>${d.size_cm ? d.size_cm[0] + " × " + d.size_cm[1] : "–"}</td>
+        <td>${d.offset_cm ? d.offset_cm[0].toFixed(1) : "–"}</td><td>${d.offset_cm ? d.offset_cm[1].toFixed(1) : "–"}</td><td>${d.dist_cm ?? "–"}</td>`;
+      tb.appendChild(tr);
+    }
+    if (!tb.children.length) tb.innerHTML = '<tr><td colspan="6" class="empty">no detections</td></tr>';
+    $("#detCnt").innerHTML = `<span class="badge plain">${(v.detections || []).length}</span>`;
+    $("#visionNote").textContent = v.error ? "vision: " + v.error
+      : (v.tool ? `tool z ${v.tool.z_cm} cm · ${v.tool.looking_down ? v.tool.px_per_cm + " px/cm on the table" : "not looking at the table (no grid)"} · ${v.ms} ms · prompts: ${(v.prompts||[]).join(", ") || "default"}` : "");
+  }
+}
+
+function connectWs() {
+  const ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws");
+  ws.onopen = () => badge("#pWs", "ws live", "ok");
+  ws.onclose = () => { badge("#pWs", "ws down", "bad"); setTimeout(connectWs, 1500); };
+  ws.onmessage = ev => { const m = JSON.parse(ev.data); if (m.type === "state") render(m); else if (m.type === "result") logLine(m, "#" + m.id); };
+}
+async function loadPoses() {
+  poses = await (await fetch("/poses")).json();
+  $("#poses").innerHTML = Object.keys(poses).map(n => `<button data-pose="${n}">${n}</button>`).join("");
+  $("#poses2").innerHTML = $("#poses").innerHTML;
+  for (const id of ["#poses", "#poses2"]) $(id).addEventListener("click", e => { const b = e.target.closest("button[data-pose]"); if (b) post("/pose", {name: b.dataset.pose}); });
+}
+
+/* ---------- camera streams: only the visible page holds a connection ---------- */
+function setImg(img, src) { if (src) { if (img.dataset.src !== src) { img.dataset.src = src; img.src = src; } } else if (img.dataset.src) { delete img.dataset.src; img.removeAttribute("src"); } }
+function updateStreams() {
+  setImg($("#ovCam"), route === "overview" ? "/vision/stream" : "");
+  setImg($("#opCamA"), route === "operator" ? "/vision/stream" : ""); setImg($("#opCamB"), route === "operator" ? "/camera/gripper/stream" : "");
+  const on = route === "cameras";
+  setImg($("#camA"), on ? (camMode === "raw" ? `/camera/${rawCam}/stream` : "/vision/stream") : "");
+  setImg($("#camB"), on && camMode === "both" ? `/camera/${rawCam}/stream` : "");
+  $("#tagA").textContent = camMode === "raw" ? "raw · " + rawCam : "annotated · gripper"; $("#tagB").textContent = "raw · " + rawCam;
+}
+function setCam(mode) {
+  camMode = mode;
+  $$("#camTabs .tab").forEach(t => t.classList.toggle("on", t.dataset.cam === mode));
+  $("#feedB").hidden = mode !== "both"; $("#feeds").className = "feeds " + (mode === "both" ? "two" : "one");
+  try { localStorage.setItem("armMenusCam", mode); } catch (e) {}
+  updateStreams();
+}
+
+/* ---------- routing ---------- */
+const vpMark = $("#arm3d").parentNode.insertBefore(Object.assign(document.createElement("span"), {hidden: true}), $("#arm3d"));
+function place3d() {   // one renderer: the viewport node lives on the 3D page or the operator page, whichever is shown
+  const vp = $("#arm3d");
+  if (route === "operator") $("#opSlot").appendChild(vp); else if (vp.parentNode !== vpMark.parentNode) vpMark.after(vp);
+}
+function go(r) {
+  if (!ROUTES[r]) r = "overview";
+  route = r;
+  $$("[data-page]").forEach(p => p.hidden = p.dataset.page !== r);
+  $$("button.nav-item[data-route]").forEach(b => b.classList.toggle("on", b.dataset.route === r));
+  $("#pageTitle").textContent = ROUTES[r][0]; $("#pageSub").textContent = ROUTES[r][1];
+  document.title = ROUTES[r][0] + " · SO-101";
+  if (location.hash !== "#" + r) history.replaceState(null, "", "#" + r);
+  $("#page").scrollTop = 0; updateStreams(); renderLogs(); place3d();
+  if (window.armView) requestAnimationFrame(() => window.armView.resize());
+}
+$$("button.nav-item[data-route]").forEach(b => b.onclick = () => go(b.dataset.route));
+$$("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
+window.addEventListener("hashchange", () => go(location.hash.slice(1)));
+document.addEventListener("keydown", e => {
+  if (e.target.closest("input, select, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = Object.keys(ROUTES)[parseInt(e.key, 10) - 1]; if (k) go(k);
+});
+
+$("#btnRail").onclick = () => { const on = document.body.classList.toggle("rail"); try { localStorage.setItem("armMenusRail", on ? "1" : ""); } catch (e) {} setTimeout(() => window.armView && window.armView.resize(), 220); };
+try { if (localStorage.getItem("armMenusRail")) document.body.classList.add("rail"); } catch (e) {}
+
+/* ---------- actions ---------- */
+$$("button[data-holder]").forEach(b => b.onclick = async () => { const j = await post("/control", {holder: b.dataset.holder}); if (j.refused) alert(j.refused); });
+$("#btnStop").onclick = () => post("/stop", {reason: "dashboard"});
+$("#btnResume").onclick = () => post("/resume", {});
+$("#btnDemoStart").onclick = async () => { const j = await post("/demo/start", {task: $("#demoTask").value}); if (j.refused) alert(j.refused); };
+$("#btnDemoStop").onclick = async () => { const j = await post("/demo/stop", {}); if (j.refused) alert(j.refused); else logLine({outcome:"ok", reason:`demo ${j.id}: ${j.rows} rows, ${j.images} images`}, "/demo/stop"); };
+const TN = { set text(v) { $("#torqueNote").textContent = v; $("#torqueNote3").textContent = v === "Releasing torque makes the arm limp: hold it, then click twice within 5 s." ? "" : v; } };
+let torqueArmed = null;
+const torqueOn = () => post("/torque", {on: true});
+const torqueOff = async () => {
+  if (torqueArmed && Date.now() - torqueArmed < 5000) {
+    torqueArmed = null; TN.text = "";
+    const j = await post("/torque", {on: false, confirm: true});
+    if (j.outcome !== "ok") TN.text = j.reason || j.refused || "failed";
+  } else {
+    torqueArmed = Date.now(); TN.text = "hold the arm, then click again within 5 s to release torque";
+    setTimeout(() => { if (torqueArmed && Date.now() - torqueArmed >= 5000) { torqueArmed = null; TN.text = "Releasing torque makes the arm limp: hold it, then click twice within 5 s."; } }, 5200);
+  }
+};
+$("#btnTorqueOn").onclick = $("#btnTorqueOn2").onclick = $("#btnTorqueOn3").onclick = torqueOn;
+$("#btnTorqueOff").onclick = $("#btnTorqueOff2").onclick = $("#btnTorqueOff3").onclick = torqueOff;
+$$("#camTabs .tab").forEach(t => t.onclick = () => setCam(t.dataset.cam));
+$("#camHealth").addEventListener("click", e => {
+  const b = e.target.closest("[data-camsel]"); if (!b) return;
+  rawCam = b.dataset.camsel; if (camMode === "annot") setCam("raw"); else updateStreams();
+  if (state) render(state);
+});
+$("#btnPrompts").onclick = () => post("/vision/prompts", {prompts: $("#prompts").value});
+$("#prompts").addEventListener("keydown", e => { if (e.key === "Enter") $("#btnPrompts").click(); });
+$("#gridSel").onchange = () => post("/vision/settings", {grid_cm: parseInt($("#gridSel").value)});
+$("#camFull").onclick = () => $("#feeds").requestFullscreen && $("#feeds").requestFullscreen();
+$$("#logFilter button").forEach(b => b.onclick = () => { logFilter = b.dataset.f; $$("#logFilter button").forEach(x => x.classList.toggle("on", x === b)); renderLogs(); });
+$("#btnClearLog").onclick = () => { logs.length = 0; renderLogs(); };
+
+buildServos(); loadPoses(); connectWs();
+let cm = "annot"; try { cm = localStorage.getItem("armMenusCam") || "annot"; } catch (e) {}
+setCam(cm); go(location.hash.slice(1) || "overview");
+if (!KEY) badge("#pWs", "no human key: view only", "warn");
+</script>
+<script type="module">
+import { mountArm3D } from "/static/arm3d.js";
+import * as THREE from "three";
+
+// The classic dashboard's Arm3D, plus what a full-size viewport needs: camera presets with a tween,
+// follow-tool, focus-a-joint, toggles for labels / goal ghost / grid, a tool trail and pause-when-hidden.
+// Everything is attached from here so static/arm3d.js stays exactly as the classic page uses it.
+const PRESETS = {
+  iso:   { pos: [0.48, -0.42, 0.34], tgt: [0.08, 0, 0.12] },
+  top:   { pos: [0.138, 0, 0.78],    tgt: [0.14, 0, 0] },       // x offset keeps +x pointing up the screen
+  front: { pos: [0.85, 0, 0.2],      tgt: [0.1, 0, 0.12] },
+  side:  { pos: [0.12, -0.8, 0.16],  tgt: [0.12, 0, 0.12] },
+  back:  { pos: [-0.6, 0, 0.3],      tgt: [0.1, 0, 0.12] },
+};
+const TRAIL_MAX = 600;
+
+function extend(arm) {
+  const ease = u => u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+  const v3 = a => new THREE.Vector3(...a);
+  const x = { follow: false, trail: false, labels: true, ghost: true, grid: true, tween: null };
+  const toolPos = () => arm.frames.gripper_frame_link.getWorldPosition(new THREE.Vector3());
+
+  x.goTo = (pos, tgt, ms = 600) => {
+    x.tween = { t0: performance.now(), ms, p0: arm.camera.position.clone(), g0: arm.controls.target.clone(), p1: pos, g1: tgt };
+  };
+  x.view = name => { const p = PRESETS[name]; if (p) { x.follow = false; x.sync(); x.goTo(v3(p.pos), v3(p.tgt)); } };
+  x.focus = joint => {
+    const J = arm.joints[joint], node = J ? J.pivot : (joint === "gripper" ? arm.jaw.pivot : null); if (!node) return;
+    const tgt = node.getWorldPosition(new THREE.Vector3());
+    const dir = arm.camera.position.clone().sub(arm.controls.target).normalize();
+    x.follow = false; x.sync(); x.goTo(tgt.clone().add(dir.multiplyScalar(0.28)), tgt);
+  };
+
+  // trail of the tool
+  const tg = new THREE.BufferGeometry(); tg.setAttribute("position", new THREE.BufferAttribute(new Float32Array(TRAIL_MAX * 3), 3)); tg.setDrawRange(0, 0);
+  const trail = new THREE.Line(tg, new THREE.LineBasicMaterial({ color: 0x3b8fd0, transparent: true, opacity: 0.75 }));
+  trail.frustumCulled = false; trail.visible = false; arm.scene.add(trail);
+  const pts = [];
+  x.clearTrail = () => { pts.length = 0; tg.setDrawRange(0, 0); };
+
+  const grid = arm.scene.children.find(o => o.isGridHelper);
+  x.sync = () => {
+    arm.labelLayer.style.display = arm.leaders.style.display = x.labels ? "" : "none";
+    if (grid) grid.visible = x.grid;
+    trail.visible = x.trail;
+  };
+
+  const baseUpdate = arm.update.bind(arm);
+  arm.update = state => {
+    baseUpdate(state);
+    if (!x.ghost) arm.ghost.visible = false;
+    const p = toolPos(), last = pts[pts.length - 1];
+    if (!last || last.distanceToSquared(p) > 4e-6) {
+      pts.push(p); if (pts.length > TRAIL_MAX) pts.shift();
+      const a = tg.attributes.position; pts.forEach((q, i) => a.setXYZ(i, q.x, q.y, q.z)); a.needsUpdate = true; tg.setDrawRange(0, pts.length);
+    }
+  };
+
+  // pause rendering while the page is not shown; run tween / follow before each frame
+  const baseAnimate = arm.animate;
+  arm.animate = () => {
+    if (!arm.container.offsetWidth) { requestAnimationFrame(arm.animate); return; }
+    if (x.tween) {
+      const u = Math.min(1, (performance.now() - x.tween.t0) / x.tween.ms), k = ease(u);
+      arm.camera.position.lerpVectors(x.tween.p0, x.tween.p1, k); arm.controls.target.lerpVectors(x.tween.g0, x.tween.g1, k);
+      if (u >= 1) x.tween = null;
+    } else if (x.follow) {
+      const d = toolPos().sub(arm.controls.target).multiplyScalar(0.12);
+      arm.controls.target.add(d); arm.camera.position.add(d);
+    }
+    baseAnimate();
+  };
+  arm.controls.addEventListener("start", () => { x.tween = null; });
+  arm.ext = x; x.sync();
+  return arm;
+}
+
+const box = document.getElementById("arm3d");
+mountArm3D(box).then(a => {
+  extend(a); window.armView = a;
+  document.getElementById("arm3dNote").textContent = "URDF chain · live pose";
+  if (window.__state) a.update(window.__state);
+}).catch(e => { document.getElementById("arm3dNote").textContent = "3D view failed: " + e; });
+
+// toolbar
+const bar = n => document.querySelector(n);
+bar("#vpViews").addEventListener("click", e => {
+  const b = e.target.closest("[data-view]"); if (!b || !window.armView) return;
+  bar("#vpViews").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+  const f = bar('[data-tg="follow"]'); f.classList.remove("on"); window.armView.ext.view(b.dataset.view);
+});
+bar("#vpToggles").addEventListener("click", e => {
+  const b = e.target.closest("[data-tg]"); if (!b || !window.armView) return;
+  const x = window.armView.ext, k = b.dataset.tg; x[k] = !x[k]; b.classList.toggle("on", x[k]);
+  if (k === "follow" && x.follow) bar("#vpViews").querySelectorAll("button").forEach(y => y.classList.remove("on"));
+  if (k === "trail" && !x.trail) x.clearTrail();
+  x.sync(); if (window.__state) window.armView.update(window.__state);
+});
+bar("#vpFull").onclick = () => box.requestFullscreen && box.requestFullscreen();
+</script>
+</body>
+</html>

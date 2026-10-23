@@ -46,6 +46,7 @@ async def _body(request):
 
 
 DASHBOARD = Path(__file__).resolve().parent / "dashboard.html"
+DASHBOARD_MENUS = Path(__file__).resolve().parent / "dashboard_menus.html"   # alternative layout, one menu per view, at /menus
 STATIC = Path(__file__).resolve().parent / "static"      # vendored three.js for the dashboard's 3D view
 MESHES = Path(__file__).resolve().parents[1] / "vendor" / "so101" / "assets"   # SO-101 STL meshes (TheRobotStudio/SO-ARM100)
 
@@ -73,13 +74,20 @@ def build_app(control, bus, cams, human_key: str | None = None, vision=None) -> 
         return web.json_response(r.to_dict(), status=409 if r.outcome == "refused" else 200)
 
     # --- dashboard -----------------------------------------------------------------------------
-    async def get_dashboard(request):
-        """The human dashboard. The human key is injected here: a page served from this origin is
-        the dashboard; cross-origin pages cannot read this response (no CORS headers are sent)."""
-        html = DASHBOARD.read_text()
+    def _dashboard(page):
+        html = page.read_text()
         inject = f'<script>window.__ARM_KEY__ = {json.dumps(human_key or "")};</script>'
         html = html.replace("<script>\nconst KEY", inject + "\n<script>\nconst KEY", 1)
         return web.Response(text=html, content_type="text/html", headers={"Cache-Control": "no-store"})
+
+    async def get_dashboard(request):
+        """The human dashboard. The human key is injected here: a page served from this origin is
+        the dashboard; cross-origin pages cannot read this response (no CORS headers are sent)."""
+        return _dashboard(DASHBOARD)
+
+    async def get_dashboard_menus(request):
+        """Same data and key injection as the dashboard, laid out as one menu per view."""
+        return _dashboard(DASHBOARD_MENUS)
 
     # --- reads ---------------------------------------------------------------------------------
     async def get_state(request):
@@ -339,7 +347,7 @@ def build_app(control, bus, cams, human_key: str | None = None, vision=None) -> 
     app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
     app.add_routes([
-        web.get("/", get_dashboard), web.get("/dashboard", get_dashboard),
+        web.get("/", get_dashboard), web.get("/dashboard", get_dashboard), web.get("/menus", get_dashboard_menus),
         web.get("/state", get_state), web.get("/health", get_health),
         web.get("/servo/{name}", get_servo), web.post("/servo/{name}", post_servo),
         web.post("/servo/{name}/nudge", post_nudge),
