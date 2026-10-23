@@ -7,115 +7,116 @@
 <link rel="icon" href="favicon.svg">
 <style>
 :root{
-  --fog:#F4F5F2; --paper:#FBFBF9; --rule:#E2E5E0; --steel:#6E7671; --ink:#1C2321;
-  --clear:#0B7A5E; --lamp:#22B98E; --clear-tint:#E3F2EC;
-  --caution:#E8A317; --caution-ink:#9A6A00; --caution-tint:#FBF1DC;
-  --stop:#C2321F; --stop-tint:#FBE9E6;
-  --agent:#3451C7; --leader:#7A4BB5; --released:#8A918C;
-  --sans:"IBM Plex Sans",-apple-system,"Helvetica Neue",Arial,sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
-  --rs:4px; --rm:8px; --rl:14px;
+  --white:#FFFFFF; --frost:#F6F8FB; --cloud:#EEF2F6; --mist:#E3E8EE; --pebble:#9AA5B1; --slate:#5F6B7A; --ink:#1F2A37;
+  --sky:#8EC5F0; --halo:#DCEDFB; --sky-tint:#EEF6FD; --sky-deep:#2C6AA8;
+  --caution:#F2B544; --caution-ink:#9A6A00; --caution-tint:#FDF4E1;
+  --stop:#C8432F; --stop-tint:#FBEBE8;
+  --agent:#5257C9; --leader:#8457B8; --released:#9AA5B1;
+  --sans:"DM Sans",-apple-system,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
+  --mono:"DM Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --rs:6px; --rm:12px; --rl:20px;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--fog);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--frost);color:var(--ink);font:15px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
 .wrap{max-width:1080px;margin:0 auto;padding:56px 24px 96px}
-.eyebrow,.label{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--steel)}
-h1{font-weight:600;font-size:56px;line-height:1.02;letter-spacing:-.025em;margin:14px 0 14px}
-h2{font-weight:600;font-size:28px;letter-spacing:-.015em;margin:8px 0 10px}
+.eyebrow,.label{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--slate)}
+h1{font-weight:600;font-size:56px;line-height:1.02;letter-spacing:-.03em;margin:14px 0 14px}
+h2{font-weight:600;font-size:28px;letter-spacing:-.02em;margin:8px 0 10px}
 h3{font-weight:600;font-size:16px;margin:0 0 6px}
 p{margin:0 0 12px;max-width:68ch}
-.lede{font-size:19px;color:#3A4440;max-width:60ch}
-.muted{color:var(--steel)}
+.lede{font-size:19px;color:#3B4757;max-width:60ch}
+.muted{color:var(--slate)}
 code,.mono{font-family:var(--mono);font-size:.92em}
-section{padding:56px 0 8px;border-top:1px solid var(--rule);margin-top:56px}
+section{padding:56px 0 8px;border-top:1px solid var(--mist);margin-top:56px}
 .grid{display:grid;gap:16px}
 .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
-.card{background:var(--paper);border:1px solid var(--rule);border-radius:var(--rl);padding:20px}
-.meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:22px;font:12px var(--mono);color:var(--steel)}
+.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.card{background:var(--white);border:1px solid var(--mist);border-radius:var(--rl);padding:20px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:22px;font:12px var(--mono);color:var(--slate)}
 .meta b{color:var(--ink);font-weight:500}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--sky);display:inline-block}
 
 /* hero */
 .hero{display:grid;grid-template-columns:1.3fr 1fr;gap:40px;align-items:center}
-.hero-mark{background:var(--paper);border:1px solid var(--rule);border-radius:24px;aspect-ratio:1;display:grid;place-items:center;position:relative;overflow:hidden}
-.hero-mark::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--rule) 1px,transparent 1px),linear-gradient(90deg,var(--rule) 1px,transparent 1px);background-size:calc(100%/16) calc(100%/16);opacity:.55}
-.hero-mark svg{width:62%;height:auto;position:relative}
+.hero-mark{background:var(--white);border:1px solid var(--mist);border-radius:32px;aspect-ratio:1;display:grid;place-items:center;position:relative;overflow:hidden}
+.hero-mark::before{content:"";position:absolute;inset:0;background-image:radial-gradient(var(--mist) 1.2px,transparent 1.3px);background-size:calc(100%/16) calc(100%/16);opacity:.9}
+.hero-mark svg{width:66%;height:auto;position:relative}
 
-/* kit tiles */
-.kit .card{display:flex;flex-direction:column;gap:6px}
-.kit .tag{display:inline-flex;align-items:center;gap:8px;font:500 12px var(--mono);color:var(--steel)}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--lamp);display:inline-block}
+.kit .card{display:flex;flex-direction:column;gap:4px;padding:16px 20px}
+.kit .tag{display:inline-flex;align-items:center;gap:8px;font:500 12px var(--mono);color:var(--slate)}
 
 /* logo panels */
-.panel{border-radius:var(--rl);border:1px solid var(--rule);display:grid;place-items:center;min-height:200px;padding:28px}
-.panel.dark{background:var(--ink);border-color:var(--ink)}
-.panel.green{background:var(--clear);border-color:var(--clear)}
-.panel.fog{background:var(--fog)}
-.panel.paper{background:var(--paper)}
-.cap{margin-top:8px;font-size:13px;color:var(--steel)}
+.panel{border-radius:var(--rl);border:1px solid var(--mist);display:grid;place-items:center;min-height:200px;padding:28px}
+.panel.deep{background:var(--sky-deep);border-color:var(--sky-deep)}
+.panel.ink{background:var(--ink);border-color:var(--ink)}
+.panel.frost{background:var(--frost)}
+.panel.white{background:var(--white)}
+.panel.tint{background:var(--sky-tint);border-color:var(--halo)}
+.cap{margin-top:8px;font-size:13px;color:var(--slate)}
 .lockup{display:flex;align-items:center;gap:14px}
-.lockup .word{font-weight:600;font-size:40px;letter-spacing:-.02em;line-height:1}
-.lockup .word small{display:block;font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin-top:6px}
+.lockup .word{font-weight:500;font-size:40px;letter-spacing:-.025em;line-height:1}
+.lockup .word small{display:block;font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--slate);margin-top:6px}
 .dont{position:relative}
-.dont::after{content:"";position:absolute;left:14px;right:14px;top:50%;height:2px;background:var(--stop);transform:rotate(-12deg);opacity:.85}
-
-/* construction */
+.dont::after{content:"";position:absolute;left:18px;right:18px;top:50%;height:2px;border-radius:2px;background:var(--stop);transform:rotate(-12deg);opacity:.75}
 .construct svg{width:100%;height:auto;max-width:360px}
 
 /* colour */
-.sw{border-radius:var(--rl);overflow:hidden;border:1px solid var(--rule);background:var(--paper)}
+.sw{border-radius:var(--rl);overflow:hidden;border:1px solid var(--mist);background:var(--white)}
 .sw .chip{height:96px;display:flex;align-items:flex-end;padding:10px 12px;font:500 12px var(--mono)}
 .sw .info{padding:12px}
 .sw .info b{display:block;font-size:14px}
-.sw .info span{font:12px var(--mono);color:var(--steel)}
-.ratio{display:flex;height:44px;border-radius:var(--rm);overflow:hidden;border:1px solid var(--rule)}
-.ratio div{display:flex;align-items:center;padding:0 12px;font:500 12px var(--mono)}
+.sw .info span{font:12px var(--mono);color:var(--slate)}
+.ratio{display:flex;height:48px;border-radius:999px;overflow:hidden;border:1px solid var(--mist)}
+.ratio div{display:flex;align-items:center;padding:0 16px;font:500 12px var(--mono);white-space:nowrap}
 .wheel{display:grid;grid-template-columns:220px 1fr;gap:28px;align-items:center}
+.rules{padding-left:18px}
+.rules li{margin:0 0 8px;max-width:72ch}
 
 /* type */
-.spec-big{font-size:64px;font-weight:600;letter-spacing:-.03em;line-height:1}
-.scale-row{display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--rule)}
+.spec-big{font-size:64px;font-weight:500;letter-spacing:-.03em;line-height:1}
+.scale-row{display:grid;grid-template-columns:140px 1fr;gap:16px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--mist)}
 .scale-row:last-child{border-bottom:0}
 
-/* shape */
 .shape svg{width:100%;height:120px}
 
 /* in use */
-.console{background:var(--fog);border:1px solid var(--rule);border-radius:var(--rl);overflow:hidden}
-.bar{display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--paper);border-bottom:1px solid var(--rule)}
-.bar .word{font-weight:600;font-size:18px;letter-spacing:-.01em}
+.console{background:var(--frost);border:1px solid var(--mist);border-radius:var(--rl);overflow:hidden}
+.bar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--mist);flex-wrap:wrap}
+.bar .word{font-weight:500;font-size:18px;letter-spacing:-.015em}
 .bar .sp{flex:1}
-.pill{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font:500 12px var(--mono);border:1px solid var(--rule);background:var(--paper)}
-.pill.on{border-color:transparent;color:var(--paper)}
-.btn{height:36px;padding:0 16px;border-radius:var(--rm);border:1px solid var(--rule);background:var(--paper);font:600 13px var(--sans);color:var(--ink);display:inline-flex;align-items:center;gap:8px}
-.btn.primary{background:var(--clear);border-color:var(--clear);color:var(--paper)}
-.btn.stop{background:var(--stop);border-color:var(--stop);color:var(--paper);letter-spacing:.08em;font-family:var(--mono);height:44px;padding:0 22px;border-radius:var(--rm);box-shadow:inset 0 0 0 2px rgba(251,251,249,.35)}
+.seg{display:inline-flex;background:var(--cloud);border-radius:999px;padding:3px;gap:2px}
+.seg span{height:26px;padding:0 12px;border-radius:999px;font:500 12px/26px var(--mono);color:var(--slate)}
+.seg span.on{background:var(--white);color:var(--agent);box-shadow:0 1px 2px rgba(31,42,55,.08)}
+.seg span.on::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--agent);margin-right:6px;vertical-align:1px}
+.btn{height:36px;padding:0 16px;border-radius:var(--rm);border:1px solid var(--mist);background:var(--white);font:500 13px var(--sans);color:var(--ink);display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--sky-deep);border-color:var(--sky-deep);color:var(--white)}
+.btn.soft{background:var(--sky-tint);border-color:var(--halo);color:var(--sky-deep)}
+.btn.stop{background:var(--stop);border-color:var(--stop);color:var(--white);letter-spacing:.1em;font:600 13px var(--mono);height:40px;padding:0 22px;border-radius:999px}
 .body{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;padding:16px}
-.log{font:12.5px/1.75 var(--mono)}
+.log{font:12.5px/1.8 var(--mono)}
 .log .r{display:flex;gap:10px;align-items:center}
-.st{display:inline-block;min-width:64px;text-align:center;border-radius:var(--rs);padding:0 6px;font-weight:500}
-.st.ok{background:var(--clear-tint);color:var(--clear)}
+.st{display:inline-block;min-width:64px;text-align:center;border-radius:999px;padding:0 8px;font-weight:500;line-height:20px}
+.st.ok{background:var(--sky-tint);color:var(--sky-deep)}
 .st.fr{background:var(--caution-tint);color:var(--caution-ink)}
-.st.rf{background:#ECEEEB;color:#4A534F}
+.st.rf{background:var(--cloud);color:var(--slate)}
 .st.sp{background:var(--stop-tint);color:var(--stop)}
-.loadbar{height:8px;border-radius:999px;background:#E9ECE8;overflow:hidden}
+.loadbar{height:8px;border-radius:999px;background:var(--cloud);overflow:hidden}
 .loadbar i{display:block;height:100%;border-radius:999px}
 .joint{display:grid;grid-template-columns:110px 1fr 54px;gap:10px;align-items:center;font:12.5px var(--mono);padding:5px 0}
-.mcp{font:12.5px/1.7 var(--mono);background:var(--paper);border:1px solid var(--rule);border-radius:var(--rm);padding:14px 16px;white-space:pre;overflow:auto}
-.mcp .k{color:var(--steel)} .mcp .g{color:var(--clear)} .mcp .a{color:var(--caution-ink)}
+.mcp{font:12.5px/1.7 var(--mono);background:var(--white);border:1px solid var(--mist);border-radius:var(--rm);padding:14px 16px;white-space:pre;overflow:auto}
+.mcp .k{color:var(--slate)} .mcp .g{color:var(--sky-deep)} .mcp .a{color:var(--slate)}
 
-/* rules */
-.rules li{margin:0 0 8px;max-width:72ch}
-.do,.no{border-radius:var(--rm);padding:12px 14px;font-size:14px}
-.do{background:var(--clear-tint)} .no{background:var(--stop-tint)}
-.do b{color:var(--clear)} .no b{color:var(--stop)}
-footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--rule);font:12px var(--mono);color:var(--steel);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.do,.no{border-radius:var(--rm);padding:12px 14px;font-size:14px;border:1px solid}
+.do{background:var(--sky-tint);border-color:var(--halo)} .no{background:var(--white);border-color:var(--mist)}
+.do b{color:var(--sky-deep)} .no b{color:var(--stop)}
+footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--mist);font:12px var(--mono);color:var(--slate);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 
 @media (max-width:820px){
   h1{font-size:40px}
   .hero,.wheel,.body,.g2,.g3,.g4{grid-template-columns:1fr}
-  .g4.sws{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g4.sws,.g5{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 </style>
 </head>
@@ -123,11 +124,22 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--rule);font:12
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <symbol id="mark" viewBox="0 0 64 64">
-      <path d="M21 30V16h22v14" fill="none" stroke="var(--m-ink,#1C2321)" stroke-width="6" stroke-linejoin="round"/>
-      <circle cx="21" cy="16" r="5" fill="var(--m-bg,#FBFBF9)" stroke="var(--m-ink,#1C2321)" stroke-width="3"/>
-      <circle cx="43" cy="16" r="5" fill="var(--m-bg,#FBFBF9)" stroke="var(--m-ink,#1C2321)" stroke-width="3"/>
-      <rect x="12" y="28" width="40" height="28" rx="8" fill="var(--m-ink,#1C2321)"/>
-      <circle cx="32" cy="42" r="5" fill="var(--m-lamp,#22B98E)"/>
+      <circle cx="32" cy="32" r="30" fill="var(--m-halo,#DCEDFB)" stroke="var(--m-ring,none)" stroke-width="2.5"/>
+      <g transform="translate(4 -3)">
+        <rect x="15" y="47" width="22" height="7" rx="3.5" fill="var(--m-arm,#2C6AA8)"/>
+        <path d="M26 47 L22 26 L42 21 L46 33" fill="none" stroke="var(--m-arm,#2C6AA8)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="22" cy="26" r="2.6" fill="var(--m-joint,#FFFFFF)"/>
+        <circle cx="42" cy="21" r="2.6" fill="var(--m-joint,#FFFFFF)"/>
+        <circle cx="26" cy="45" r="2.6" fill="var(--m-joint,#FFFFFF)"/>
+        <circle cx="46" cy="40" r="3.4" fill="var(--m-tip,#8EC5F0)"/>
+      </g>
+    </symbol>
+    <symbol id="fav" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="31" fill="#DCEDFB"/>
+      <g transform="translate(4 -3)">
+        <rect x="14" y="46" width="24" height="9" rx="4.5" fill="#2C6AA8"/>
+        <path d="M26 47 L22 26 L42 21 L46 34" fill="none" stroke="#2C6AA8" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
     </symbol>
   </defs>
 </svg>
@@ -137,15 +149,15 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--rule);font:12
 <!-- HERO -->
 <div class="hero">
   <div>
-    <div class="eyebrow">Brand guide · v1.0 · 23 Oct 2026</div>
+    <div class="eyebrow">Brand guide · v2.0 · 23 Oct 2026</div>
     <h1>Interlock</h1>
-    <p class="lede">The safety layer between people, agents and a robot arm. One bus owner, one holder at a time, a guard on every move.</p>
+    <p class="lede">A calm safety layer between people, agents and a robot arm. One bus owner, one holder at a time, a guard on every move.</p>
     <p class="muted" style="margin-top:14px">Tagline: <b style="color:var(--ink)">One hand on the arm at a time.</b></p>
     <div class="meta">
       <span>kit <b>daemon · MCP · dashboard</b></span>
-      <span>accent <b>Clear #0B7A5E</b></span>
-      <span>type <b>IBM Plex Sans / Mono</b></span>
-      <span>radius <b>4 · 8 · 14</b></span>
+      <span>brand <b>Sky #8EC5F0</b></span>
+      <span>type <b>DM Sans / DM Mono</b></span>
+      <span>radius <b>6 · 12 · 20 · pill</b></span>
     </div>
   </div>
   <div class="hero-mark"><svg viewBox="0 0 64 64"><use href="#mark"/></svg></div>
@@ -157,12 +169,12 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--rule);font:12
   <h2>Why “Interlock”</h2>
   <div class="grid g2">
     <div>
-      <p>An interlock is the machine-safety device that stops a machine unless conditions are safe: the door switch on a cell, the key that only one person can hold. That is exactly what the kit does. The daemon is the single owner of the serial bus, the <i>holder</i> switch decides who may move the arm (human, agent, leader, or nobody), and every command passes guards that clamp, freeze or refuse.</p>
-      <p>It is a real engineering word, short, easy to say, and it reads as a promise: nothing moves unless it is allowed to.</p>
+      <p>In machine safety, an interlock is what lets a machine run only when conditions are right. That is the kit's job. The daemon is the single owner of the serial bus, the <i>holder</i> switch decides who may move the arm (human, agent, leader, or nobody), and every command passes guards that clamp, freeze or refuse.</p>
+      <p>The word also means <i>linked together</i>: arm links, joints, and people and agents working with each other. The brand leans on that second meaning. The logo shows an arm working inside a safe halo, not a lock.</p>
     </div>
     <div class="grid kit" style="gap:12px">
-      <div class="card"><span class="tag"><i class="dot"></i>arm-daemon · :8800</span><h3>Interlock Core</h3><span class="muted">The bus owner. Guards, holders, STOP, logs.</span></div>
-      <div class="card"><span class="tag"><i class="dot" style="background:var(--agent)"></i>mcp_server.py</span><h3>Interlock Link</h3><span class="muted">The agent's hands. MCP tools that only move while the agent holds the arm.</span></div>
+      <div class="card"><span class="tag"><i class="dot" style="background:var(--sky-deep)"></i>arm-daemon · :8800</span><h3>Interlock Core</h3><span class="muted">The bus owner. Guards, holders, STOP, logs.</span></div>
+      <div class="card"><span class="tag"><i class="dot" style="background:var(--agent)"></i>mcp_server.py</span><h3>Interlock Link</h3><span class="muted">The agent's hands. MCP tools that move only while the agent holds the arm.</span></div>
       <div class="card"><span class="tag"><i class="dot" style="background:var(--ink)"></i>http://127.0.0.1:8800/</span><h3>Interlock Console</h3><span class="muted">The human's view. Live camera, 3D arm, holder switch, STOP.</span></div>
     </div>
   </div>
@@ -171,124 +183,128 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--rule);font:12
 <!-- LOGO -->
 <section>
   <div class="eyebrow">02 · Logo</div>
-  <h2>A padlock built from a robot arm</h2>
-  <p>The shackle is two arm links meeting at two round joints; the body is the guarded envelope; the lamp is live state. Read fast it is a lock. Read slow it is an arm. Closed, symmetric and sitting on a wide base, it never looks like it is about to move.</p>
+  <h2>An arm at work inside its halo</h2>
+  <p>A three-link arm (base, upper arm, forearm) drawn with fully rounded ends and white joints, reaching for a light-blue point: the thing it has been trusted with. Around it sits the halo, the safe workspace the guards keep. Nothing in it is pointed, and the whole mark sits inside a circle, the softest closed shape there is.</p>
 
   <div class="grid g3" style="margin-top:20px">
-    <div><div class="panel paper"><div class="lockup"><svg width="64" height="64"><use href="#mark"/></svg><div class="word">interlock</div></div></div><div class="cap">Primary lockup on Paper. Wordmark lowercase, Plex Sans 600, −2 % tracking.</div></div>
-    <div><div class="panel dark" style="--m-ink:#FBFBF9;--m-bg:#1C2321"><div class="lockup" style="color:var(--paper)"><svg width="64" height="64"><use href="#mark"/></svg><div class="word">interlock</div></div></div><div class="cap">Reversed on Graphite. The lamp stays Clear.</div></div>
-    <div><div class="panel fog"><div class="lockup"><svg width="64" height="64"><use href="#mark"/></svg><div class="word">interlock<small>console</small></div></div></div><div class="cap">Product lockup: mono descriptor under the word, Steel.</div></div>
+    <div><div class="panel white"><div class="lockup"><svg width="64" height="64"><use href="#mark"/></svg><div class="word">interlock</div></div></div><div class="cap">Primary lockup on White. Lowercase wordmark, DM Sans 500, −2.5 % tracking.</div></div>
+    <div><div class="panel deep" style="--m-halo:rgba(255,255,255,.16);--m-arm:#FFFFFF;--m-joint:#2C6AA8;--m-tip:#B9DCF7"><div class="lockup" style="color:var(--white)"><svg width="64" height="64"><use href="#mark"/></svg><div class="word">interlock</div></div></div><div class="cap">Reversed on Sky Deep, for launch and splash surfaces.</div></div>
+    <div><div class="panel frost"><div class="lockup"><svg width="64" height="64"><use href="#mark"/></svg><div class="word">interlock<small>console</small></div></div></div><div class="cap">Product lockup: mono descriptor under the word, in Slate.</div></div>
   </div>
 
   <div class="grid g4" style="margin-top:16px">
-    <div><div class="panel paper" style="min-height:150px"><svg width="72" height="72"><use href="#mark"/></svg></div><div class="cap">Mark, full colour</div></div>
-    <div><div class="panel paper" style="min-height:150px;--m-lamp:#FBFBF9"><svg width="72" height="72"><use href="#mark"/></svg></div><div class="cap">Mono (print, engraving, stickers)</div></div>
-    <div><div class="panel green" style="min-height:150px;--m-ink:#FBFBF9;--m-bg:#0B7A5E;--m-lamp:#0B7A5E"><svg width="72" height="72"><use href="#mark"/></svg></div><div class="cap">On Clear, for launch and status surfaces</div></div>
-    <div><div class="panel fog" style="min-height:150px;gap:14px;grid-auto-flow:column">
-      <svg width="16" height="16" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#F4F5F2"/><path d="M21 30V15h22v15" fill="none" stroke="#1C2321" stroke-width="7" stroke-linejoin="round"/><rect x="11" y="27" width="42" height="30" rx="8" fill="#1C2321"/><circle cx="32" cy="42" r="6" fill="#22B98E"/></svg>
-      <svg width="32" height="32" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#FBFBF9"/><path d="M21 30V15h22v15" fill="none" stroke="#1C2321" stroke-width="7" stroke-linejoin="round"/><rect x="11" y="27" width="42" height="30" rx="8" fill="#1C2321"/><circle cx="32" cy="42" r="6" fill="#22B98E"/></svg>
-      <svg width="48" height="48" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#FBFBF9"/><path d="M21 30V15h22v15" fill="none" stroke="#1C2321" stroke-width="7" stroke-linejoin="round"/><rect x="11" y="27" width="42" height="30" rx="8" fill="#1C2321"/><circle cx="32" cy="42" r="6" fill="#22B98E"/></svg>
-    </div><div class="cap">Favicon / app icon: joints dropped below 32 px, strokes thickened</div></div>
+    <div><div class="panel white" style="min-height:150px"><svg width="80" height="80"><use href="#mark"/></svg></div><div class="cap">Mark, full colour</div></div>
+    <div><div class="panel white" style="min-height:150px;--m-halo:none;--m-ring:#1F2A37;--m-arm:#1F2A37;--m-tip:#1F2A37"><svg width="80" height="80"><use href="#mark"/></svg></div><div class="cap">Mono (print, engraving, stickers)</div></div>
+    <div><div class="panel tint" style="min-height:150px;--m-halo:#FFFFFF"><svg width="80" height="80"><use href="#mark"/></svg></div><div class="cap">On Sky Tint, the halo turns white</div></div>
+    <div><div class="panel frost" style="min-height:150px;gap:16px;grid-auto-flow:column;align-items:center">
+      <svg width="16" height="16"><use href="#fav"/></svg><svg width="32" height="32"><use href="#fav"/></svg><svg width="48" height="48"><use href="#fav"/></svg>
+    </div><div class="cap">Favicon / app icon: joints and point dropped, strokes thickened</div></div>
   </div>
 
   <div class="grid g2" style="margin-top:28px;align-items:center">
     <div class="construct card">
       <svg viewBox="0 0 64 64">
-        <defs><pattern id="g" width="4" height="4" patternUnits="userSpaceOnUse"><path d="M4 0H0V4" fill="none" stroke="#E2E5E0" stroke-width=".25"/></pattern></defs>
+        <defs><pattern id="g" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="0" cy="0" r=".22" fill="#9AA5B1"/></pattern></defs>
         <rect width="64" height="64" fill="url(#g)"/>
-        <rect x="4" y="4" width="56" height="56" fill="none" stroke="#22B98E" stroke-width=".4" stroke-dasharray="1.2 1"/>
         <use href="#mark"/>
-        <g fill="none" stroke="#C2321F" stroke-width=".35">
-          <circle cx="21" cy="16" r="7.5"/><circle cx="43" cy="16" r="7.5"/>
-          <path d="M12 28h40M12 56h40M32 26v32"/>
+        <g fill="none" stroke="#C8432F" stroke-width=".3">
+          <circle cx="32" cy="32" r="30" stroke-dasharray="1 1"/>
+          <circle cx="26" cy="23" r="3.5"/><circle cx="46" cy="18" r="3.5"/><circle cx="30" cy="42" r="3.5"/>
+          <path d="M19 51h22"/>
         </g>
-        <g font-family="ui-monospace,monospace" font-size="2.6" fill="#6E7671">
-          <text x="49" y="3">joint r5 +3</text><text x="53.5" y="31">r8</text><text x="5" y="63.5">clear space = ¼ mark</text>
+        <g font-family="ui-monospace,monospace" font-size="2.4" fill="#5F6B7A">
+          <text x="49" y="5">joints r2.6</text><text x="2" y="4">halo r30</text><text x="45" y="63.2">stroke 7, round</text>
         </g>
       </svg>
     </div>
     <div>
       <h3>Construction</h3>
       <ul class="rules">
-        <li>64-unit grid, 4-unit module. Body 40 × 28 with an 8-unit radius; the same radius the UI uses for buttons and cards.</li>
-        <li>Shackle stroke 6, joints r5 with a 3 stroke; lamp r5 on the body's centre line.</li>
-        <li>Clear space on every side: one quarter of the mark's width (the dashed square).</li>
-        <li>Minimum size: mark 16 px (use the favicon cut), lockup 96 px wide.</li>
-        <li>The lamp is the only colour in the mark. Clear means the arm is in a safe, known state; in live UI it may switch to Caution or Stop to show the real state, nothing else.</li>
+        <li>64-unit grid, 4-unit module. Halo r30 centred; arm stroke 7 with round caps and joins, so every end is a half-circle.</li>
+        <li>Joints are white r2.6 dots, the held point is a Sky r3.4 dot. Base is a 22 × 7 pill.</li>
+        <li>The arm is optically centred in the halo (shifted +4, −3), with the reach to the right: forward, like reading.</li>
+        <li>Clear space: one quarter of the mark's width on every side. Minimum: 16 px (favicon cut), lockup 96 px wide.</li>
+        <li>Only two blues and white inside the mark. It never takes a safety colour.</li>
       </ul>
     </div>
   </div>
 
   <div class="grid g4" style="margin-top:20px">
-    <div><div class="panel paper dont" style="min-height:120px"><svg width="56" height="56" style="transform:rotate(18deg)"><use href="#mark"/></svg></div><div class="cap">Don't rotate it. It should never look in motion.</div></div>
-    <div><div class="panel paper dont" style="min-height:120px;--m-lamp:#C2321F"><svg width="56" height="56"><use href="#mark"/></svg></div><div class="cap">Don't paint the lamp red as decoration. Red is STOP.</div></div>
-    <div><div class="panel paper dont" style="min-height:120px"><svg width="84" height="40" viewBox="0 0 64 64" preserveAspectRatio="none"><use href="#mark"/></svg></div><div class="cap">Don't stretch or squash.</div></div>
-    <div><div class="panel dont" style="min-height:120px;background:linear-gradient(135deg,#3451C7,#7A4BB5)"><svg width="56" height="56"><use href="#mark"/></svg></div><div class="cap">Don't place on gradients or busy photos.</div></div>
+    <div><div class="panel white dont" style="min-height:120px"><svg width="64" height="64" style="transform:scaleX(-1)"><use href="#mark"/></svg></div><div class="cap">Don't mirror it. The arm reaches forward, to the right.</div></div>
+    <div><div class="panel white dont" style="min-height:120px;--m-arm:#C8432F"><svg width="64" height="64"><use href="#mark"/></svg></div><div class="cap">Don't recolour in safety colours. Red is STOP.</div></div>
+    <div><div class="panel white dont" style="min-height:120px"><svg width="96" height="48" viewBox="0 0 64 64" preserveAspectRatio="none"><use href="#mark"/></svg></div><div class="cap">Don't stretch or squash.</div></div>
+    <div><div class="panel white dont" style="min-height:120px;--m-halo:none"><svg width="64" height="64"><use href="#mark"/></svg></div><div class="cap">Don't drop the halo. The arm always works inside it.</div></div>
   </div>
 </section>
 
 <!-- COLOUR -->
 <section>
   <div class="eyebrow">03 · Colour</div>
-  <h2>Light ground, one calm accent, safety colours kept for safety</h2>
-  <p>Interlock is a near-white, low-chroma system. The neutrals carry a faint green bias so they sit with the accent instead of reading as cold office blue. Colour is information: if something is coloured, it is telling you about the arm.</p>
+  <h2>Whites, soft grays, one light blue</h2>
+  <p>Interlock is airy and quiet: mostly white, with cool soft grays for structure and a single light blue that means "this is Interlock, and it's fine". Every gray carries a trace of the same blue hue (≈ 212°), so the whole surface reads as one material. Warm colours appear only when the arm needs attention.</p>
 
   <div class="ratio" style="margin:22px 0 8px">
-    <div style="flex:60;background:var(--fog);color:var(--steel)">60 · Fog / Paper</div>
-    <div style="flex:30;background:var(--ink);color:var(--paper)">30 · Graphite</div>
-    <div style="flex:10;background:var(--clear);color:var(--paper)">10 · Clear</div>
+    <div style="flex:60;background:var(--white);color:var(--slate)">60 · White / Frost</div>
+    <div style="flex:30;background:var(--cloud);color:var(--slate)">30 · Soft grays</div>
+    <div style="flex:10;background:var(--sky);color:var(--ink)">10 · Sky</div>
   </div>
-  <p class="cap">60-30-10: ground, ink, accent. Caution and Stop sit outside the ratio and appear only when the state calls for them.</p>
+  <p class="cap">60-30-10: white ground, soft-gray structure, light-blue accent. Ink is for text only. Caution and Stop sit outside the ratio.</p>
 
-  <h3 style="margin-top:28px">Neutrals</h3>
-  <div class="grid g4 sws" style="grid-template-columns:repeat(5,minmax(0,1fr))">
-    <div class="sw"><div class="chip" style="background:#F4F5F2;color:#6E7671">Aa</div><div class="info"><b>Fog</b><span>#F4F5F2 · page ground</span></div></div>
-    <div class="sw"><div class="chip" style="background:#FBFBF9;color:#6E7671;border-bottom:1px solid var(--rule)">Aa</div><div class="info"><b>Paper</b><span>#FBFBF9 · cards, panels</span></div></div>
-    <div class="sw"><div class="chip" style="background:#E2E5E0;color:#6E7671">Aa</div><div class="info"><b>Rule</b><span>#E2E5E0 · hairlines</span></div></div>
-    <div class="sw"><div class="chip" style="background:#6E7671;color:#FBFBF9">4.5:1</div><div class="info"><b>Steel</b><span>#6E7671 · secondary text</span></div></div>
-    <div class="sw"><div class="chip" style="background:#1C2321;color:#FBFBF9">15:1</div><div class="info"><b>Graphite</b><span>#1C2321 · ink, mark</span></div></div>
+  <h3 style="margin-top:28px">Whites and soft grays</h3>
+  <div class="grid g5 sws">
+    <div class="sw"><div class="chip" style="background:#FFFFFF;color:#9AA5B1;border-bottom:1px solid var(--mist)">Aa</div><div class="info"><b>White</b><span>#FFFFFF · cards, panels</span></div></div>
+    <div class="sw"><div class="chip" style="background:#F6F8FB;color:#9AA5B1">Aa</div><div class="info"><b>Frost</b><span>#F6F8FB · page ground</span></div></div>
+    <div class="sw"><div class="chip" style="background:#EEF2F6;color:#5F6B7A">Aa</div><div class="info"><b>Cloud</b><span>#EEF2F6 · fills, tracks</span></div></div>
+    <div class="sw"><div class="chip" style="background:#E3E8EE;color:#5F6B7A">Aa</div><div class="info"><b>Mist</b><span>#E3E8EE · hairlines</span></div></div>
+    <div class="sw"><div class="chip" style="background:#9AA5B1;color:#FFFFFF">icons</div><div class="info"><b>Pebble</b><span>#9AA5B1 · icons, disabled</span></div></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="sw"><div class="chip" style="background:#5F6B7A;color:#FFFFFF;height:64px">5.4:1</div><div class="info"><b>Slate</b><span>#5F6B7A · secondary text</span></div></div>
+    <div class="sw"><div class="chip" style="background:#1F2A37;color:#FFFFFF;height:64px">14.5:1</div><div class="info"><b>Ink</b><span>#1F2A37 · primary text (a deep blue-gray, never pure black)</span></div></div>
   </div>
 
-  <h3 style="margin-top:28px">Accent and safety states</h3>
+  <h3 style="margin-top:28px">Blues</h3>
   <div class="grid g4 sws">
-    <div class="sw"><div class="chip" style="background:#0B7A5E;color:#FBFBF9">5.1:1</div><div class="info"><b>Clear</b><span>#0B7A5E · brand, go, ok</span><br><span>lamp #22B98E · tint #E3F2EC</span></div></div>
-    <div class="sw"><div class="chip" style="background:#E8A317;color:#1C2321">ink 7.4:1</div><div class="info"><b>Caution</b><span>#E8A317 · frozen, load, near table</span><br><span>text #9A6A00 · tint #FBF1DC</span></div></div>
-    <div class="sw"><div class="chip" style="background:#C2321F;color:#FBFBF9">5.4:1</div><div class="info"><b>Stop</b><span>#C2321F · STOP only</span><br><span>tint #FBE9E6</span></div></div>
-    <div class="sw"><div class="chip" style="background:#ECEEEB;color:#4A534F">refused</div><div class="info"><b>Refused</b><span>neutral grey · nothing moved</span><br><span>refusal is not an error</span></div></div>
+    <div class="sw"><div class="chip" style="background:#8EC5F0;color:#1F2A37">ink 7.9:1</div><div class="info"><b>Sky</b><span>#8EC5F0 · the brand colour</span><br><span>fills, highlights; never text</span></div></div>
+    <div class="sw"><div class="chip" style="background:#DCEDFB;color:#2C6AA8">Aa</div><div class="info"><b>Halo</b><span>#DCEDFB · the halo, selection</span></div></div>
+    <div class="sw"><div class="chip" style="background:#EEF6FD;color:#2C6AA8">Aa</div><div class="info"><b>Sky Tint</b><span>#EEF6FD · soft backgrounds</span></div></div>
+    <div class="sw"><div class="chip" style="background:#2C6AA8;color:#FFFFFF">5.6:1</div><div class="info"><b>Sky Deep</b><span>#2C6AA8 · text, links, buttons, "ok"</span></div></div>
   </div>
 
-  <h3 style="margin-top:28px">Holders — who has the arm</h3>
+  <h3 style="margin-top:28px">Safety states and holders</h3>
   <div class="grid g4 sws">
-    <div class="sw"><div class="chip" style="background:#1C2321;color:#FBFBF9">human</div><div class="info"><b>Human</b><span>Graphite #1C2321</span></div></div>
-    <div class="sw"><div class="chip" style="background:#3451C7;color:#FBFBF9">agent</div><div class="info"><b>Agent</b><span>Cobalt #3451C7 · 6.4:1</span></div></div>
-    <div class="sw"><div class="chip" style="background:#7A4BB5;color:#FBFBF9">leader</div><div class="info"><b>Leader</b><span>Violet #7A4BB5 · 5.8:1</span></div></div>
-    <div class="sw"><div class="chip" style="background:#8A918C;color:#FBFBF9">released</div><div class="info"><b>Released</b><span>Ash #8A918C · non-text</span></div></div>
+    <div class="sw"><div class="chip" style="background:#F2B544;color:#1F2A37">ink 7.9:1</div><div class="info"><b>Caution</b><span>#F2B544 · frozen, load, near table</span><br><span>text #9A6A00</span></div></div>
+    <div class="sw"><div class="chip" style="background:#C8432F;color:#FFFFFF">4.9:1</div><div class="info"><b>Stop</b><span>#C8432F · STOP and only STOP</span></div></div>
+    <div class="sw"><div class="chip" style="background:#5257C9;color:#FFFFFF">agent</div><div class="info"><b>Agent</b><span>Iris #5257C9 · 5.9:1</span></div></div>
+    <div class="sw"><div class="chip" style="background:#8457B8;color:#FFFFFF">leader</div><div class="info"><b>Leader</b><span>Lilac #8457B8 · 5.2:1</span></div></div>
   </div>
+  <p class="cap">Human = Ink, released = Pebble. "ok" is Sky Deep, refused is Cloud with Slate text: a refusal means a guard worked, so it stays calm and gray.</p>
 
   <div class="wheel card" style="margin-top:28px">
     <svg viewBox="-110 -110 220 220" width="220" height="220" aria-label="Hue wheel">
-      <circle r="92" fill="none" stroke="#E2E5E0" stroke-width="14"/>
-      <!-- hue positions: angle = hue - 90 -->
-      <line x1="28.4" y1="87.5" x2="11.2" y2="-91.3" stroke="#6E7671" stroke-width="1" stroke-dasharray="3 3"/>
-      <g stroke="#FBFBF9" stroke-width="3">
-        <circle cx="28.4" cy="87.5" r="13" fill="#0B7A5E"/>
-        <circle cx="59.1" cy="-70.5" r="11" fill="#E8A317"/>
-        <circle cx="11.2" cy="-91.3" r="11" fill="#C2321F"/>
-        <circle cx="-68.4" cy="61.6" r="10" fill="#3451C7"/>
-        <circle cx="-91.9" cy="4.8" r="10" fill="#7A4BB5"/>
+      <circle r="92" fill="none" stroke="#EEF2F6" stroke-width="16"/>
+      <!-- dot position: angle = hue − 90°, r = 92 -->
+      <line x1="-40.3" y1="82.7" x2="40.3" y2="-82.7" stroke="#9AA5B1" stroke-width="1" stroke-dasharray="3 3"/>
+      <g stroke="#FFFFFF" stroke-width="3">
+        <circle cx="-46" cy="79.7" r="11" fill="#2C6AA8"/>
+        <circle cx="-40.3" cy="82.7" r="13" fill="#8EC5F0"/>
+        <circle cx="12.8" cy="-91.1" r="11" fill="#C8432F"/>
+        <circle cx="57.9" cy="-71.5" r="11" fill="#F2B544"/>
+        <circle cx="-77.2" cy="50.1" r="10" fill="#5257C9"/>
+        <circle cx="-91.9" cy="3.2" r="10" fill="#8457B8"/>
       </g>
-      <g font-family="ui-monospace,monospace" font-size="9" fill="#6E7671" text-anchor="middle">
-        <text x="0" y="-4">hue wheel</text><text x="0" y="8">clear ↔ stop</text>
+      <g font-family="ui-monospace,monospace" font-size="9" fill="#5F6B7A" text-anchor="middle">
+        <text y="-4">cool brand</text><text y="8">warm alerts</text>
       </g>
     </svg>
     <div>
       <h3>The colour theory behind it</h3>
       <ul class="rules">
-        <li><b>Complement for STOP.</b> Clear (hue ≈ 162°) sits almost exactly opposite Stop (≈ 7°). Every screen is mostly green-tinted neutrals and a little Clear, so the one red button gets maximum contrast against everything around it.</li>
-        <li><b>Safety meanings are borrowed, not invented.</b> Green = safe, amber = caution, red = stop follows ISO 3864 and every factory floor. Operators read them without a legend.</li>
-        <li><b>Holders live in the cool half of the wheel</b> (cobalt, violet), away from the safety hues, so "who has the arm" is never confused with "is it safe".</li>
-        <li><b>Low chroma, high value.</b> Neutrals stay above 90 % lightness and under 3 % saturation: light, clean, quiet. Saturation is spent only where a decision is needed.</li>
-        <li><b>Contrast first.</b> Every text pairing meets WCAG AA (≥ 4.5:1); ratios are printed on each chip. Amber is never text on light ground; use Caution text #9A6A00.</li>
+        <li><b>Analogous and cool for calm.</b> Every neutral and both blues sit around 206–213°. One hue family with low saturation reads as clean, trustworthy and quiet, the way a clean lab or a hospital reads.</li>
+        <li><b>Complements for alerts.</b> Caution (≈ 39°) and Stop (≈ 8°) sit across the wheel from the blue. On an all-cool screen the warm states are the only warm things, so they are seen instantly without being loud.</li>
+        <li><b>High value, low chroma.</b> The surface stays above 90 % lightness. Sky is light enough to sit on white without shouting; Sky Deep carries text where contrast is needed.</li>
+        <li><b>Holders stay in the cool half</b> (Iris, Lilac), next to the brand blue but distinct from it, so "who has the arm" never gets confused with "is it safe".</li>
+        <li><b>Safety meanings are borrowed, not invented.</b> Amber = caution and red = stop follow ISO 3864, so operators read them without a legend. Every text pairing meets WCAG AA (≥ 4.5:1).</li>
       </ul>
     </div>
   </div>
@@ -297,45 +313,45 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--rule);font:12
 <!-- TYPE -->
 <section>
   <div class="eyebrow">04 · Typography</div>
-  <h2>IBM Plex Sans and IBM Plex Mono</h2>
-  <p>Plex was drawn for engineering: straight-sided, slightly mechanical, very legible at small sizes, and the Sans and Mono share one skeleton, so labels and numbers sit together without friction. Both are free (SIL OFL). Sans for words people read; Mono for anything the machine says: joint values, ports, outcomes, tool names, timestamps.</p>
+  <h2>DM Sans and DM Mono</h2>
+  <p>DM Sans is a low-contrast geometric sans with round bowls and open shapes: friendly, modern and very clean, without being cute. DM Mono is drawn on the same skeleton, so labels and numbers sit beside words without a jolt. Both are free (SIL OFL). Sans for words people read; Mono for anything the machine says: joint values, ports, outcomes, tool names, timestamps.</p>
   <div class="grid g2" style="margin-top:20px">
     <div class="card">
-      <div class="label">Plex Sans · 400 / 500 / 600</div>
+      <div class="label">DM Sans · 400 / 500 / 600</div>
       <div class="spec-big" style="margin:16px 0 10px">Aa Gg 06</div>
       <p class="muted" style="margin:0">ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz 0123456789</p>
     </div>
     <div class="card">
-      <div class="label">Plex Mono · 400 / 500</div>
-      <div class="spec-big" style="margin:16px 0 10px;font-family:var(--mono);font-weight:500">0O 1lI</div>
+      <div class="label">DM Mono · 400 / 500</div>
+      <div class="spec-big" style="margin:16px 0 10px;font-family:var(--mono);font-weight:400">0O 1lI</div>
       <p class="muted mono" style="margin:0">elbow_flex  −12.4°  load 31 %<br>outcome: refused · stop is set</p>
     </div>
   </div>
   <div class="card" style="margin-top:16px">
-    <div class="scale-row"><span class="label">Display 56/600</span><span style="font-size:40px;font-weight:600;letter-spacing:-.025em;line-height:1.05">Nothing moves unless allowed</span></div>
-    <div class="scale-row"><span class="label">H2 28/600</span><span style="font-size:28px;font-weight:600;letter-spacing:-.015em">Holder: agent</span></div>
-    <div class="scale-row"><span class="label">Body 15/400</span><span>The arm froze on a load spike at the wrist. Look before retrying.</span></div>
+    <div class="scale-row"><span class="label">Display 56 / 600</span><span style="font-size:40px;font-weight:600;letter-spacing:-.03em;line-height:1.05">Nothing moves unless allowed</span></div>
+    <div class="scale-row"><span class="label">H2 28 / 600</span><span style="font-size:28px;font-weight:600;letter-spacing:-.02em">Holder: agent</span></div>
+    <div class="scale-row"><span class="label">Body 15 / 400</span><span>The arm paused on a load spike at the wrist. Look before retrying.</span></div>
     <div class="scale-row"><span class="label">Label 11 mono caps</span><span class="label" style="color:var(--ink)">Tool pose · joints · log</span></div>
     <div class="scale-row"><span class="label">Data 13 mono tnum</span><span class="mono" style="font-variant-numeric:tabular-nums">x 18.20  y −3.05  z 8.00 cm</span></div>
   </div>
-  <p class="cap" style="margin-top:10px">Fallbacks: <code>-apple-system, Helvetica Neue, Arial</code> and <code>ui-monospace, SF Mono, Menlo</code>. This page renders in those if Plex is not installed; ship Plex as local woff2 files inside the Console, never from a CDN (the daemon is loopback-only).</p>
+  <p class="cap" style="margin-top:10px">Fallbacks: <code>-apple-system, SF Pro, Helvetica Neue</code> and <code>ui-monospace, SF Mono, Menlo</code>. This page renders in those if DM isn't installed. Ship DM Sans and DM Mono as local woff2 files inside the Console, never from a CDN (the daemon is loopback-only).</p>
 </section>
 
 <!-- SHAPE -->
 <section>
   <div class="eyebrow">05 · Shape</div>
-  <h2>Squares hold, circles turn, triangles warn</h2>
-  <p>Shape carries meaning the same way colour does. Interlock's vocabulary is small and literal.</p>
+  <h2>Round ends, soft corners, nothing that can catch</h2>
+  <p>Shape theory: circles and rounded forms read as safe, gentle and approachable; straight runs read as dependable and practical. Interlock uses both, in fixed roles, and drops the sharp corner entirely.</p>
   <div class="grid g4 shape" style="margin-top:20px">
-    <div class="card"><svg viewBox="0 0 120 120"><rect x="22" y="30" width="76" height="60" rx="12" fill="#1C2321"/></svg><h3>Rounded rectangle</h3><span class="muted">Structure, stability, the guarded envelope. Panels, cards, buttons, the lock body. Sits flat on its longest side.</span></div>
-    <div class="card"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="30" fill="none" stroke="#1C2321" stroke-width="8"/><circle cx="60" cy="60" r="8" fill="#22B98E"/></svg><h3>Circle</h3><span class="muted">Joints, motion, live state. Status dots, joint markers in the 3D view, the lamp. A circle always means "this can move or change".</span></div>
-    <div class="card"><svg viewBox="0 0 120 120"><path d="M24 84V40h72v44" fill="none" stroke="#1C2321" stroke-width="10" stroke-linejoin="round"/><circle cx="24" cy="40" r="9" fill="#FBFBF9" stroke="#1C2321" stroke-width="5"/><circle cx="96" cy="40" r="9" fill="#FBFBF9" stroke="#1C2321" stroke-width="5"/></svg><h3>Orthogonal link</h3><span class="muted">Straight segments at 90°, rounded joins. Connectors, dividers, diagrams. Pragmatic, no flourish, no diagonals.</span></div>
-    <div class="card"><svg viewBox="0 0 120 120"><path d="M60 26 98 92H22Z" fill="#E8A317" stroke="#E8A317" stroke-width="8" stroke-linejoin="round"/><rect x="56" y="50" width="8" height="24" rx="3" fill="#1C2321"/><circle cx="60" cy="82" r="4.5" fill="#1C2321"/></svg><h3>Triangle</h3><span class="muted">Reserved for warnings, always with rounded corners and Caution fill. Never decorative, never in the logo.</span></div>
+    <div class="card"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="40" fill="#DCEDFB"/><circle cx="60" cy="60" r="10" fill="#8EC5F0"/></svg><h3>Circle · safety</h3><span class="muted">The halo, status dots, joints. A circle means a protected space or a live state.</span></div>
+    <div class="card"><svg viewBox="0 0 120 120"><path d="M34 86 L46 40 L84 32" fill="none" stroke="#2C6AA8" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg><h3>Capsule · motion</h3><span class="muted">Straight runs with round ends: arm links, pills, progress and load bars. Practical, but soft at every end.</span></div>
+    <div class="card"><svg viewBox="0 0 120 120"><rect x="22" y="32" width="76" height="56" rx="16" fill="#FFFFFF" stroke="#E3E8EE" stroke-width="2"/><rect x="32" y="44" width="40" height="6" rx="3" fill="#E3E8EE"/><rect x="32" y="56" width="56" height="6" rx="3" fill="#EEF2F6"/></svg><h3>Soft rectangle · order</h3><span class="muted">Cards and panels. Stable, flat on the ground, generous radius. The pragmatic shape.</span></div>
+    <div class="card"><svg viewBox="0 0 120 120"><path d="M60 28 96 90H24Z" fill="#F2B544" stroke="#F2B544" stroke-width="14" stroke-linejoin="round"/><rect x="56" y="50" width="8" height="22" rx="4" fill="#1F2A37"/><circle cx="60" cy="81" r="4.5" fill="#1F2A37"/></svg><h3>Triangle · warning only</h3><span class="muted">Deeply rounded, always in Caution. The one pointed idea in the system, kept for when attention is needed.</span></div>
   </div>
   <div class="grid g3" style="margin-top:16px">
-    <div class="card"><div style="display:flex;gap:14px;align-items:end"><div style="width:44px;height:44px;border:2px solid var(--ink);border-radius:4px"></div><div style="width:60px;height:60px;border:2px solid var(--ink);border-radius:8px"></div><div style="width:80px;height:80px;border:2px solid var(--ink);border-radius:14px"></div></div><h3 style="margin-top:14px">Radius 4 · 8 · 14</h3><span class="muted">Chips and inputs 4, buttons and cards 8, panels and icons 14. Nothing has a sharp corner, like the arm: no edge that can catch.</span></div>
-    <div class="card"><div style="display:flex;gap:4px;align-items:end;height:80px"><i style="width:4px;height:4px;background:var(--ink)"></i><i style="width:8px;height:8px;background:var(--ink)"></i><i style="width:12px;height:12px;background:var(--ink)"></i><i style="width:16px;height:16px;background:var(--ink)"></i><i style="width:24px;height:24px;background:var(--ink)"></i><i style="width:32px;height:32px;background:var(--ink)"></i><i style="width:48px;height:48px;background:var(--clear)"></i></div><h3 style="margin-top:14px">4-px grid</h3><span class="muted">Spacing steps 4, 8, 12, 16, 24, 32, 48. Same module as the logo grid.</span></div>
-    <div class="card"><div style="display:flex;gap:10px;align-items:center;height:80px"><span style="width:28px;height:28px;border-radius:50%;border:2px solid var(--rule)"></span><span style="font:12px var(--mono);color:var(--steel)">1 px Rule lines, 2 px focus rings in Clear. No drop shadows; depth comes from Fog vs Paper.</span></div><h3 style="margin-top:14px">Flat, hairline</h3><span class="muted">A light, flat surface keeps the camera feed and 3D arm as the brightest, most detailed things on screen.</span></div>
+    <div class="card"><div style="display:flex;gap:14px;align-items:end"><div style="width:44px;height:44px;border:2px solid var(--pebble);border-radius:6px"></div><div style="width:60px;height:60px;border:2px solid var(--pebble);border-radius:12px"></div><div style="width:80px;height:80px;border:2px solid var(--pebble);border-radius:20px"></div><div style="width:80px;height:36px;border:2px solid var(--sky);border-radius:999px"></div></div><h3 style="margin-top:14px">Radius 6 · 12 · 20 · pill</h3><span class="muted">Inputs 6, buttons and cards 12, panels and icons 20, toggles and statuses as pills.</span></div>
+    <div class="card"><div style="display:flex;gap:4px;align-items:end;height:80px"><i style="width:4px;height:4px;border-radius:2px;background:var(--pebble)"></i><i style="width:8px;height:8px;border-radius:3px;background:var(--pebble)"></i><i style="width:12px;height:12px;border-radius:4px;background:var(--pebble)"></i><i style="width:16px;height:16px;border-radius:5px;background:var(--pebble)"></i><i style="width:24px;height:24px;border-radius:7px;background:var(--pebble)"></i><i style="width:32px;height:32px;border-radius:9px;background:var(--pebble)"></i><i style="width:48px;height:48px;border-radius:12px;background:var(--sky)"></i></div><h3 style="margin-top:14px">4 px grid</h3><span class="muted">Spacing steps 4, 8, 12, 16, 24, 32, 48. Same module as the logo grid.</span></div>
+    <div class="card"><div style="display:flex;gap:12px;align-items:center;height:80px"><span style="width:40px;height:40px;border-radius:12px;background:var(--white);box-shadow:0 1px 2px rgba(31,42,55,.06),0 4px 12px rgba(31,42,55,.05);flex:none"></span><span style="font:12px var(--mono);color:var(--slate)">1 px Mist lines, one soft shadow for floating things, 3 px Halo focus ring.</span></div><h3 style="margin-top:14px">Airy, barely raised</h3><span class="muted">The camera feed and 3D arm stay the most detailed things on screen.</span></div>
   </div>
 </section>
 
@@ -345,24 +361,21 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--rule);font:12
   <h2>The Console, the Link, the log</h2>
   <div class="console" style="margin-top:20px">
     <div class="bar">
-      <svg width="28" height="28"><use href="#mark"/></svg>
+      <svg width="30" height="30"><use href="#mark"/></svg>
       <span class="word">interlock</span><span class="label">console</span>
       <span class="sp"></span>
-      <span class="pill">human</span>
-      <span class="pill on" style="background:var(--agent)"><i class="dot" style="background:#FBFBF9"></i>agent</span>
-      <span class="pill">leader</span>
-      <span class="pill">released</span>
+      <span class="seg"><span>human</span><span class="on">agent</span><span>leader</span><span>released</span></span>
       <button class="btn stop">STOP</button>
     </div>
     <div class="body">
       <div class="card">
         <div class="label" style="margin-bottom:10px">Joints · load</div>
-        <div class="joint"><span>shoulder_pan</span><div class="loadbar"><i style="width:18%;background:var(--clear)"></i></div><span>+4.1°</span></div>
-        <div class="joint"><span>shoulder_lift</span><div class="loadbar"><i style="width:42%;background:var(--clear)"></i></div><span>−38.0°</span></div>
+        <div class="joint"><span>shoulder_pan</span><div class="loadbar"><i style="width:18%;background:var(--sky)"></i></div><span>+4.1°</span></div>
+        <div class="joint"><span>shoulder_lift</span><div class="loadbar"><i style="width:42%;background:var(--sky)"></i></div><span>−38.0°</span></div>
         <div class="joint"><span>elbow_flex</span><div class="loadbar"><i style="width:71%;background:var(--caution)"></i></div><span>+61.5°</span></div>
-        <div class="joint"><span>wrist_flex</span><div class="loadbar"><i style="width:22%;background:var(--clear)"></i></div><span>+72.0°</span></div>
-        <div class="joint"><span>gripper</span><div class="loadbar"><i style="width:9%;background:var(--clear)"></i></div><span>55 %</span></div>
-        <div style="display:flex;gap:8px;margin-top:14px"><button class="btn primary">Resume</button><button class="btn">Pose: standby</button></div>
+        <div class="joint"><span>wrist_flex</span><div class="loadbar"><i style="width:22%;background:var(--sky)"></i></div><span>+72.0°</span></div>
+        <div class="joint"><span>gripper</span><div class="loadbar"><i style="width:9%;background:var(--sky)"></i></div><span>55 %</span></div>
+        <div style="display:flex;gap:8px;margin-top:14px"><button class="btn primary">Resume</button><button class="btn soft">Pose: standby</button></div>
       </div>
       <div class="card log">
         <div class="label" style="margin-bottom:10px">Motion log</div>
@@ -386,8 +399,8 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--rule);font:12
     <div>
       <h3>Voice</h3>
       <ul class="rules">
-        <li><b>Say what happened, then what to do.</b> "Froze on a load spike at the elbow. Look before retrying." Not "Oops, something went wrong."</li>
-        <li><b>Refused is calm.</b> A refusal means the guard worked and nothing moved. Grey, not red.</li>
+        <li><b>Say what happened, then what to do.</b> "Paused on a load spike at the elbow. Look before retrying." Not "Oops, something went wrong."</li>
+        <li><b>Refused is calm.</b> A refusal means the guard worked and nothing moved. Gray, not red.</li>
         <li><b>Units always.</b> Degrees, percent open, centimetres. Mono, tabular numbers.</li>
         <li><b>Name the holder.</b> Every message that moves the arm says who moved it.</li>
       </ul>
@@ -398,21 +411,21 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--rule);font:12
 <!-- RULES -->
 <section>
   <div class="eyebrow">07 · Rules</div>
-  <h2>Five rules that hold the brand together</h2>
+  <h2>Eight rules that hold the brand together</h2>
   <div class="grid g2" style="margin-top:16px">
-    <div class="do"><b>Do</b> keep Red for STOP and nothing else, in product, slides and stickers.</div>
-    <div class="no"><b>Don't</b> use red for errors, deletes or "important". Refused is grey, frozen is amber.</div>
-    <div class="do"><b>Do</b> let the camera feed and 3D arm be the most colourful thing on screen.</div>
-    <div class="no"><b>Don't</b> add gradients, glows or drop shadows. Depth is Fog under Paper.</div>
+    <div class="do"><b>Do</b> keep surfaces mostly white and Frost; let soft grays carry structure.</div>
+    <div class="no"><b>Don't</b> use red for errors, deletes or "important". Red is STOP; refused is gray, frozen is amber.</div>
+    <div class="do"><b>Do</b> use Sky for highlights and fills, Sky Deep for text and buttons.</div>
+    <div class="no"><b>Don't</b> use pure black, heavy shadows, gradients or glows.</div>
     <div class="do"><b>Do</b> put machine words in Mono: <code>shoulder_lift</code>, <code>:8800</code>, <code>held</code>.</div>
-    <div class="no"><b>Don't</b> draw sharp corners or diagonals in UI chrome; radius 4 · 8 · 14 only.</div>
+    <div class="no"><b>Don't</b> draw sharp corners. Radius 6 · 12 · 20 · pill only.</div>
     <div class="do"><b>Do</b> show the holder colour wherever the arm can be commanded.</div>
-    <div class="no"><b>Don't</b> animate the logo or make it look in motion. The lock is still.</div>
+    <div class="no"><b>Don't</b> put the arm outside its halo or recolour the mark.</div>
   </div>
 </section>
 
 <footer>
-  <span>Interlock · brand guide v1.0 · arm-daemon/brand/</span>
+  <span>Interlock · brand guide v2.0 · arm-daemon/brand/</span>
   <span>files: mark.svg · mark-reversed.svg · mark-mono.svg · lockup.svg · favicon.svg · tokens.css</span>
 </footer>
 

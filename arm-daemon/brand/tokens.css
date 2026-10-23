@@ -1,37 +1,41 @@
 /* Interlock brand tokens. One source for Console, docs and anything else that wears the brand. */
 :root {
-  /* neutrals — 60 % of every surface */
-  --il-fog: #F4F5F2;       /* page ground */
-  --il-paper: #FBFBF9;     /* cards, panels */
-  --il-rule: #E2E5E0;      /* hairlines, dividers */
-  --il-steel: #6E7671;     /* secondary text (4.5:1 on paper) */
-  --il-graphite: #1C2321;  /* ink, mark, primary text (15:1) */
+  /* whites and soft grays — most of every surface */
+  --il-white: #FFFFFF;     /* cards, panels */
+  --il-frost: #F6F8FB;     /* page ground */
+  --il-cloud: #EEF2F6;     /* quiet fills, tracks, hover */
+  --il-mist: #E3E8EE;      /* hairlines, dividers */
+  --il-pebble: #9AA5B1;    /* icons, disabled, non-text marks */
+  --il-slate: #5F6B7A;     /* secondary text (5.4:1 on white) */
+  --il-ink: #1F2A37;       /* primary text (14.5:1) */
 
-  /* brand accent — 10 %, means "clear / safe / go" */
-  --il-clear: #0B7A5E;       /* text + controls (5.1:1) */
-  --il-clear-lamp: #22B98E;  /* the lamp in the mark, live dots; never text */
-  --il-clear-tint: #E3F2EC;
+  /* brand blue */
+  --il-sky: #8EC5F0;        /* the brand colour: fills, highlights, the held point; never text */
+  --il-halo: #DCEDFB;       /* the halo, selected rows, focus glow */
+  --il-sky-tint: #EEF6FD;   /* soft backgrounds */
+  --il-sky-deep: #2C6AA8;   /* text, links, primary buttons, "ok" (5.6:1) */
 
-  /* safety states — ISO 3864 meaning, never decoration */
-  --il-caution: #E8A317;      /* fill only, graphite text on it (7.4:1) */
+  /* safety states — warm complements of the cool brand, only when the state calls for them */
+  --il-caution: #F2B544;      /* fill only, ink text on it (7.9:1) */
   --il-caution-ink: #9A6A00;  /* caution as text */
-  --il-caution-tint: #FBF1DC;
-  --il-stop: #C2321F;         /* STOP and only STOP; paper text on it (5.4:1) */
-  --il-stop-tint: #FBE9E6;
+  --il-caution-tint: #FDF4E1;
+  --il-stop: #C8432F;         /* STOP and only STOP; white text on it (4.9:1) */
+  --il-stop-tint: #FBEBE8;
 
   /* holders — who has the arm */
-  --il-holder-human: #1C2321;
-  --il-holder-agent: #3451C7;
-  --il-holder-leader: #7A4BB5;
-  --il-holder-released: #8A918C;
+  --il-holder-human: #1F2A37;
+  --il-holder-agent: #5257C9;
+  --il-holder-leader: #8457B8;
+  --il-holder-released: #9AA5B1;
 
   /* type */
-  --il-font-sans: "IBM Plex Sans", -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --il-font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --il-font-sans: "DM Sans", -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --il-font-mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  /* shape — one radius family, no sharp corners */
-  --il-radius-s: 4px;   /* chips, inputs */
-  --il-radius-m: 8px;   /* buttons, cards */
-  --il-radius-l: 14px;  /* panels, app icon */
-  --il-unit: 4px;       /* spacing grid */
+  /* shape — soft, generous radii; no sharp corners */
+  --il-radius-s: 6px;    /* chips, inputs */
+  --il-radius-m: 12px;   /* buttons, cards */
+  --il-radius-l: 20px;   /* panels, app icon */
+  --il-radius-pill: 999px;
+  --il-unit: 4px;        /* spacing grid */
 }
