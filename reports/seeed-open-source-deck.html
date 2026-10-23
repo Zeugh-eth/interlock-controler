@@ -280,7 +280,36 @@ body.idle #help,body.idle #count{opacity:0}
   <div class="foot"><span>Source: reports/guardrail-loop/. The AI used only Interlock Link (MCP).</span><span>The table check also stops moves that end within 1.5 cm of it.</span></div>
 </section>
 
-<!-- 9 MEME: BRAIN -->
+<!-- 9 LIVE EVENTS -->
+<section class="slide" data-notes="These four events were not planned. They happened during the test rounds. A person took over with the leader arm. Another AI program moved the arm. The elbow lagged while lifting a new box. And we stopped Core in the middle of a spin to install an update. Each time the arm stayed safe, and each event is in the log.">
+  <div class="eyebrow">Not planned · real events during the test rounds, 23 October</div>
+  <h2 style="margin-bottom:20px">Four things nobody planned. <span class="hl">Interlock handled each one.</span></h2>
+  <div class="grow" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-content:center">
+      <div class="card" style="display:flex;flex-direction:column;gap:10px;padding:18px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span class="eyebrow">11:02 · round 37</span><span class="pill" style="background:var(--il-ink);color:#fff">person</span></div>
+        <p style="font-size:18px;line-height:1.35;font-weight:600">A person took control with the leader arm, just before the AI closed the gripper.</p>
+        <p class="lbl" style="margin:0;font-size:16px">Interlock refused the AI's moves. The AI did not close the gripper and waited for control to come back.</p>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;gap:10px;padding:18px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span class="eyebrow">11:13 · round 37</span><span class="pill p-caution">stopped</span></div>
+        <p style="font-size:18px;line-height:1.35;font-weight:600">Another AI program started moving the arm while our AI had control.</p>
+        <p class="lbl" style="margin:0;font-size:16px">Our AI saw moves it did not send, stopped, and reported it. The same day we added rules for a second AI (slide 12).</p>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;gap:10px;padding:18px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span class="eyebrow">12:00 · round 50</span><span class="pill p-caution">frozen</span></div>
+        <p style="font-size:18px;line-height:1.35;font-weight:600">While lifting a new box, the elbow fell 6° behind its target.</p>
+        <p class="lbl" style="margin:0;font-size:16px">Interlock froze the arm in place. The box stayed in the gripper. The AI skipped the next shake step, as its rules say.</p>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;gap:10px;padding:18px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span class="eyebrow">12:18 · round 55</span><span class="pill p-ok">held</span></div>
+        <p style="font-size:18px;line-height:1.35;font-weight:600">We stopped Interlock Core in the middle of a spin to install an update.</p>
+        <p class="lbl" style="margin:0;font-size:16px">The motors stayed on. The arm kept holding the box, 26 cm above the table.</p>
+      </div>
+  </div>
+  <div class="foot"><span>Source: reports/guardrail-loop/session-2026-10-23.jsonl and arm-daemon/logs/20261023.jsonl</span><span></span></div>
+</section>
+
+<!-- 10 MEME: BRAIN -->
 <section class="slide white" data-notes="Read the last panel out loud. A person decides when the AI gets control. Anyone can stop it. Only a person can start it again. Interlock enforces exactly this.">
   <div class="eyebrow">05 · Safety rules</div>
   <div class="row grow" style="gap:48px;align-items:center;margin-top:12px">
@@ -297,7 +326,7 @@ body.idle #help,body.idle #count{opacity:0}
   </div>
 </section>
 
-<!-- 10 MCP OUTCOMES -->
+<!-- 11 MCP OUTCOMES -->
 <section class="slide" data-notes="Every answer to the AI is one short word plus what to do next. The example from test round 4 shows it working: the tool refused to close the gripper on nothing.">
   <div class="eyebrow">02 · Interlock Link · for AI models</div>
   <h2>When the AI makes a mistake, it gets a clear answer.</h2>
@@ -319,7 +348,34 @@ body.idle #help,body.idle #count{opacity:0}
   <div class="foot"><span>Source: arm-daemon/mcp_server.py and the driving-the-arm skill</span><span></span></div>
 </section>
 
-<!-- 11 COCKPIT -->
+<!-- 12 REMOTE AI -->
+<section class="slide" data-notes="New today: an AI on another computer can control the arm too, for example Hermes on a Raspberry Pi. It connects over the network with a secret token. The AI on this computer goes first: for 20 seconds after it asks to move, the remote AI waits. If the local AI needs the arm, it stops a remote move at once. A person can block the remote AI from the Console, and can still press STOP or take control from both. This is in the code and its tests; we have not run it on the arm yet.">
+  <div class="eyebrow">02 · Interlock Link · AI on another computer</div>
+  <h2 style="margin-bottom:18px">An AI on another computer can drive the arm too. <span class="hl">The AI on this computer goes first.</span></h2>
+  <div class="row grow" style="gap:36px;align-items:center">
+    <div style="width:420px;flex:none;display:flex;flex-direction:column;align-items:stretch">
+      <div class="row" style="gap:12px">
+        <div class="box" style="flex:1;border-color:var(--il-agent)"><b style="color:var(--il-agent)">Local AI</b><span>on this computer, for example Claude</span><span class="m">mcp_server.py</span></div>
+        <div class="box" style="flex:1;border:1.5px dashed var(--il-agent)"><b style="color:var(--il-agent)">Remote AI</b><span>on another computer, for example Hermes on a Raspberry Pi</span><span class="m">--http · port 8811 · token</span></div>
+      </div>
+      <div class="arrow">↓ BOTH USE INTERLOCK LINK ↓</div>
+      <div class="box core"><b>Interlock Core</b><span>decides which AI may move, and checks every move</span></div>
+      <div class="arrow">↑ STOP AND CONTROL ↑</div>
+      <div class="box"><b>A person, in the Console</b><span>sees both AIs, can block the remote one, can always press STOP</span></div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;gap:12px;align-items:baseline"><span style="flex:none;width:210px;text-align:right"><span class="pill p-refused">no token</span></span><span style="font-size:17px;line-height:1.4">The remote AI needs a secret token. Without it, Link does not accept the connection.</span></div>
+<div style="display:flex;gap:12px;align-items:baseline"><span style="flex:none;width:210px;text-align:right"><span class="pill p-refused">local agent has control</span></span><span style="font-size:17px;line-height:1.4">For 20 seconds after the local AI asks to move, the remote AI waits.</span></div>
+<div style="display:flex;gap:12px;align-items:baseline"><span style="flex:none;width:210px;text-align:right"><span class="pill p-caution">frozen</span></span><span style="font-size:17px;line-height:1.4">If the local AI needs the arm, it stops a remote move at once.</span></div>
+<div style="display:flex;gap:12px;align-items:baseline"><span style="flex:none;width:210px;text-align:right"><span class="pill p-refused">remote agent blocked</span></span><span style="font-size:17px;line-height:1.4">A person can block the remote AI from the Console with one button.</span></div>
+<div style="display:flex;gap:12px;align-items:baseline"><span style="flex:none;width:210px;text-align:right"><span class="pill p-ok">person · local · remote</span></span><span style="font-size:17px;line-height:1.4">Every result in the log says who asked for the move.</span></div>
+      <p style="margin:6px 0 0 222px"><span class="pill p-next" style="margin:0">new today: in the code and its tests, not yet run on the arm</span></p>
+    </div>
+  </div>
+  <div class="foot"><span>Source: arm-daemon/API.md, control model item 8 · commits 6e214f2 and f5a8609</span><span></span></div>
+</section>
+
+<!-- 13 COCKPIT -->
 <section class="slide" style="padding:44px 56px" data-notes="This is the real Console, recorded while the AI ran a test round by itself. Watch the result log fill with each move. Left: the 3D model. Middle: the gripper camera. Right: control, poses and STOP.">
   <div class="eyebrow">03 · Interlock Console · for people</div>
   <h2 style="font-size:40px;margin:10px 0 18px">Everything about the arm on one screen</h2>
@@ -335,7 +391,7 @@ body.idle #help,body.idle #count{opacity:0}
   </div>
 </section>
 
-<!-- 12 MEME: VISION -->
+<!-- 14 MEME: VISION -->
 <section class="slide" data-notes="Left: a real frame from the gripper camera, with a grid in centimetres and the carton with its measured size. Right: the 3D model in the Console. Each label shows one servo's angle, load and temperature. A person and the AI read the same data.">
   <div class="eyebrow">03 · Interlock Console · camera and servos</div>
   <h2 style="margin-bottom:18px">A person and the AI see the same camera view and the same servo data.</h2>
@@ -357,7 +413,7 @@ body.idle #help,body.idle #count{opacity:0}
   </div>
 </section>
 
-<!-- 13 MEME: HEAT -->
+<!-- 15 MEME: HEAT -->
 <section class="slide" data-notes="The Console showed the elbow servo at 71 degrees, just above the limit. We stopped the arm and let it rest. When we checked again it was 36 degrees, so it was safe to keep working. Live temperature on every servo is what let us see this and act on it.">
   <div class="eyebrow">04 · Servo temperature</div>
   <h2>The elbow servo reached 71 °C. We let it rest, checked again, and it was back to 36 °C.</h2>
@@ -376,7 +432,7 @@ body.idle #help,body.idle #count{opacity:0}
   <div class="foot"><span>Now every servo's temperature updates every 2.5 s and is logged every 10 s.</span><span>Source: servo health report</span></div>
 </section>
 
-<!-- 14 HEAT DATA -->
+<!-- 16 HEAT DATA -->
 <section class="slide" data-notes="Almost four hours of real temperature data. The shoulder servo holds the arm up, so it carries about three times the load of the others and runs warmest. After a break it was 33 degrees. When the AI started again it reached 39 degrees in 16 minutes, then stayed between 38 and 41 for the rest of the morning. Its highest single reading, 42 degrees, is still 28 degrees below the limit.">
   <div class="eyebrow">Test data · almost 4 hours of temperature logs</div>
   <h2 style="margin-bottom:20px">The shoulder servo holds the arm up and runs warmest. <span class="hl">During steady AI work it stays between 38 and 41 °C.</span></h2>
@@ -406,7 +462,7 @@ body.idle #help,body.idle #count{opacity:0}
   </div>
 </section>
 
-<!-- 15 ERRORS CAUGHT -->
+<!-- 17 ERRORS CAUGHT -->
 <section class="slide" data-notes="This is the most important slide. Each problem we found in testing now has a check, and each check is visible somewhere: in the log, in the AI's reply, or on the Console.">
   <div class="eyebrow">Summary · problems, checks and where you see them</div>
   <h2 style="margin-bottom:16px">Every problem we found now has a check, <span class="hl">and you can see it working.</span></h2>
@@ -426,7 +482,7 @@ body.idle #help,body.idle #count{opacity:0}
   <div class="foot"><span>Every row works in Interlock today. The last row is new: it is in the code and its tests, not yet run on the arm.</span><span></span></div>
 </section>
 
-<!-- 16 BENCHMARK -->
+<!-- 18 BENCHMARK -->
 <section class="slide" data-notes="How Interlock fits with what exists. LeRobot and LeLab record data and train models. Interlock runs the arm safely while a model or an AI agent controls it. They work together. Running a LeLab-trained model through Interlock is the next step; it is not built yet.">
   <div class="eyebrow">Comparison · open tools for the SO&#8209;ARM101</div>
   <h2>LeLab trains the model. <span class="hl">Interlock runs it safely.</span></h2>
@@ -446,7 +502,7 @@ body.idle #help,body.idle #count{opacity:0}
   <div class="foot"><span>LeLab at commit 9b5afae (huggingface/leLab), read 23 Oct · LeRobot v0.6</span><span></span></div>
 </section>
 
-<!-- 17 GIVE BACK -->
+<!-- 19 GIVE BACK -->
 <section class="slide" data-notes="This is what we will give to the community. Each piece helps a new owner on the first day.">
   <div class="eyebrow">What we will share</div>
   <h2>What every new SO&#8209;ARM101 owner gets</h2>
@@ -460,7 +516,7 @@ body.idle #help,body.idle #count{opacity:0}
   </div>
 </section>
 
-<!-- 18 CLOSE -->
+<!-- 20 CLOSE -->
 <section class="slide deep nomark" data-notes="Close, then go to the arm. Live demo: the AI picks up the carton, we press STOP during the move, and we show that the AI cannot restart it.">
   <div class="grow" style="display:flex;flex-direction:column;justify-content:center">
     <div style="display:flex;align-items:center;gap:14px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="52" height="52" role="img" aria-label="Interlock">
