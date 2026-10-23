@@ -85,3 +85,67 @@ Cycle 29 picked the carton where it stood after the restart, about (19.5, 5.5). 
 fixed drop spot and find pose, as in run 2.
 
 **Totals so far: 33 cycles, 33 picks held, 33 blocked moves refused.**
+
+## Run 4: cycles 34-55, with spins and shakes (22 cycles)
+
+From cycle 35 the user asked for tricks while holding: spin the wrist roll to +170°, then −170°, then 0
+(speed 40), then shake the shoulder pan −30° / +19° twice and back to −5.5° (speed 45, ±25° around
+centre) at ~25 cm. From cycle 38, every decision used an **observe pair**: wait 0.6 s, `observe()`,
+wait 0.4 s, `observe()`, and act only when both frames agree. A single frame can be about 0.5 s old
+even when it reports `stale: false`.
+
+**Result: 21 cycles completed (34-54), each on one close; 21/21 blocked moves refused with nothing
+moved.** Cycle 55 was stopped by the user mid-spin. The full shake ran in 18 cycles. Max servo
+temperature 42 °C; wrist roll reached 47 °C only while the leader arm held it at its joint limits.
+
+| Cycles | Object | Notes |
+|---|---|---|
+| 34-36 | Pi 5 carton | 34 before tricks; 35 ±90° spin (one lag freeze at shake speed 60 → use 45); 36 one shake stroke denied by the permission classifier, then an allow rule was added |
+| 37 | carton | aborted twice (leader took control; another agent client drove the arm), one empty close; succeeded on retry 3 with wrist roll −7° matched to the carton's twist |
+| 38-45 | carton | 38-39 `grasp()` said **empty** at 2.9-3.0 % although held (a 3 cm lift + observe pair showed it riding with the jaws); 43-44 a phone lay on the mat 10 cm away, clear of every path; 45 shake **skipped**: the carton's end flap had sprung open |
+| 46 | new white box | first try **aborted**: lying flat it is ~1 cm tall, below the 1.5 cm table guard; `grasp()` said held but it stayed on the table; `descend_to_contact` found no top above 1.1 cm. The user stood it on its narrow edge (≈3.6 cm wide × 4 cm tall); retry held at 19.9 % |
+| 47-54 | white box | 47-48 shake **delayed** 8-10 s until a person leaning over the table sat back; 50 the raise **froze** (lag 6° on the elbow, peak load 296) and the spin, already batched, ran anyway at 17 cm; shake skipped. From 51 the raise runs alone at speed 25 (peak 216-240) and its result is checked before any trick |
+| 55 | white box | held and spun; stopped by the user before the shake |
+
+| Cycle | Blocked call | Refusal |
+|---|---|---|
+| 34 | `goto_xyz(0.22,0,0)` | path within -0.0 cm of table |
+| 35 | `goto_xyz(0.42,0.20,0.08)` | unreachable top-down |
+| 36 | `move_tool(dz=-0.08)` | path within -2.9 cm of table |
+| 37 | `goto_xyz(-0.12,-0.10,0.09)` | unreachable top-down |
+| 38 | `goto_xyz(0.14,0.02,-0.03)` | path within -3.0 cm of table |
+| 39 | `move_tool(0.06,-0.06,-0.06)` | path within -0.9 cm of table |
+| 40 | `set_servo("base",30)` | unknown servo base |
+| 41 | `goto_xyz(-0.05,0.42,0.08)` | unreachable top-down (err 19 mm) |
+| 42 | `move_tool(dz=-0.04)` | path within 1.3 cm of table |
+| 43 | `goto_xyz(0.26,-0.06,0)` | path within -0.0 cm of table |
+| 44 | `goto_xyz(0.60,-0.10,0.05)` | unreachable top-down (err 134 mm) |
+| 45 | `move_tool(dz=-0.05)` | path within 0.1 cm of table |
+| 46 | `move_tool(0.06,-0.06,-0.06)` | path within -0.9 cm of table |
+| 47 | `goto_xyz(0.20,0.12,-0.06)` | path within -6.0 cm of table |
+| 48 | `move_tool(0.09,0.03,-0.08)` | path within -2.9 cm of table |
+| 49 | `set_servo("joint7",20)` | unknown servo joint7 |
+| 50 | `goto_xyz(0.02,-0.50,0.10)` | unreachable top-down (err 63 mm) |
+| 51 | `goto_xyz(0.20,-0.03,0.012)` | path within 1.2 cm of table |
+| 52 | `goto_xyz(0.15,0.12,0)` | path within -0.0 cm of table |
+| 53 | `goto_xyz(0.38,-0.25,0.06)` | unreachable top-down (err 18 mm) |
+| 54 | `move_tool(dz=-0.09)` | path within -3.8 cm of table |
+
+**White-box recipe (cycles 47-54, pan ≈ −24°):** find at the last grasp point + 7 cm up, open 60 %,
+`move_tool(dz=-0.02)`, observe pair, shift the tool *radially* (along the arm, not base x) until the box's
+left wall sits 40-50 px right of the fixed jaw tip, descend 1.5 then 1.3 cm, observe pair, `grasp(lift_cm=3)`
+at tool z ≈ 2.2 cm (jaws stop at ~19 %). Place 0.5 cm radially further out than the grasp point;
+without that the box crept ~0.5 cm toward the base each cycle.
+
+**Lessons**
+- `grasp()` can be wrong both ways (false empty at 2.9 %, false held on a box that slipped). Confirm with
+  a lift and an observe pair: held means the object stays put in the frame while the table recedes.
+- Off-centre pan rotates the image axes with the arm: corrections are radial / tangential, not base x/y.
+- Check people in the frames before each shake; wait rather than swing near a hand or a leaning body.
+- Send a raise alone and read its outcome; a batched follow-up runs even after a `frozen`.
+- Auto demo cards label the white-box cycles `no_close` (19 % jaws looks open to the phase detector);
+  the `reported_outcome` and notes are the true label.
+
+Demos `20261023-105008` … `20261023-121643` in the main checkout's `arm-daemon/demos/`.
+
+**Totals: 55 cycle numbers, 54 completed (each on one close; extra misses only in 37 and 46 before their retries), 54/54 blocked moves refused.**

@@ -80,6 +80,10 @@ without the object getting closer to the band → stop and report what you saw.
   is out of frame when the opening is 46 % or more.
 - Raw axes: image-left = toward the base, image-top = world left. Object left of the band →
   `move_tool(dx<0)` (tool toward the base). Object above the jaw row → `move_tool(dy>0)` (tool left).
+  These hold near pan 0. The camera turns with the pan, so off-centre (e.g. pan −25°) image-left is
+  *radially* toward the base: split the correction along the arm's direction, not base x/y.
+- **Frames lag ~0.5 s even when `stale: false`.** Decide from an observe pair: wait 0.6 s,
+  `observe()`, wait 0.4 s, `observe()`; act only when both frames agree.
 - Open the jaws (55 % for a 3 cm side, `open_pct` in `align_to`) BEFORE sliding sideways or descending.
 - Keep tool z at or below 9 cm when x is under 18 cm: nearer the base a higher top-down pose is
   unreachable. 8 cm works everywhere the arm works.
@@ -88,7 +92,14 @@ without the object getting closer to the band → stop and report what you saw.
 - The detector often misses small objects above 6 cm. No detection is not evidence of absence; your
   eyes on the raw frame are evidence.
 - The jaw percent alone cannot tell a thin hold (1.5 %) from a miss (1 %): `grasp(label)` checks
-  with vision after the lift when the detector can see the object.
+  with vision after the lift when the detector can see the object. When it cannot, the verdict can
+  be wrong both ways (23 Oct: "empty" at 2.9 % on a held carton; "held" on a box that slid out, the
+  opening shrinking during the lift). Confirm with a 3 cm lift and an observe pair: held means the
+  object stays put in the frame while the table recedes.
+- The table guard keeps the tool at ≥1.5 cm, so an object needs to stand clearly taller than that to
+  be gripped from above. A box lying flat (~1 cm) can't be; ask the user to stand it on edge.
+- Send any big move (a raise, a carry) alone and read its outcome before the next call: calls
+  batched after it still run even when it comes back `frozen`. Carrying a load, raise at speed ≤25.
 - Descend in 1.5 cm steps and look between steps: parallax moves the picture as you get low.
 - Postures: compact/standby = `crouch-tight`, home = `ready`, `straight`, sleep/rest = `rest`
   (torque off), `look-down`. Other shapes: the arm-posture skill explains the words; its scripts open
