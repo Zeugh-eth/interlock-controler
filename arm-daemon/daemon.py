@@ -1,6 +1,7 @@
 """arm-daemon entry point: the single owner of the SO-101 serial bus, serving the API on
 127.0.0.1:8800. Start it from Terminal via start.command. Never from a Claude shell or a watchdog."""
 import argparse
+import os
 import secrets
 import signal
 import subprocess
@@ -14,8 +15,8 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 sys.path.append(str(ROOT / "scripts"))
 
-PORT_DEV = "/dev/cu.usbmodem5B790812561"
-LEADER_DEV = "/dev/cu.usbmodem5B901010331"
+PORT_DEV = os.environ.get("ARM_FOLLOWER_PORT", "/dev/cu.usbmodem5B790812561")
+LEADER_DEV = os.environ.get("ARM_LEADER_PORT", "/dev/cu.usbmodem5B901010331")
 DEMO_DIR = HERE / "demos"
 KEY_FILE = HERE / "human.key"
 STOP_FILE = ROOT / "arm-agent/STOP"

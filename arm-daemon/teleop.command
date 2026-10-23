@@ -5,8 +5,8 @@
 HERE="$(cd "$(dirname "$0")" && pwd)"
 URL=${ARM_URL:-http://127.0.0.1:8800}
 KEY=$(cat "$HERE/human.key" 2>/dev/null)
-FOLLOWER=/dev/cu.usbmodem5B790812561
-LEADER=/dev/cu.usbmodem5B901010331
+FOLLOWER=${ARM_FOLLOWER_PORT:-/dev/cu.usbmodem5B790812561}
+LEADER=${ARM_LEADER_PORT:-/dev/cu.usbmodem5B901010331}
 c() { curl -s --noproxy '*' -m 5 "$@"; }
 if c "$URL/health" >/dev/null; then
   echo "arm-daemon: releasing the bus (holder=released) for LeRobot teleop"

@@ -12,7 +12,7 @@ asks before torque-off. Needs scripts/cam-server.command running.
 
 Usage (from tools/arm-lerobot): uv run python ../../scripts/grasp.py look
 """
-import json, math, sys, threading, time
+import json, math, os, sys, threading, time
 from pathlib import Path
 import cv2
 import numpy as np
@@ -22,7 +22,7 @@ from lerobot.motors.feetech import FeetechMotorsBus
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import kin, vision
 
-PORT = "/dev/cu.usbmodem5B790812561"
+PORT = os.environ.get("ARM_FOLLOWER_PORT", "/dev/cu.usbmodem5B790812561")
 OUT = Path(__file__).resolve().parents[1] / "lab/arm-vision"
 TEACH = OUT / "teach.json"
 HOVER_R, HOVER_Z = 0.20, 0.08      # m, tool point (between jaw tips) in base frame

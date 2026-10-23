@@ -17,6 +17,8 @@ SIGN = {j: 1.0 for j in CHAIN}
 # Every joint turns the URDF way. Verified from the MacBook side view (study2): shoulder_lift +
 # tilts forward, elbow_flex + lowers the forearm, wrist_flex + lowers the gripper.
 CAL_PATH = Path.home() / ".cache/huggingface/lerobot/calibration/robots/so_follower/hackaiwoo_follower.json"
+if not CAL_PATH.exists():   # fresh clone: the copy shipped in the repo (recalibrate for your own arm)
+    CAL_PATH = Path(__file__).resolve().parents[1] / "lab/calibration/hackaiwoo_follower.json"
 
 
 def _offsets():

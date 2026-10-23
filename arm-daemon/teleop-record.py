@@ -7,13 +7,14 @@ row per tick in recordings/<stamp>-teleop/frames.jsonl:
 without it reuse the previous image, as tools/smolvla/convert_runs.py already expects.
 Usage: uv run python teleop-record.py "<task text>" [--fps 30] [--max-step 15] [--episode-s 0]
 Ctrl-C stops (follower torque is released like plain teleop: rest the arm first)."""
-import argparse, json, signal, sys, time, urllib.request
+import argparse, json, os, signal, sys, time, urllib.request
 from pathlib import Path
 
 from lerobot.robots.so_follower import SO101Follower, SO101FollowerConfig
 from lerobot.teleoperators.so_leader import SO101Leader, SO101LeaderConfig
 
-FOLLOWER, LEADER = "/dev/cu.usbmodem5B790812561", "/dev/cu.usbmodem5B901010331"
+FOLLOWER = os.environ.get("ARM_FOLLOWER_PORT", "/dev/cu.usbmodem5B790812561")
+LEADER = os.environ.get("ARM_LEADER_PORT", "/dev/cu.usbmodem5B901010331")
 CAM = "http://127.0.0.1:8765/gripper/frame.jpg"
 
 ap = argparse.ArgumentParser()
