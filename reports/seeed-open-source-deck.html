@@ -340,7 +340,29 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
   <div class="foot"><span>source: reports/robot-ai-practices/run-analysis.html · arm-daemon/demos</span><span></span></div>
 </section>
 
-<!-- 14 GIVE BACK -->
+<!-- 14 BENCHMARK -->
+<section class="slide" data-notes="Where we sit next to what exists. LeRobot and LeLab are how you prepare a model: teach, record, train. We are what runs the work once an AI operates the arm, with a human one click from STOP. Not rivals: prepare in LeLab, operate in the daemon. The bridge, a trained policy running as a daemon client, is next, not built.">
+  <div class="eyebrow">Benchmark · existing open options</div>
+  <h2>LeLab prepares the model. <span class="hl">We run the work.</span></h2>
+  <div class="grow" style="display:flex;flex-direction:column;justify-content:center">
+    <table style="border-collapse:collapse;width:100%;font-size:21px">
+      <tr style="font:700 13px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);text-align:left">
+        <th style="padding:10px 12px;border-bottom:2px solid var(--ink)"></th>
+        <th style="padding:10px 12px;border-bottom:2px solid var(--ink)">LeRobot CLI</th>
+        <th style="padding:10px 12px;border-bottom:2px solid var(--ink)">LeLab web UI</th>
+        <th style="padding:10px 12px;border-bottom:2px solid var(--hot);color:var(--hot)">arm-daemon</th></tr>
+      <tr><td style="padding:11px 12px;border-bottom:1px solid var(--line)">Teach by hand + record</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✅</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✅</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✅</td></tr>
+      <tr><td style="padding:11px 12px;border-bottom:1px solid var(--line)">Train a policy</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✅</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✅</td><td style="padding:11px 12px;border-bottom:1px solid var(--line);color:var(--ink2)">— not our job</td></tr>
+      <tr><td style="padding:11px 12px;border-bottom:1px solid var(--line)">Any AI model drives it live (MCP)</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✗</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✗</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✅</td></tr>
+      <tr><td style="padding:11px 12px;border-bottom:1px solid var(--line)">STOP + human takes the arm back</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✗ Ctrl-C</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✗ no e-stop</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✅</td></tr>
+      <tr><td style="padding:11px 12px;border-bottom:1px solid var(--line)">Table, contact + load guards</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✗</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✗</td><td style="padding:11px 12px;border-bottom:1px solid var(--line)">✅</td></tr>
+    </table>
+    <p class="sub" style="font-size:20px;margin-top:22px">Not rivals: <b style="color:var(--ink)">prepare in LeLab, operate in the daemon.</b> Next: a LeLab-trained policy runs as one more daemon client, under the same guards. <span class="pill warn">not built yet</span></p>
+  </div>
+  <div class="foot"><span>LeLab @ 9b5afae (huggingface/leLab), read 23 Oct · LeRobot v0.6</span><span></span></div>
+</section>
+
+<!-- 15 GIVE BACK -->
 <section class="slide" data-notes="What lands upstream. Everything a person who just unboxed an SO-101 would want on day one.">
   <div class="eyebrow">What we give back</div>
   <h2>Day one for every new SO-101 owner</h2>
@@ -354,7 +376,7 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
   </div>
 </section>
 
-<!-- 15 ASK -->
+<!-- 16 ASK -->
 <section class="slide hot" data-notes="A home, servo facts, a reviewer. Then: we'd rather this be yours than ours.">
   <div class="eyebrow">The ask</div>
   <h2 style="font-size:64px;color:#1b0b05">Three things from Seeed</h2>
@@ -366,7 +388,7 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
   <p style="font:600 19px system-ui;color:#3a0d03">In return: an open licence, tests that run without hardware, a maintainer for the first six months.</p>
 </section>
 
-<!-- 16 CLOSE -->
+<!-- 17 CLOSE -->
 <section class="slide dark" data-notes="Close, then walk to the arm. Live: ask the AI to grab the carton, hit STOP mid-move, show it freeze and that the AI can't resume.">
   <div class="grow" style="display:flex;flex-direction:column;justify-content:center">
     <div class="eyebrow">HackAIWoo</div>
