@@ -1,0 +1,653 @@
+# Fair Profit License (FPL) v2.0
+## WORKING DRAFT - No Sunset, Deep Funding as Path
+
+**Last Updated:** 2026-03-13  
+**Status:** Draft for review  
+**Changes from v1:** Removed sunset clause, added Deep Funding as commercial path
+
+---
+
+## PREAMBLE
+
+**Philosophy:**
+This license embodies the principle that software built on public infrastructure should contribute back when generating private profit. It offers THREE paths for commercial use: radical transparency, traditional licensing, or funding the commons through deep funding.
+
+**Goals:**
+1. Enable free use for public good, research, and non-commercial purposes
+2. Require commercial entities to choose: transparency, payment, or ecosystem funding
+3. Never sunset - maintain incentive alignment indefinitely
+4. Fund entire dependency stack when companies choose that path
+
+---
+
+## SECTION 1: DEFINITIONS
+
+**1.1 "Software"**  
+The work of authorship made available under this License, including all source code, documentation, configuration files, and associated materials.
+
+**1.2 "Licensor"**  
+The copyright holder(s) granting rights under this License.
+
+**1.3 "You" (or "Your")**  
+An individual or Legal Entity exercising rights under this License.
+
+**1.4 "Non-Commercial Use"**  
+Use of the Software that does not generate revenue or reduce costs for a commercial entity. Non-Commercial Use includes:
+- Personal projects and learning
+- Academic research and education
+- Open source projects with no revenue model
+- Non-profit organizations (registered 501(c)(3) or equivalent)
+- Government entities and public institutions
+
+**1.5 "Commercial Use"**  
+Any use of the Software that generates revenue or reduces operational costs for a for-profit entity. Commercial Use includes but is not limited to:
+- Software-as-a-Service (SaaS) offerings
+- Integration into commercial products
+- Internal business tools that reduce labor costs
+- Consulting services utilizing the Software
+- Revenue-generating open source projects
+
+**1.6 "Attributable Revenue"**  
+Revenue reasonably traceable to the use of this Software. Methods for determination:
+- **Direct:** Revenue from products explicitly using the Software
+- **Indirect:** Proportional revenue from services enabled by the Software
+- **Baseline:** If uncertain, use 10% of gross annual revenue as safe harbor
+
+**1.7 "Dependency"**  
+Any software library, package, service, or infrastructure that this Software requires or recommends for operation. Includes:
+- **Direct Dependencies:** Listed in package.json, requirements.txt, or equivalent
+- **Transitive Dependencies:** Dependencies of direct dependencies (up to 3 levels)
+- **Infrastructure Dependencies:** RPC providers, IPFS nodes, blockchain networks, APIs
+- **Ecosystem Dependencies:** Protocol development (e.g., Ethereum Foundation, ENS)
+- **Public Goods:** Open source infrastructure benefiting the ecosystem
+
+**1.8 "Full Transparency"**  
+The complete disclosure requirement under Path A, including:
+- Open source code (all derivatives under OSI-approved license)
+- Published financial statements (revenue, costs, attributable profit)
+- Annual transparency report submitted to Licensor
+
+**1.9 "Deep Funding Pool"**  
+The aggregate fees collected under Path C, distributed exclusively to Dependencies, Contributors, and public goods (zero allocation to Licensor).
+
+---
+
+## SECTION 2: GRANT OF RIGHTS
+
+**2.1 Non-Commercial Grant**
+
+Subject to the terms of this License, Licensor grants You a worldwide, royalty-free, non-exclusive, **perpetual** license to:
+- Use, copy, modify, and distribute the Software
+- Create and distribute Derivative Works
+- Sublicense to other Non-Commercial users
+
+This grant is irrevocable as long as use remains Non-Commercial.
+
+**2.2 Commercial Use Requirement**
+
+Commercial Use is permitted ONLY IF You comply with ONE of:
+- **Path A:** Full Transparency (Section 3.1)
+- **Path B:** Traditional Commercial License (Section 3.2)
+- **Path C:** Deep Funding Path (Section 3.3)
+
+---
+
+## SECTION 3: COMMERCIAL USE PATHS
+
+You must choose ONE path if engaging in Commercial Use:
+
+---
+
+### PATH A: Full Transparency (Zero Cost)
+
+**Purpose:** Radical openness in exchange for free use
+
+**3.1.1 Open Source Requirement**
+
+ALL software that uses, integrates with, or derives from this Software MUST be released under an OSI-approved open source license (recommended: Apache 2.0, MIT, or GPL v3).
+
+This includes:
+- The Software itself (including modifications)
+- Any proprietary software that imports or links to the Software
+- Internal tools and scripts that utilize the Software
+- Configuration and deployment code
+
+**Exception:** Standard business software unrelated to the Software's function (e.g., accounting software, HR systems) is excluded.
+
+**3.1.2 Financial Disclosure Requirement**
+
+You must publish annual financial statements including:
+
+**Required Disclosures:**
+- Gross revenue (total)
+- Attributable revenue (revenue enabled by this Software)
+- Operating costs (breakdown by category)
+- Net profit/loss
+- Cost savings attributable to the Software (if used internally)
+
+**Format:**
+- Machine-readable (JSON, CSV, or standardized format)
+- Published within 90 days of fiscal year end
+- Hosted at a stable public URL
+- Archived for minimum 7 years
+
+**Example:**
+```json
+{
+  "company": "Example Corp",
+  "fiscal_year": 2026,
+  "currency": "USD",
+  "gross_revenue": 5000000,
+  "attributable_revenue": 500000,
+  "operating_costs": {
+    "engineering": 200000,
+    "infrastructure": 50000,
+    "other": 100000
+  },
+  "net_profit": 150000,
+  "software_name": "Clawban",
+  "software_version": "1.2.0",
+  "usage_description": "Task management for our AI agent fleet"
+}
+```
+
+**3.1.3 Annual Transparency Report**
+
+Submit to Licensor by January 31 each year:
+- Link to open source repositories
+- Link to published financial statements
+- Description of how Software is used
+- Estimated user impact metrics
+
+**3.1.4 Benefits**
+
+- ✅ **Zero cost** - No license fees
+- ✅ **Perpetual** - Never expires
+- ✅ **Good for your reputation** - Radical transparency builds trust
+- ✅ **Community support** - Transparent companies get priority support
+
+---
+
+### PATH B: Traditional Commercial License
+
+**Purpose:** Keep code and financials private, pay for the privilege
+
+**3.2.1 License Fee Structure**
+
+Annual fee based on Attributable Revenue:
+
+| Tier | Annual Attributable Revenue | License Fee |
+|------|----------------------------|-------------|
+| Startup | < $100,000 | $2,500/year |
+| Growth | $100,000 - $1,000,000 | $15,000/year |
+| Scale | $1,000,000 - $10,000,000 | 2% of attributable revenue |
+| Enterprise | > $10,000,000 | Negotiated (minimum 1.5%) |
+
+**3.2.2 Fee Distribution**
+
+Fees collected under Path B are distributed:
+
+| Recipient | Allocation | Purpose |
+|-----------|-----------|---------|
+| **Licensor** | 60% | Maintenance, development, enforcement |
+| **Contributors** | 25% | Developers who contributed to this Software |
+| **Dependencies** | 10% | Direct dependencies (at Licensor's discretion) |
+| **Public Goods** | 5% | Ecosystem infrastructure |
+
+**Rationale:** Path B users pay primarily for Licensor's private benefit (code privacy), so Licensor receives majority.
+
+**3.2.3 Payment Terms**
+
+- Payment due within 30 days of fiscal year end
+- Invoiced by Licensor based on Your self-reported revenue
+- Late payment: 1.5% monthly interest
+- Non-payment for 90 days = license termination
+
+**3.2.4 Reporting Requirement**
+
+Annual report due within 60 days of fiscal year end:
+- Gross revenue
+- Attributable revenue calculation with methodology
+- Number of users/seats utilizing the Software
+- Selected license tier
+
+**3.2.5 Audit Rights**
+
+- Licensor may audit Your revenue calculations once per year
+- 30 days advance notice required
+- You must provide reasonable documentation
+- If underpayment >10% discovered, You pay audit costs
+
+---
+
+### PATH C: Deep Funding (Fund the Commons)
+
+**Purpose:** Pay to support the entire ecosystem, not just the Licensor
+
+**3.3.1 Philosophy**
+
+Path C users recognize that this Software stands on the shoulders of giants. Instead of paying the Licensor for private code rights, they fund the public infrastructure that makes this Software possible.
+
+**3.3.2 Fee Structure**
+
+Same tiers as Path B, but **100% goes to the commons** (zero to Licensor):
+
+| Tier | Annual Attributable Revenue | License Fee |
+|------|----------------------------|-------------|
+| Startup | < $100,000 | $2,500/year |
+| Growth | $100,000 - $1,000,000 | $15,000/year |
+| Scale | $1,000,000 - $10,000,000 | 2% of attributable revenue |
+| Enterprise | > $10,000,000 | Negotiated (minimum 1.5%) |
+
+**3.3.3 Deep Funding Distribution**
+
+Fees collected under Path C are distributed:
+
+| Recipient | Allocation | Selection Method |
+|-----------|-----------|------------------|
+| **Direct Dependencies** | 35% | Listed in package.json/FUNDING.md |
+| **Transitive Dependencies** | 20% | Dependencies of dependencies (levels 2-3) |
+| **Infrastructure** | 20% | RPC providers, IPFS, blockchain nodes |
+| **Ecosystem** | 15% | Protocol development (Ethereum, ENS, etc.) |
+| **Public Goods Pool** | 10% | Community-voted projects |
+| **Licensor** | 0% | Zero allocation - pure ecosystem funding |
+
+**3.3.4 Transparency Requirement**
+
+Path C users must publish:
+- Annual summary of how Software is used (non-financial)
+- Link to company website or About page
+- Optional: GitHub profile or open source contributions
+
+**No financial disclosure required** (unlike Path A)
+
+**3.3.5 Recognition**
+
+Path C users receive:
+- ✅ Public acknowledgment on Software website/README
+- ✅ "Deep Funding Supporter" badge/logo
+- ✅ Listed in annual transparency report
+- ✅ Priority support and feature requests
+- ✅ Invitation to ecosystem governance discussions
+
+**3.3.6 Distribution Transparency**
+
+Licensor publishes quarterly reports showing:
+- Total Deep Funding Pool collected
+- Complete distribution breakdown
+- List of funded dependencies with amounts
+- Community votes for Public Goods Pool allocation
+
+**Example Distribution:**
+```json
+{
+  "quarter": "Q1 2026",
+  "total_collected": 50000,
+  "distribution": {
+    "direct_dependencies": {
+      "viem": 7000,
+      "ethers": 5000,
+      "content-hash": 500
+    },
+    "transitive_dependencies": {
+      "abi-coder": 2000,
+      "bn.js": 1500
+    },
+    "infrastructure": {
+      "infura": 4000,
+      "alchemy": 3000,
+      "ipfs-gateway": 1000
+    },
+    "ecosystem": {
+      "ethereum-foundation": 4000,
+      "ens-dao": 2500
+    },
+    "public_goods": {
+      "protocol-guild": 3000,
+      "gitcoin": 2000
+    }
+  }
+}
+```
+
+**3.3.7 Why Choose Path C?**
+
+- ✅ **Ethical:** Fund the commons, not just one maintainer
+- ✅ **Strategic:** Strengthen your dependency stack
+- ✅ **Marketing:** Public recognition as ecosystem supporter
+- ✅ **Governance:** Influence in ecosystem decisions
+- ✅ **Karma:** Good for the industry
+
+---
+
+## SECTION 4: DEPENDENCY IDENTIFICATION
+
+**4.1 Automatic Identification**
+
+Dependencies are identified from:
+1. `package.json`, `requirements.txt`, `go.mod`, or equivalent
+2. `FUNDING.md` or `DEPENDENCIES.md` in this repository
+3. Documented infrastructure used (RPC providers, IPFS, etc.)
+
+**4.2 Manual Declaration**
+
+Licensor may declare additional dependencies eligible for funding, including:
+- Infrastructure services critical to operation
+- Ecosystem protocols this Software builds on
+- Public goods benefiting the ecosystem
+
+**4.3 Exclusions**
+
+NOT considered dependencies for funding purposes:
+- Licensor's other projects
+- Closed-source commercial software
+- Dependencies that decline funding
+- Sanctioned entities or individuals
+
+**4.4 Dependency Consent**
+
+Before distributing funds, Licensor attempts to contact dependency maintainers. If unreachable after 60 days, funds are:
+- Held in escrow for 1 year
+- If still unclaimed, reallocated to Public Goods Pool
+
+---
+
+## SECTION 5: CONTRIBUTOR ALLOCATION
+
+**5.1 Eligibility (Paths B & C)**
+
+Contributors eligible for fee allocation:
+- Anyone who contributed code, documentation, or design
+- Must have commits merged into main branch
+- Must not be the Licensor (to avoid self-dealing)
+
+**5.2 Allocation Formula (Path B: 25% of fees)**
+
+Default allocation by contribution weight:
+- **Lines of code:** 40%
+- **Features implemented:** 30%
+- **Issues resolved:** 15%
+- **Documentation/design:** 10%
+- **Licensor discretion:** 5% (for non-code contributions)
+
+**5.3 Path C Contributor Recognition**
+
+Path C has zero Contributor allocation (all to ecosystem). Instead, Contributors receive:
+- Public acknowledgment in quarterly reports
+- Recognition badge on website
+- Invitation to governance discussions
+
+**Rationale:** Path C is about ecosystem funding, not individual compensation.
+
+**5.4 Payout Mechanics**
+
+- Distributed quarterly via GitHub Sponsors, OpenCollective, or direct payment
+- Minimum payout threshold: $50 (to avoid micro-transactions)
+- Below threshold: carried forward to next quarter
+- Contributors must provide payment information
+
+---
+
+## SECTION 6: PUBLIC GOODS POOL
+
+**6.1 Purpose (Path C Only)**
+
+10% of Path C fees go to community-voted public goods projects.
+
+**6.2 Nomination Process**
+
+Any Path C user or Contributor can nominate projects:
+- Must be open source or public infrastructure
+- Must benefit the ecosystem
+- Cannot be Licensor's own projects
+
+**6.3 Voting**
+
+Quarterly votes weighted by:
+- Path C users: 1 vote per $1,000 contributed in last 12 months
+- Contributors: 10 votes each
+- Licensor: 0 votes (to ensure community control)
+
+**6.4 Example Projects**
+
+- Protocol Guild (Ethereum core devs)
+- Gitcoin Grants
+- Public RPC infrastructure
+- Open source security audits
+- Ecosystem research initiatives
+
+---
+
+## SECTION 7: PATH SWITCHING
+
+**7.1 Allowed Transitions**
+
+You may switch paths annually with 60 days notice:
+
+| From | To | Conditions |
+|------|----|-----------| 
+| Path A | Path B | Pay difference for retroactive year |
+| Path A | Path C | Pay difference for retroactive year |
+| Path B | Path A | Publish financials retroactively (last 2 years) |
+| Path B | Path C | Pay difference (small), gain recognition |
+| Path C | Path A | Publish financials retroactively (last 2 years) |
+| Path C | Path B | Allowed, pay difference if any |
+
+**7.2 One-Time Switch**
+
+You may switch paths once per fiscal year at year-end. Mid-year switches not permitted except with Licensor approval.
+
+**7.3 Popular Transitions**
+
+Most common expected transitions:
+- **Startup → Path B → Path C** (as they grow and value ecosystem)
+- **Path B → Path A** (companies embracing transparency)
+
+---
+
+## SECTION 8: ENFORCEMENT
+
+**8.1 Compliance Verification**
+
+Licensor may request evidence of compliance:
+- Path A: Links to repos + financial disclosures
+- Path B: Revenue reports + payment confirmations
+- Path C: Revenue reports + payment confirmations
+
+**8.2 Breach and Cure**
+
+- Licensor notifies You of suspected breach in writing
+- You have 60 days to cure (provide missing info or payment)
+- If not cured, license terminates immediately
+- You must cease all use of the Software
+
+**8.3 Termination**
+
+Upon termination:
+- All rights granted under this License cease
+- You must stop using, distributing, and modifying the Software
+- Derivative works in production must be migrated within 180 days
+- Outstanding fees remain due
+
+**8.4 Dispute Resolution**
+
+- Good-faith negotiation required before formal proceedings
+- If unresolved after 30 days, binding arbitration in [JURISDICTION TBD]
+- Prevailing party recovers reasonable legal fees
+
+---
+
+## SECTION 9: GENERAL PROVISIONS
+
+**9.1 No Warranty**
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+**9.2 Limitation of Liability**
+
+IN NO EVENT SHALL LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM USE OF THE SOFTWARE, EVEN IF ADVISED OF POSSIBILITY OF SUCH DAMAGES.
+
+**9.3 Patents**
+
+If You initiate patent litigation against Licensor or any contributor regarding the Software, Your license terminates immediately.
+
+**9.4 Trademarks**
+
+This License does not grant permission to use Licensor's trade names, trademarks, or service marks.
+
+**9.5 Modifications to License**
+
+Licensor may release new versions of this License. You may choose to use the Software under the original version or any later version.
+
+**9.6 Severability**
+
+If any provision is found unenforceable, it shall be modified to minimum extent necessary to make it enforceable, or severed if modification is impossible.
+
+**9.7 Governing Law**
+
+This License is governed by the laws of [JURISDICTION TBD], excluding conflict of law provisions.
+
+**9.8 Perpetual License**
+
+This License has NO sunset clause. It remains in effect indefinitely unless:
+- You breach and fail to cure
+- You initiate patent litigation
+- Licensor releases Software under a different license (Your choice to adopt)
+
+---
+
+## APPENDIX A: QUICK REFERENCE
+
+**Which Path Should I Choose?**
+
+| Path | Cost | Code Privacy | Financial Privacy | Recognition | Best For |
+|------|------|--------------|-------------------|-------------|----------|
+| **Path A** | FREE | No (must open source) | No (must publish) | High | Transparent companies |
+| **Path B** | $$$ | Yes | Yes | None | Traditional businesses |
+| **Path C** | $$$ | Yes | Yes | Very High | Ecosystem supporters |
+
+**Where Does Money Go?**
+
+| Path | Licensor | Contributors | Ecosystem | Total |
+|------|----------|--------------|-----------|-------|
+| **Path A** | 0% | 0% | 0% | FREE |
+| **Path B** | 60% | 25% | 15% | 100% |
+| **Path C** | 0% | 0% | 100% | 100% |
+
+---
+
+## APPENDIX B: EXAMPLE SCENARIOS
+
+### Scenario 1: Solo Developer
+**User:** Personal project  
+**Revenue:** $0  
+**Path:** Non-Commercial  
+**Cost:** Free ✅
+
+### Scenario 2: Transparent Startup
+**User:** Open source AI company  
+**Revenue:** $500k/year  
+**Path:** Path A (already open + transparent)  
+**Cost:** Free ✅  
+**Requirements:** Link to repos + annual report
+
+### Scenario 3: Traditional SaaS
+**User:** Private SaaS company  
+**Revenue:** $2M/year (attributable: $500k)  
+**Path:** Path B  
+**Cost:** $10,000/year (2% of $500k)  
+**Distribution:**
+- Licensor: $6,000
+- Contributors: $2,500
+- Ecosystem: $1,500
+
+### Scenario 4: Ecosystem Champion
+**User:** Web3 infrastructure company  
+**Revenue:** $2M/year (attributable: $500k)  
+**Path:** Path C (values ecosystem)  
+**Cost:** $10,000/year (same as Path B)  
+**Distribution:**
+- Licensor: $0
+- Direct deps: $3,500
+- Transitive deps: $2,000
+- Infrastructure: $2,000
+- Ecosystem: $1,500
+- Public goods: $1,000
+
+**Benefits:**
+- Public recognition as Deep Funding Supporter
+- Listed on website
+- Priority support
+- Governance participation
+
+---
+
+## APPENDIX C: DISCUSSION POINTS
+
+**✅ Resolved:**
+- ✅ Removed sunset clause (perpetual license)
+- ✅ Deep funding as separate Path C (not just distribution)
+
+**🔴 Still Need to Decide:**
+
+1. **Fee amounts:** Are tiers reasonable?
+   - Startup: $2,500/year
+   - Growth: $15,000/year
+   - Scale: 2% of attributable revenue
+   - Enterprise: Negotiated (1.5%+)
+
+2. **Path B vs Path C pricing:** Should they be the same?
+   - Current: Same price, different distribution
+   - Alternative: Path C discount to incentivize ecosystem funding?
+
+3. **Jurisdiction:** Where to enforce?
+   - Options: Delaware, Switzerland, Your jurisdiction
+
+4. **Path A code scope:** Entire app or just modifications?
+   - Current: "All software that uses or integrates"
+   - Could narrow: "Only modifications to Software itself"
+
+5. **Contributor allocation formula:** Fair?
+   - Current: 40% LOC, 30% features, 15% issues, 10% docs, 5% discretion
+
+**🟡 Questions:**
+
+1. **Path C marketing:** How to incentivize companies to choose Path C over Path B?
+   - Currently: Recognition + priority support
+   - Add more benefits?
+
+2. **Public Goods Pool governance:** Who should vote?
+   - Current: Path C users (weighted by $) + Contributors
+   - Should Path A users also vote?
+
+3. **Infrastructure auto-funding:** Must-have or nice-to-have?
+   - Example: Should Infura get auto-funded if listed as dependency?
+
+4. **Switching paths:** Allow mid-year switches?
+   - Current: Once per year only
+
+---
+
+## NEXT STEPS
+
+**Review:**
+1. Path structure (A/B/C) - Does this make sense?
+2. Fee amounts - Too high/low?
+3. Deep Funding distribution (Path C) - Fair split?
+4. Path B distribution - Should Licensor get 60%?
+
+**Decide:**
+- Jurisdiction
+- Path C incentives (enough to attract companies?)
+- Contributor formula
+
+**Refine:**
+- Simplify language where possible
+- Add more examples
+- Create FAQ
+
+---
+
+**Status:** v2.0 DRAFT READY  
+**Key Changes:** No sunset, Deep Funding = Path C  
+**Next:** Review together! 🔧

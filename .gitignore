@@ -37,3 +37,5 @@ docs/*
 !docs/superpowers/
 !docs/superpowers/**
 !docs/*.md
+!README.md
+!LICENSE
