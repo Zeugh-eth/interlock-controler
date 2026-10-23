@@ -12,6 +12,9 @@ arm-daemon/*
 !arm-daemon/dashboard.html
 !arm-daemon/brand/
 !arm-daemon/brand/*
+!arm-daemon/brand/png/
+!arm-daemon/brand/png/*
+**/.DS_Store
 !arm-daemon/tests/
 arm-daemon/tests/*
 !arm-daemon/tests/*.py
