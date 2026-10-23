@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interlock Console</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='31' fill='%23DCEDFB'/%3E%3Cg transform='translate(4 -3)'%3E%3Crect x='14' y='46' width='24' height='9' rx='4.5' fill='%232C6AA8'/%3E%3Cpath d='M26 47 L22 26 L42 21 L46 34' fill='none' stroke='%232C6AA8' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+  :root {
+    /* Interlock brand (arm-daemon/brand/tokens.css): whites, soft grays, one light blue */
+    --bg:#F6F8FB; --panel:#FFFFFF; --panel2:#F6F8FB; --cloud:#EEF2F6; --line:#E3E8EE; --line2:#D3DAE2;
+    --fg:#1F2A37; --dim:#5F6B7A; --mute:#6B7785; --pebble:#9AA5B1;
+    --blue:#2C6AA8; --blue-l:#8EC5F0; --blue-bg:#EEF6FD; --blue-line:#B9DCF7; --halo:#DCEDFB;
+    --ok:#2C6AA8; --warn:#F2B544; --warn-ink:#9A6A00; --bad:#C8432F;
+    --ok-bg:var(--blue-bg); --warn-bg:#FDF4E1; --bad-bg:#FBEBE8;
+    --agent:#5257C9; --leader:#8457B8;
+    --mono:"DM Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans:"DM Sans", -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    --rs:6px; --rm:12px;
+    --hdr:52px;
+  }
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:13px/1.4 var(--sans); -webkit-font-smoothing:antialiased; overflow:hidden; }
+  button, input { font:inherit; }
+
+  /* ---------- top bar ---------- */
+  header { height:var(--hdr); display:flex; gap:14px; align-items:center; padding:0 16px; background:var(--panel); border-bottom:1px solid var(--line); }
+  .brand { display:flex; align-items:center; gap:9px; margin-right:6px; }
+  .brand svg { width:28px; height:28px; flex:none; }
+  .brand h1 { font-size:17px; font-weight:500; margin:0; letter-spacing:-.015em; }
+  .brand small { font:500 10px var(--mono); color:var(--mute); text-transform:uppercase; letter-spacing:.14em; }
+  .status { display:flex; gap:4px; align-items:center; }
+  .pill { display:inline-flex; align-items:center; gap:6px; padding:4px 10px 4px 8px; border-radius:999px; border:1px solid var(--line); background:var(--panel2);
+    color:var(--dim); font:11px/1 var(--mono); white-space:nowrap; letter-spacing:.01em; }
+  .pill::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--pebble); flex:none; }
+  .pill.ok { color:var(--blue); border-color:var(--blue-line); background:var(--blue-bg); } .pill.ok::before { background:var(--blue); }
+  .pill.warn { color:var(--warn-ink); border-color:#F5DDA8; background:var(--warn-bg); } .pill.warn::before { background:var(--warn); }
+  .pill.bad { color:var(--bad); border-color:#F2C6BE; background:var(--bad-bg); } .pill.bad::before { background:var(--bad); }
+  .spacer { flex:1; }
+  .estop { display:flex; gap:8px; align-items:center; }
+  button.stop { background:var(--bad); border:1px solid var(--bad); color:#fff; font:600 12px var(--mono); letter-spacing:.14em; padding:9px 24px; border-radius:999px; }
+  button.stop:hover { background:#B23B29; color:#fff; border-color:#B23B29; }
+  button.resume { background:var(--blue-bg); border:1px solid var(--halo); color:var(--blue); font-weight:500; padding:8px 14px; border-radius:999px; }
+
+  /* ---------- one-screen grid ---------- */
+  main { height:calc(100vh - var(--hdr)); display:grid; gap:10px; padding:10px;
+    grid-template-columns: minmax(0, 4.4fr) minmax(0, 4.4fr) minmax(0, 3.2fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 290px);
+    grid-template-areas: "model cam control" "tool log servos"; }
+  .a-model { grid-area:model; } .a-cam { grid-area:cam; } .a-servos { grid-area:servos; }
+  .a-control { grid-area:control; } .a-tool { grid-area:tool; } .a-log { grid-area:log; }
+  @media (max-width: 1180px) {
+    body { overflow:auto; } main { height:auto; grid-template-columns: 1fr 1fr; grid-template-rows:none;
+      grid-template-areas: "model cam" "control servos" "tool log"; }
+    #arm3d, .a-cam .camwrap { height:380px; flex:none; }
+  }
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; grid-template-areas: "model" "cam" "control" "servos" "tool" "log"; padding:8px; gap:8px; }
+    header { height:auto; flex-wrap:wrap; padding:8px 10px; row-gap:6px; }
+    .brand { order:0; } .estop { order:1; margin-left:auto; } .spacer { display:none; }
+    .status { order:2; width:100%; overflow-x:auto; scrollbar-width:none; } .status::-webkit-scrollbar { display:none; }
+    #arm3d, .a-cam .camwrap { height:320px; }
+  }
+
+  /* ---------- cards ---------- */
+  section { background:var(--panel); border:1px solid var(--line); border-radius:var(--rm); padding:12px 14px 14px; min-width:0; min-height:0; display:flex; flex-direction:column; }
+  section > h2 { display:flex; align-items:baseline; gap:10px; font:500 10.5px var(--mono); text-transform:uppercase; letter-spacing:.14em; color:var(--dim);
+    margin:0 0 8px; padding-bottom:6px; border-bottom:1px solid var(--line); flex:none; }
+  section > h2 small { font:10.5px var(--mono); font-weight:400; text-transform:none; letter-spacing:0; color:var(--mute); margin-left:auto; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .body { flex:1; min-height:0; overflow:auto; }
+  .row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin:5px 0; }
+  .row > .lbl { color:var(--mute); font:10.5px var(--mono); text-transform:uppercase; letter-spacing:.08em; min-width:54px; }
+  .a-control .row { flex-direction:column; align-items:stretch; gap:5px; margin:0 0 12px; }
+  .a-control .row > .lbl { min-width:0; }
+  .a-control .row > small { font-size:10.5px; }
+  .seg.vert { flex-direction:column; width:100%; }
+  .seg.vert button { border-right:0; border-bottom:1px solid var(--line2); text-align:left; padding:6px 10px; } .seg.vert button:last-child { border-bottom:0; }
+  .a-control .seg:not(.vert) { width:100%; } .a-control .seg:not(.vert) button { flex:1; }
+  .a-control input[type=text] { width:100%; }
+  .btnrow { display:flex; gap:6px; } .btnrow button { flex:1; }
+  small, .hint { color:var(--mute); font-size:11px; }
+
+  /* ---------- controls ---------- */
+  button { background:var(--panel); color:var(--fg); border:1px solid var(--line2); border-radius:var(--rs); padding:5px 10px; cursor:pointer; font-size:12px; line-height:1.2; }
+  button:hover { border-color:var(--blue-line); color:var(--blue); background:var(--blue-bg); }
+  button.on { background:var(--blue-bg); border-color:var(--blue-line); color:var(--blue); font-weight:600; }
+  /* holder colours: who has the arm */
+  button[data-holder].on::before { content:""; display:inline-block; width:7px; height:7px; border-radius:50%; background:currentColor; margin-right:7px; vertical-align:1px; }
+  button[data-holder="human"].on { color:var(--fg); }
+  button[data-holder="agent"].on { color:var(--agent); background:#EFEFFB; }
+  button[data-holder="leader"].on { color:var(--leader); background:#F4EFFA; }
+  button[data-holder="released"].on { color:var(--dim); background:var(--cloud); }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  .seg { display:inline-flex; border:1px solid var(--line2); border-radius:var(--rs); overflow:hidden; }
+  .seg button { border:0; border-radius:0; border-right:1px solid var(--line2); } .seg button:last-child { border-right:0; }
+  .chips { display:flex; gap:4px; flex-wrap:wrap; } .chips button { padding:4px 9px; font-size:11.5px; font-family:var(--mono); }
+  button.danger { color:var(--bad); } button.danger.on { background:var(--bad-bg); border-color:var(--bad); color:var(--bad); }
+  input[type=text] { background:var(--panel); color:var(--fg); border:1px solid var(--line2); border-radius:var(--rs); padding:5px 8px; font-size:12px; min-width:0; }
+  input[type=text]:focus { outline:none; border-color:var(--blue-l); box-shadow:0 0 0 3px var(--halo); }
+  input[type=range] { -webkit-appearance:none; appearance:none; width:100%; height:18px; background:transparent; cursor:pointer; margin:0; }
+  input[type=range]::-webkit-slider-runnable-track { height:4px; border-radius:2px; background:var(--cloud); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; margin-top:-5px; border-radius:50%; background:#fff; border:2px solid var(--blue); }
+  input[type=range]::-moz-range-track { height:4px; border-radius:2px; background:var(--cloud); }
+  input[type=range]::-moz-range-thumb { width:10px; height:10px; border-radius:50%; background:#fff; border:2px solid var(--blue); }
+
+  /* ---------- camera ---------- */
+  .camwrap { border:1px solid var(--line); border-radius:var(--rs); overflow:hidden; background:var(--fg); flex:1; min-height:200px; display:flex; }
+  img#cam { display:block; width:100%; height:100%; object-fit:contain; background:var(--fg); }
+  .a-cam .body { display:flex; flex-direction:column; overflow:hidden; }
+  .a-cam .row { flex:none; flex-wrap:nowrap; } .a-cam .row input[type=text] { flex:1; min-width:0; }
+  /* everything under the toolbar lives in a fixed-height block that scrolls, so the frame never resizes */
+  .a-cam .extras { flex:none; height:112px; overflow:auto; border-top:1px solid var(--line); margin-top:6px; padding-top:4px; }
+  .a-cam .extras .hint { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .a-cam .extras .hint:hover { white-space:normal; }
+  .a-cam table { margin-top:2px; } .a-cam thead th { position:sticky; top:0; background:var(--panel); }
+  table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; margin-top:4px; }
+  td, th { padding:3px 6px; border-bottom:1px solid var(--line); text-align:right; font:11px var(--mono); }
+  th { color:var(--mute); font-weight:500; font-family:var(--sans); font-size:10px; text-transform:uppercase; letter-spacing:.08em; }
+  td:first-child, th:first-child { text-align:left; } td:first-child { font-family:var(--sans); font-size:12px; }
+  tbody:empty::after { content:"no detections"; display:block; padding:6px; color:var(--mute); font:11px var(--sans); }
+
+  /* ---------- servos ---------- */
+  .servo { display:grid; grid-template-columns: minmax(78px, 1fr) 56px minmax(48px, 1.5fr) 56px 58px; gap:8px; align-items:center; padding:3px 0; border-bottom:1px solid var(--line); }
+  .servo:last-child { border-bottom:0; }
+  .servo .n { display:flex; flex-direction:column; gap:0; min-width:0; line-height:1.2; }
+  .servo .n b { font-weight:600; font-size:11.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .servo .n .t { font:10.5px var(--mono); color:var(--mute); display:inline-flex; gap:5px; align-items:center; }
+  .servo .n .t i { width:6px; height:6px; border-radius:50%; background:var(--line2); display:inline-block; }
+  .servo .n .t.cool i { background:var(--blue-l); } .servo .n .t.warm i { background:var(--warn); } .servo .n .t.hot i { background:var(--bad); }
+  .servo .v { text-align:right; font:500 15px/1 var(--mono); font-variant-numeric:tabular-nums; }
+  .servo .v em { font-style:normal; font-size:10px; color:var(--mute); margin-left:1px; }
+  .servo .load { display:flex; flex-direction:column; gap:3px; }
+  .servo .load .lv { font:10px var(--mono); color:var(--mute); text-align:right; }
+  .bar { height:4px; border-radius:2px; background:var(--cloud); overflow:hidden; } .bar i { display:block; height:100%; border-radius:2px; background:var(--blue-l); transition:width .15s; }
+  .bar i.warm { background:var(--warn); } .bar i.hot { background:var(--bad); }
+  .nudge { display:inline-flex; border:1px solid var(--line2); border-radius:var(--rs); overflow:hidden; justify-self:end; }
+  .nudge button { border:0; border-radius:0; padding:4px 0; width:28px; font-family:var(--mono); font-size:13px; }
+  .nudge button:first-child { border-right:1px solid var(--line2); }
+  @media (max-width: 760px) {
+    .servo { grid-template-columns: 1fr 70px 58px; grid-template-areas: "n v g" "s s s" "l l l"; row-gap:4px; }
+    .servo .n { grid-area:n; } .servo .v { grid-area:v; } .servo input[type=range] { grid-area:s; } .servo .load { grid-area:l; } .servo .nudge { grid-area:g; }
+  }
+
+  /* ---------- tool stats ---------- */
+  .stats { display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; }
+  .stat { border:1px solid var(--line); border-radius:var(--rs); padding:7px 10px; min-width:0; background:var(--panel2); }
+  .stat b { display:block; font:10px var(--mono); font-weight:500; color:var(--mute); text-transform:uppercase; letter-spacing:.08em; margin-bottom:3px; }
+  .stat span { font:500 14px/1.2 var(--mono); font-variant-numeric:tabular-nums; word-break:break-word; }
+  .stat span.ok { color:var(--blue); } .stat span.warn { color:var(--warn-ink); } .stat span.bad { color:var(--bad); }
+
+  /* ---------- 3D ---------- */
+  #arm3d { position:relative; flex:1; min-height:200px; background:#FBFCFE; border:1px solid var(--line); border-radius:var(--rs); overflow:hidden; }
+  #arm3d canvas { display:block; }
+  .arm3d-labels, .arm3d-leaders { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .arm3d-leaders line { stroke:var(--pebble); stroke-width:1; opacity:.7; } .arm3d-leaders circle { fill:var(--blue); }
+  .arm3d-label { position:absolute; transform:translate(-100%, 0); font:10.5px/1.25 var(--mono); color:var(--fg);
+    background:rgba(255,255,255,.94); border:1px solid var(--line2); border-left-width:3px; border-radius:4px; padding:2px 6px; white-space:nowrap; }
+  .arm3d-label b { display:block; color:var(--mute); font-weight:500; font-size:9.5px; text-transform:uppercase; letter-spacing:.06em; }
+  .arm3d-label.tool { border-color:var(--blue) !important; }
+  .arm3d-label.hot { background:var(--bad-bg); }
+  .legend { display:flex; gap:12px; flex-wrap:wrap; font:10.5px var(--mono); color:var(--mute); margin-top:6px; flex:none; }
+  .legend i { display:inline-block; width:8px; height:8px; border-radius:2px; vertical-align:-1px; margin-right:4px; }
+
+  /* ---------- log ---------- */
+  #log { font:11px/1.5 var(--mono); color:var(--dim); display:flex; flex-direction:column; }
+  #log:empty::after { content:"motion results from every client appear here"; color:var(--mute); }
+  #log div { padding:3px 8px; border-left:3px solid var(--line2); white-space:pre-wrap; word-break:break-word; border-bottom:1px solid var(--line); }
+  #log .ok { border-left-color:var(--blue-l); } #log .frozen { border-left-color:var(--warn); color:var(--warn-ink); } #log .refused { border-left-color:var(--pebble); color:var(--dim); }
+  ::-webkit-scrollbar { width:8px; height:8px; } ::-webkit-scrollbar-thumb { background:var(--line2); border-radius:999px; } ::-webkit-scrollbar-track { background:transparent; }
+</style>
+<script type="importmap">{"imports": {"three": "/static/three.module.min.js"}}</script>
+</head>
+<body>
+<header>
+  <div class="brand"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#DCEDFB"/><g transform="translate(4 -3)"><rect x="15" y="47" width="22" height="7" rx="3.5" fill="#2C6AA8"/><path d="M26 47 L22 26 L42 21 L46 33" fill="none" stroke="#2C6AA8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="26" r="2.6" fill="#fff"/><circle cx="42" cy="21" r="2.6" fill="#fff"/><circle cx="26" cy="45" r="2.6" fill="#fff"/><circle cx="46" cy="40" r="3.4" fill="#8EC5F0"/></g></svg><h1>interlock</h1><small>console · SO-101</small></div>
+  <div class="status">
+    <span id="pBus" class="pill">bus</span>
+    <span id="pHolder" class="pill">holder</span>
+    <span id="pStop" class="pill">stop</span>
+    <span id="pMotion" class="pill">motion</span>
+    <span id="pTorque" class="pill">torque</span>
+    <span id="pDemo" class="pill">demo</span>
+    <span id="pWs" class="pill">ws</span>
+  </div>
+  <span class="spacer"></span>
+  <div class="estop">
+    <button id="btnResume" class="resume">Resume</button>
+    <button id="btnStop" class="stop">STOP</button>
+  </div>
+</header>
+<main>
+  <section class="a-model">
+    <h2>Arm model <small id="arm3dNote">loading…</small></h2>
+    <div id="arm3d"></div>
+    <div class="legend">
+      <span><i style="background:var(--blue-l)"></i>cool</span><span><i style="background:var(--warn)"></i>warm</span><span><i style="background:var(--bad)"></i>hot ≥55 °C</span>
+      <span><i style="background:var(--warn); border-radius:50%"></i>ring = load (red near guard 350)</span>
+      <span><i style="background:var(--blue)"></i>goal while moving</span>
+      <span>drag orbit · wheel zoom · right-drag pan</span>
+    </div>
+  </section>
+
+  <section class="a-cam">
+    <h2>Gripper camera <small id="camAge"></small></h2>
+    <div class="body">
+      <div class="camwrap"><img id="cam" alt="gripper camera"></div>
+      <div class="row" style="margin-top:8px">
+        <span class="seg"><button id="viewAnnot" class="on">annotated</button><button id="viewRaw">raw</button></span>
+        <select id="gridSel" title="table grid spacing"><option value="1">1 cm grid</option><option value="2">2 cm grid</option><option value="5">5 cm grid</option></select>
+        <input id="prompts" type="text" placeholder="YOLO prompts: box, cup, bottle">
+        <button id="btnPrompts">detect</button>
+      </div>
+      <div class="extras">
+      <div class="hint" id="visionNote">Annotated view: rotated so up = forward (+x), left = +y; 1 cm grid on the table plane (bold every 5 cm) around the jaw target ✛; sizes and offsets assume the object lies on the table.</div>
+      <div class="tbl"><table id="dets"><thead><tr><th>object</th><th>conf</th><th>size cm</th><th>fwd cm</th><th>left cm</th><th>dist cm</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="a-servos">
+    <h2>Servos <small>slider = absolute on release · ± = 2°</small></h2>
+    <div class="body" id="servos"></div>
+  </section>
+
+  <section class="a-control">
+    <h2>Control</h2>
+    <div class="body">
+      <div class="row">
+        <span class="lbl">Holder</span>
+        <span class="seg vert">
+          <button data-holder="human">human</button>
+          <button data-holder="agent">agent</button>
+          <button data-holder="leader">leader · teleop</button>
+          <button data-holder="released">released · bus free</button>
+        </span>
+      </div>
+      <div class="row">
+        <span class="lbl">Pose</span><span id="poses" class="chips"></span>
+      </div>
+      <div class="row">
+        <span class="lbl">Torque</span>
+        <span class="seg"><button id="btnTorqueOn">on · hold</button><button id="btnTorqueOff" class="danger">off · limp</button></span>
+        <small id="torqueNote"></small>
+      </div>
+      <div class="row">
+        <span class="lbl">Demo</span>
+        <input id="demoTask" type="text" placeholder="task, e.g. pick up the carton">
+        <span class="btnrow"><button id="btnDemoStart">Record</button><button id="btnDemoStop">Stop</button></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="a-tool">
+    <h2>Tool</h2>
+    <div class="body"><div class="stats" id="tool"></div></div>
+  </section>
+
+  <section class="a-log">
+    <h2>Results <small>newest first · all clients</small></h2>
+    <div class="body" id="log"></div>
+  </section>
+</main>
+<script>
+const KEY = window.__ARM_KEY__ || "";
+const J = ["shoulder_pan","shoulder_lift","elbow_flex","wrist_flex","wrist_roll","gripper"];
+const H = {"Content-Type":"application/json","X-Arm-Human-Key":KEY};
+const $ = s => document.querySelector(s);
+let state = null, busy = false, poses = {};
+
+async function post(path, body) {
+  const r = await fetch(path, {method:"POST", headers:H, body: JSON.stringify(body||{})});
+  let j = {}; try { j = await r.json(); } catch(e) {}
+  if (j.outcome || j.refused) logLine(j, path);
+  return j;
+}
+function logLine(j, path) {
+  const d = document.createElement("div");
+  const cls = j.outcome || "refused";
+  d.className = cls;
+  const t = new Date().toLocaleTimeString();
+  d.textContent = `${t}  ${path} → ${j.outcome || "refused"} ${j.reason || j.refused || ""}`;
+  if (j.final) d.textContent = `${t}  ${path} → ${j.outcome} ${j.reason || ""}  ${J.map(k => (j.final[k] ?? "?")).join(" / ")}`;
+  const log = $("#log"); log.prepend(d); while (log.children.length > 200) log.lastChild.remove();
+}
+function pill(id, text, cls) { const e = $(id); e.textContent = text; e.className = "pill " + (cls||""); }
+function tempClass(t) { return t == null ? "" : (t >= 55 ? "hot" : (t >= 45 ? "warm" : "cool")); }
+
+function buildServos() {
+  const box = $("#servos"); box.innerHTML = "";
+  for (const j of J) {
+    const row = document.createElement("div"); row.className = "servo"; row.id = "s-"+j;
+    row.innerHTML = `<span class="n"><b>${j.replace("_", " ")}</b><span class="t"><i></i><span>–</span></span></span>
+      <span class="v">–</span><input type="range" step="0.5">
+      <div class="load"><span class="lv">load –</span><div class="bar"><i></i></div></div>
+      <span class="nudge"><button data-nudge="${j}" data-d="-2">−</button><button data-nudge="${j}" data-d="2">+</button></span>`;
+    box.appendChild(row);
+    const r = row.querySelector("input");
+    r.addEventListener("change", () => {
+      const unit = j === "gripper" ? "pct" : "deg";
+      post(`/servo/${j}`, {[unit]: parseFloat(r.value)});
+    });
+    r.addEventListener("input", () => { row.querySelector(".v").innerHTML = (+r.value).toFixed(1) + `<em>${j === "gripper" ? "%" : "°"}</em>`; row.dataset.dragging = "1"; });
+    r.addEventListener("change", () => { delete row.dataset.dragging; });
+  }
+  box.addEventListener("click", e => {
+    const b = e.target.closest("button[data-nudge]"); if (!b) return;
+    post(`/servo/${b.dataset.nudge}/nudge`, {delta: parseFloat(b.dataset.d)});
+  });
+}
+
+function render(s) {
+  state = s;
+  pill("#pBus", "bus " + s.bus, s.bus === "ok" ? "ok" : (s.bus === "released" ? "warn" : "bad"));
+  pill("#pHolder", "holder " + s.control.holder, s.control.holder === "human" ? "ok" : "warn");
+  pill("#pStop", s.stop.set ? "STOP " + (s.stop.by||"") : "stop clear", s.stop.set ? "bad" : "ok");
+  pill("#pMotion", "motion " + s.motion.state + (s.motion.id ? " #" + s.motion.id : ""), s.motion.state === "frozen" ? "warn" : (s.motion.state === "moving" ? "ok" : ""));
+  pill("#pDemo", s.demo ? `rec ${s.demo.id.slice(16)} ${s.demo.rows} rows` : "no demo", s.demo ? "bad" : "");
+  const tq = J.map(j => s.servos[j] && s.servos[j].torque);
+  const tOn = tq.every(Boolean), tOff = tq.every(v => v === false);
+  pill("#pTorque", tOn ? "torque on" : (tOff ? "torque OFF (limp)" : "torque mixed"), tOn ? "ok" : "warn");
+  $("#btnTorqueOn").classList.toggle("on", tOn); $("#btnTorqueOff").classList.toggle("on", tOff);
+  document.querySelectorAll("button[data-holder]").forEach(b => b.classList.toggle("on", b.dataset.holder === s.control.holder));
+  for (const j of J) {
+    const e = s.servos[j]; if (!e) continue;
+    const row = $("#s-"+j); const r = row.querySelector("input");
+    const v = j === "gripper" ? e.pct : e.deg;
+    r.min = j === "gripper" ? e.min_pct : e.min_deg; r.max = j === "gripper" ? e.max_pct : e.max_deg;
+    if (!row.dataset.dragging && document.activeElement !== r) { r.value = v; row.querySelector(".v").innerHTML = v.toFixed(1) + `<em>${j === "gripper" ? "%" : "°"}</em>`; }
+    const bar = row.querySelector(".bar i"); const load = Math.min(100, Math.abs(e.load) / 3.5);
+    bar.style.width = load + "%"; bar.className = Math.abs(e.load) > 300 ? "hot" : (Math.abs(e.load) > 150 ? "warm" : "");
+    row.querySelector(".lv").textContent = `load ${e.load}`;
+    const t = row.querySelector(".t"); t.className = "t " + tempClass(e.temp_c);
+    t.lastElementChild.textContent = (e.temp_c == null ? "– °C" : e.temp_c + " °C") + (e.torque === false ? " · limp" : "");
+    row.querySelector(".n").title = `goal ${e.goal_deg ?? e.goal_pct}  load ${e.load}  torque ${e.torque}  temp ${e.temp_c ?? "?"}°C`;
+  }
+  const t = s.tool || {};
+  const lz = t.lowest_link_z_m;
+  const age = Date.now()/1000 - s.t;
+  const stat = (k, v, cls) => `<div class="stat"><b>${k}</b><span class="${cls||""}">${v}</span></div>`;
+  $("#tool").innerHTML = stat("tool xyz (cm)", (t.xyz_m||[]).map(v => (v*100).toFixed(1)).join(" / ") || "?")
+    + stat("tilt from down", (t.tilt_from_down_deg ?? "?") + "°")
+    + stat("lowest link", lz != null ? (lz*100).toFixed(1) + " cm" : "?", lz != null && lz < 0.04 ? "bad" : "")
+    + stat("leader", s.leader ? (s.leader.active ? "active" : (s.leader.configured ? "idle" : "not configured")) : "?", s.leader && s.leader.active ? "warn" : "")
+    + stat("state age", age.toFixed(2) + " s", age > 1 ? "warn" : "")
+    + stat("motion", s.motion.state + (s.motion.result && s.motion.result.peak_load != null ? ` · peak ${s.motion.result.peak_load}` : ""), s.motion.state === "frozen" ? "warn" : "");
+  const c = s.cameras && s.cameras.gripper; $("#camAge").textContent = c ? (c.ok ? `live · ${c.age_s}s` : "no frame") : "";
+  if (window.armView) window.armView.update(s);
+  if (s.vision) {
+    const v = s.vision; const tb = $("#dets tbody"); tb.innerHTML = "";
+    for (const d of (v.detections || [])) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${d.label}</td><td>${d.conf.toFixed(2)}</td><td>${d.size_cm ? d.size_cm[0] + " × " + d.size_cm[1] : "–"}</td>
+        <td>${d.offset_cm ? d.offset_cm[0].toFixed(1) : "–"}</td><td>${d.offset_cm ? d.offset_cm[1].toFixed(1) : "–"}</td><td>${d.dist_cm ?? "–"}</td>`;
+      tb.appendChild(tr);
+    }
+    if (v.error) $("#visionNote").textContent = "vision: " + v.error;
+    else if (v.tool) $("#visionNote").textContent = `tool z ${v.tool.z_cm} cm · ${v.tool.looking_down ? v.tool.px_per_cm + " px/cm on the table" : "not looking at the table (no grid)"} · ${v.ms} ms · prompts: ${(v.prompts||[]).join(", ") || "default"}`;
+  }
+}
+
+function connectWs() {
+  const ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws");
+  ws.onopen = () => pill("#pWs", "ws live", "ok");
+  ws.onclose = () => { pill("#pWs", "ws down", "bad"); setTimeout(connectWs, 1500); };
+  ws.onmessage = ev => { const m = JSON.parse(ev.data); if (m.type === "state") render(m); else if (m.type === "result") logLine(m, "#" + m.id); };
+}
+
+async function loadPoses() {
+  poses = await (await fetch("/poses")).json();
+  $("#poses").innerHTML = Object.keys(poses).map(n => `<button data-pose="${n}">${n}</button>`).join("");
+  $("#poses").addEventListener("click", e => { const b = e.target.closest("button[data-pose]"); if (b) post("/pose", {name: b.dataset.pose}); });
+}
+
+document.querySelectorAll("button[data-holder]").forEach(b => b.onclick = async () => {
+  const j = await post("/control", {holder: b.dataset.holder});
+  if (j.refused) alert(j.refused);
+});
+$("#btnStop").onclick = () => post("/stop", {reason: "dashboard"});
+$("#btnResume").onclick = () => post("/resume", {});
+$("#btnDemoStart").onclick = async () => { const j = await post("/demo/start", {task: $("#demoTask").value}); if (j.refused) alert(j.refused); };
+$("#btnDemoStop").onclick = async () => { const j = await post("/demo/stop", {}); if (j.refused) alert(j.refused); else logLine({outcome:"ok", reason:`demo ${j.id}: ${j.rows} rows, ${j.images} images`}, "/demo/stop"); };
+$("#btnTorqueOn").onclick = () => post("/torque", {on: true});
+let torqueArmed = null;
+$("#btnTorqueOff").onclick = async () => {
+  if (torqueArmed && Date.now() - torqueArmed < 5000) {
+    torqueArmed = null; $("#torqueNote").textContent = "";
+    const j = await post("/torque", {on: false, confirm: true});
+    if (j.outcome !== "ok") $("#torqueNote").textContent = j.reason || j.refused || "failed";
+  } else {
+    torqueArmed = Date.now();
+    $("#torqueNote").textContent = "hold the arm, then click again within 5 s to release torque";
+    setTimeout(() => { if (torqueArmed && Date.now() - torqueArmed >= 5000) { torqueArmed = null; $("#torqueNote").textContent = ""; } }, 5200);
+  }
+};
+
+buildServos(); loadPoses(); connectWs();
+function setView(annot) {
+  $("#viewAnnot").classList.toggle("on", annot); $("#viewRaw").classList.toggle("on", !annot);
+  $("#cam").src = annot ? "/vision/stream" : "/camera/gripper/stream";
+  try { localStorage.setItem("armView", annot ? "annot" : "raw"); } catch (e) {}
+}
+$("#viewAnnot").onclick = () => setView(true); $("#viewRaw").onclick = () => setView(false);
+$("#btnPrompts").onclick = () => post("/vision/prompts", {prompts: $("#prompts").value});
+$("#gridSel").onchange = () => post("/vision/settings", {grid_cm: parseInt($("#gridSel").value)});
+$("#prompts").addEventListener("keydown", e => { if (e.key === "Enter") $("#btnPrompts").click(); });
+let view = "annot"; try { view = localStorage.getItem("armView") || "annot"; } catch (e) {}
+setView(view !== "raw");
+if (!KEY) pill("#pWs", "no human key: view only", "warn");
+</script>
+<script type="module">
+import { mountArm3D } from "/static/arm3d.js";
+// keep the model frame the same size as the camera frame (the camera card has a toolbar below it)
+const camwrap = document.querySelector(".camwrap"), arm3d = document.getElementById("arm3d");
+new ResizeObserver(() => {
+  if (matchMedia("(max-width: 1180px)").matches) { arm3d.style.height = ""; arm3d.style.flex = ""; return; }
+  arm3d.style.flex = "none"; arm3d.style.height = camwrap.getBoundingClientRect().height + "px";
+}).observe(camwrap);
+mountArm3D(document.getElementById("arm3d"))
+  .then(a => { window.armView = a; document.getElementById("arm3dNote").textContent = "URDF chain · live pose, load, temperature"; if (state) a.update(state); })
+  .catch(e => { document.getElementById("arm3dNote").textContent = "3D view failed: " + e; });
+</script>
+</body>
+</html>

@@ -9,7 +9,9 @@ arm-daemon/*
 !arm-daemon/*.py
 !arm-daemon/*.md
 !arm-daemon/pytest.ini
+!arm-daemon/dashboard.html
 !arm-daemon/dashboard_menus.html
+!arm-daemon/mcp-http.command
 !arm-daemon/tests/
 arm-daemon/tests/*
 !arm-daemon/tests/*.py
