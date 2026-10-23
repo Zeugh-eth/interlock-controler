@@ -9,6 +9,7 @@ arm-daemon/*
 !arm-daemon/*.py
 !arm-daemon/*.md
 !arm-daemon/pytest.ini
+!arm-daemon/dashboard.html
 !arm-daemon/brand/
 !arm-daemon/brand/*
 !arm-daemon/tests/
