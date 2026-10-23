@@ -3,54 +3,85 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Open hardware, one layer up</title>
+<title>Interlock for the SO-ARM101</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23DCEDFB'/%3E%3Cg transform='translate(4 -3)'%3E%3Crect x='15' y='47' width='22' height='7' rx='3.5' fill='%232C6AA8'/%3E%3Cpath d='M26 47 L22 26 L42 21 L46 33' fill='none' stroke='%232C6AA8' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/g%3E%3C/svg%3E">
 <style>
-:root{--ground:#f0ece1;--card:#f6f2e7;--line:#d9d2c0;--ink:#1a2230;--ink2:#56637a;--accent:#0f4c81;--accent-soft:#e2ebf4;
---good:#1a6e4f;--good-bg:#dcebe1;--warn:#9a6200;--warn-bg:#f1e4c6;--bad:#a8342a;--bad-bg:#f0d9d4}
+/* Interlock brand tokens (arm-daemon/brand/tokens.css) */
+:root{
+  --il-white:#FFFFFF;--il-frost:#F6F8FB;--il-cloud:#EEF2F6;--il-mist:#E3E8EE;--il-pebble:#9AA5B1;--il-slate:#5F6B7A;--il-ink:#1F2A37;
+  --il-sky:#8EC5F0;--il-halo:#DCEDFB;--il-sky-tint:#EEF6FD;--il-sky-deep:#2C6AA8;
+  --il-caution:#F2B544;--il-caution-ink:#9A6A00;--il-caution-tint:#FDF4E1;--il-stop:#C8432F;
+  --sans:"DM Sans",-apple-system,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
+  --mono:"DM Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
 *{box-sizing:border-box}
-body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:980px;margin:0 auto;padding:48px 16px 80px}
-.eyebrow{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
-h1,h2,.big{font-family:Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-.01em}
-h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:14px 0 16px}
-h2{font-size:26px;margin:0 0 6px}
-.stand{font-size:19px;color:var(--ink2);max-width:760px;margin:0 0 18px}
-.meta{font:12px/1.6 ui-monospace,Menlo,monospace;color:var(--ink2);display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:28px}
+body{margin:0;background:var(--il-frost);color:var(--il-ink);font:16px/1.55 var(--sans)}
+main{max-width:980px;margin:0 auto;padding:40px 16px 80px}
+.lockup{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.lockup svg{width:44px;height:44px;flex:none}
+.lockup .word{font:500 30px/1 var(--sans);letter-spacing:-.025em}
+.lockup .tag{font:13px var(--mono);color:var(--il-slate);margin-left:auto;text-align:right}
+.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--il-sky-deep)}
+h1,h2,.big{font-family:var(--sans);font-weight:600;letter-spacing:-.025em}
+h1{font-size:clamp(30px,5vw,46px);line-height:1.1;margin:14px 0 16px}
+h2{font-size:28px;line-height:1.2;margin:0 0 6px}
+.stand{font-size:19px;color:var(--il-slate);max-width:760px;margin:0 0 18px}
+.meta{font:12px/1.6 var(--mono);color:var(--il-slate);display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:28px}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 40px}
-.tile{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px}
-.tile .big{font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
-.tile .lbl{font-size:13px;color:var(--ink2);margin-top:6px}
+.tile{background:var(--il-white);border:1px solid var(--il-mist);border-radius:12px;padding:16px}
+.tile .big{font-size:34px;line-height:1;font-variant-numeric:tabular-nums;color:var(--il-sky-deep)}
+.tile .lbl{font-size:13px;color:var(--il-slate);margin-top:8px}
 section{margin:0 0 44px}
-.lede{color:var(--ink2);margin:0 0 16px;max-width:760px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px 20px;margin:0 0 14px}
-.card h3{margin:0 0 4px;font:600 18px/1.3 Georgia,serif}
-.n{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:var(--accent);text-transform:uppercase}
+.lede{color:var(--il-slate);margin:0 0 16px;max-width:760px}
+.card{background:var(--il-white);border:1px solid var(--il-mist);border-radius:20px;padding:20px 22px;margin:0 0 14px}
+.card h3{margin:6px 0 4px;font:600 19px/1.3 var(--sans);letter-spacing:-.015em}
+.n{font:500 11px/1 var(--mono);letter-spacing:.12em;color:var(--il-sky-deep);text-transform:uppercase}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:10px}
-@media(max-width:700px){.cols{grid-template-columns:1fr}}
-.cols h4{margin:0 0 4px;font:600 11px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+@media(max-width:700px){.cols{grid-template-columns:1fr}.lockup .tag{display:none}}
+.cols h4{margin:0 0 4px;font:500 11px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--il-pebble)}
 .cols p,.cols ul{margin:0;font-size:15px}
 ul{padding-left:18px}
 li{margin:2px 0}
-code{font:13px ui-monospace,Menlo,monospace;background:var(--accent-soft);padding:1px 5px;border-radius:4px}
-.pill{display:inline-block;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:99px;margin-left:8px;vertical-align:middle}
-.good{background:var(--good-bg);color:var(--good)}.warn{background:var(--warn-bg);color:var(--warn)}.bad{background:var(--bad-bg);color:var(--bad)}
-.ask{background:var(--accent);color:#f4f2ec;border-radius:8px;padding:22px 24px}
-.ask h2{color:#f4f2ec}.ask li{margin:6px 0}.ask .eyebrow{color:#b9cfe6}
-.scroll{overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+li::marker{color:var(--il-sky)}
+code{font:13px var(--mono);background:var(--il-cloud);padding:1px 6px;border-radius:6px}
+.pill{display:inline-block;font:500 11px/1 var(--mono);letter-spacing:.04em;padding:5px 9px;border-radius:999px;margin-left:8px;vertical-align:middle}
+.good{background:var(--il-sky-tint);color:var(--il-sky-deep)}
+.warn{background:var(--il-caution-tint);color:var(--il-caution-ink)}
+.refused{background:var(--il-cloud);color:var(--il-slate)}
+.stop{background:var(--il-stop);color:#fff}
+.ask{background:var(--il-sky-deep);color:#fff;border-radius:20px;padding:26px 28px}
+.ask h2{color:#fff}.ask li{margin:6px 0}.ask .eyebrow{color:var(--il-halo)}
+.scroll{overflow:auto;border:1px solid var(--il-mist);border-radius:12px;background:var(--il-white)}
 table{border-collapse:collapse;width:100%;font-size:14px}
-th{position:sticky;top:0;background:var(--accent-soft);text-align:left;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;padding:10px 12px}
-td{padding:9px 12px;border-top:1px solid var(--line);vertical-align:top}
-tr:hover td{background:#f1ecdd}
-.talk p{margin:0 0 10px}.talk b{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--accent)}
-footer{color:var(--ink2);font-size:13px}
+th{position:sticky;top:0;background:var(--il-white);text-align:left;font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--il-pebble);padding:11px 12px;border-bottom:1px solid var(--il-mist)}
+td{padding:9px 12px;border-top:1px solid var(--il-mist);vertical-align:top}
+tr:hover td{background:var(--il-sky-tint)}
+.talk p{margin:0 0 10px}.talk b{font:500 12px var(--mono);color:var(--il-sky-deep)}
+footer{color:var(--il-slate);font-size:13px;display:flex;align-items:center;gap:8px}
+footer svg{width:20px;height:20px;flex:none}
 </style>
 </head>
 <body>
 <main>
 
-<div class="eyebrow">HackAIWoo · alternate pitch · for Seeed Studio</div>
-<h1>The SO-101 is open. We built the layer that makes it safe, visible and easy to use, and we are giving it back.</h1>
-<p class="stand">Seeed and the SO-ARM100/101 community opened the hardware. The next barrier to adoption is not the arm. It is what sits above it: who owns the serial port, what stops a model from crashing the arm into the table, how a newcomer sees what is happening, and how an AI agent drives it without guessing. We built that layer in a hackathon and propose to contribute it upstream.</p>
+<div class="lockup"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Interlock">
+  
+  <circle cx="32" cy="32" r="30" fill="#DCEDFB"/>
+  <g transform="translate(4 -3)">
+    
+    <rect x="15" y="47" width="22" height="7" rx="3.5" fill="#2C6AA8"/>
+    <path d="M26 47 L22 26 L42 21 L46 33" fill="none" stroke="#2C6AA8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="22" cy="26" r="2.6" fill="#FFFFFF"/>
+    <circle cx="42" cy="21" r="2.6" fill="#FFFFFF"/>
+    <circle cx="26" cy="45" r="2.6" fill="#FFFFFF"/>
+    
+    <circle cx="46" cy="40" r="3.4" fill="#8EC5F0"/>
+  </g>
+</svg><span class="word">interlock</span><span class="tag">One hand on the arm at a time.</span></div>
+
+<div class="eyebrow">Interlock · by HackAIWoo · for Seeed Studio</div>
+<h1>The SO-101 is open. We built Interlock, the layer that makes it safe, visible and easy to use, and we are giving it back.</h1>
+<p class="stand">Seeed and the SO-ARM100/101 community opened the hardware. The next barrier to adoption is not the arm. It is what sits above it: who owns the serial port, what stops a model from crashing the arm into the table, how a newcomer sees what is happening, and how an AI agent drives it without guessing. We built that layer, Interlock, in a hackathon and propose to contribute it upstream: Interlock Core owns the arm, Interlock Link lets any AI model drive it, and Interlock Console lets a person watch, steer and stop it.</p>
 <div class="meta"><span>audience: Seeed Studio team</span><span>hardware: SO-ARM101 · LeRobot 0.6.1</span><span>prepared 2026-10-23</span><span>sibling of: hackathon-pitch-script.html</span></div>
 
 <div class="tiles">
@@ -73,7 +104,7 @@ footer{color:var(--ink2);font-size:13px}
   <p class="lede">Each card says what exists today and what we would hand over. The heat piece is the youngest and is labelled honestly.</p>
 
   <div class="card">
-    <div class="n">1 · Daemon <span class="pill good">working</span></div>
+    <div class="n">1 · Interlock Core <span class="pill good">working</span></div>
     <h3>One owner for the bus, a documented API for everyone else</h3>
     <div class="cols">
       <div><h4>Today</h4><ul>
@@ -93,7 +124,7 @@ footer{color:var(--ink2);font-size:13px}
   </div>
 
   <div class="card">
-    <div class="n">2 · MCP <span class="pill good">working</span></div>
+    <div class="n">2 · Interlock Link (MCP) <span class="pill good">working</span></div>
     <h3>Any model, open or closed, drives the same arm</h3>
     <div class="cols">
       <div><h4>Today</h4><ul>
@@ -103,7 +134,7 @@ footer{color:var(--ink2);font-size:13px}
         <li>A cheap model (Haiku) was used as the stress test; its failures drove the tool design.</li>
       </ul></div>
       <div><h4>We would upstream</h4><ul>
-        <li>The MCP server, as the first standard tool interface for the SO-101.</li>
+        <li>Interlock Link, as the first standard tool interface for the SO-101.</li>
         <li>The <code>driving-the-arm</code> skill: when to look, grab, stop or ask.</li>
         <li>The outcome vocabulary, reusable for other low-cost arms.</li>
       </ul></div>
@@ -111,17 +142,17 @@ footer{color:var(--ink2);font-size:13px}
   </div>
 
   <div class="card">
-    <div class="n">3 · Dashboard <span class="pill good">working</span></div>
+    <div class="n">3 · Interlock Console <span class="pill good">working</span></div>
     <h3>See the arm, take it back, stop it</h3>
     <div class="cols">
       <div><h4>Today</h4><ul>
-        <li>3D model built from the real SO-101 STL meshes and URDF, driven by the same kinematics as the daemon.</li>
+        <li>3D model built from the real SO-101 STL meshes and URDF, driven by the same kinematics as Core.</li>
         <li>Live gripper camera with a 1 cm table grid, detections and size/offset in cm.</li>
         <li>Per-joint angle, load and temperature; sliders, nudges, named poses, big STOP, holder switch.</li>
         <li>A log of every motion result from every client, human or agent.</li>
       </ul></div>
       <div><h4>We would upstream</h4><ul>
-        <li>The dashboard as a no-build, single-folder UI (vendored three.js).</li>
+        <li>Interlock Console as a no-build, single-folder UI (vendored three.js).</li>
         <li>The URDF-driven 3D viewer, usable by any SO-101 project.</li>
       </ul></div>
     </div>
@@ -132,8 +163,8 @@ footer{color:var(--ink2);font-size:13px}
     <h3>We found a 71 °C elbow reading, traced it, and fixed what hid it</h3>
     <div class="cols">
       <div><h4>Today</h4><ul>
-        <li>A servo health report covers about 14 h of use on 22 to 23 Oct (1,250 agent calls, 340 daemon commands, 17 demos): load, tracking and travel for all six STS3215 servos.</li>
-        <li>Finding: the dashboard showed the elbow at 71 °C, above the 70 °C limit set in every servo's EEPROM. It was a stale value: the daemon stopped re-reading temperature while the leader arm drove. A fresh read showed 36 °C.</li>
+        <li>A servo health report covers about 14 h of use on 22 to 23 Oct (1,250 agent calls, 340 Core commands, 17 demos): load, tracking and travel for all six STS3215 servos.</li>
+        <li>Finding: the Console showed the elbow at 71 °C, above the 70 °C limit set in every servo's EEPROM. It was a stale value: Core stopped re-reading temperature while the leader arm drove. A fresh read showed 36 °C.</li>
         <li>Fix, merged and running since 08:36 on 23 Oct: temperature refreshes every 2.5 s in every mode, and a per-servo health row (temperature, load, position, torque) is written every 10 s to <code>logs/health/</code>.</li>
         <li>First 2 h of that log (427 rows): the shoulder lift, which holds the folded arm up, runs hottest on average (38.1 °C) at about 4× the load of the others. Hottest real reading: 44 °C (gripper), 26 °C under the limit. Heat following holding load is still a hypothesis.</li>
         <li>The log caught two impossible readings on wrist flex: 74 °C and 62 °C for a single 10 s sample, with 36 °C either side. No servo heats and cools that fast, so these are bad bus reads. One in four health rows came back with no temperature at all.</li>
@@ -152,7 +183,7 @@ footer{color:var(--ink2);font-size:13px}
     <h3>An AI that cannot hurt the arm, the table or the person</h3>
     <div class="cols">
       <div><h4>Today</h4><ul>
-        <li><b>Human first:</b> the daemon starts with the human in control. Only a request carrying the human key can hand control to an agent. An agent cannot take it back.</li>
+        <li><b>Human first:</b> Interlock Core starts with the human in control. Only a request carrying the human key can hand control to an agent. An agent cannot take it back.</li>
         <li><b>STOP for anyone,</b> resume for humans only. The legacy STOP file still works.</li>
         <li><b>Load and lag guard</b> on every move, always on; the arm freezes where it is and holds.</li>
         <li><b>Table clearance</b> check before the move, refused with the reachable height.</li>
@@ -171,11 +202,11 @@ footer{color:var(--ink2);font-size:13px}
 <section>
   <div class="eyebrow">Proof it is real</div>
   <h2>What it caught, and how it stopped</h2>
-  <p class="lede">We don't count wins: many runs that day were never recorded. We count what the logs did catch. Over 8.3 h the daemon logged 1,013 motion commands and refused 43 before anything moved. 19 of those were paths into or within 1.5 cm of the table (the deepest 5.0 cm into it); 18 were writes while someone else held the arm. Two AI moves froze mid-way when a human took over with the leader arm. In the attack loop, cycle 4's tracker locked onto the white jaw; after 12 moves the tool returned <code>not_aligned</code> and never closed the jaws.</p>
+  <p class="lede">We don't count wins: many runs that day were never recorded. We count what the logs did catch. Over 8.3 h Interlock Core logged 1,013 motion commands and refused 43 before anything moved. 19 of those were paths into or within 1.5 cm of the table (the deepest 5.0 cm into it); 18 were writes while someone else held the arm. Two AI moves froze mid-way when a human took over with the leader arm. In the attack loop, cycle 4's tracker locked onto the white jaw; after 12 moves the tool returned <code>not_aligned</code> and never closed the jaws.</p>
   <div class="scroll" style="margin-bottom:16px"><table>
     <thead><tr><th>The error</th><th>Caught by</th><th>What happens</th><th>Where you see it</th></tr></thead>
     <tbody>
-      <tr><td>A path into the table</td><td>clearance check, before moving</td><td>refused, with the cm</td><td>result log, MCP reason</td></tr>
+      <tr><td>A path into the table</td><td>clearance check, before moving</td><td>refused, with the cm</td><td>result log, Link reason</td></tr>
       <tr><td>An AI write while a human holds the arm</td><td>control token</td><td>refused: human has control</td><td>holder switch</td></tr>
       <tr><td>A human takes over mid-move</td><td>holder change</td><td>AI move frozen in place, torque held</td><td>result log, 3D twin</td></tr>
       <tr><td>Jaws closing beside the object</td><td>jaw-band check on the camera</td><td>not_aligned, jaws stay open</td><td>green band on the raw view</td></tr>
@@ -186,9 +217,9 @@ footer{color:var(--ink2);font-size:13px}
   <div class="scroll"><table>
     <thead><tr><th>Layer</th><th>What a newcomer gets</th><th>Status</th></tr></thead>
     <tbody>
-      <tr><td>Daemon</td><td>No port collisions; a documented API</td><td><span class="pill good">working</span></td></tr>
-      <tr><td>MCP</td><td>Any model can drive the arm with honest outcomes</td><td><span class="pill good">working</span></td></tr>
-      <tr><td>Dashboard</td><td>Live 3D, camera, loads, STOP</td><td><span class="pill good">working</span></td></tr>
+      <tr><td>Interlock Core</td><td>No port collisions; a documented API</td><td><span class="pill good">working</span></td></tr>
+      <tr><td>Interlock Link</td><td>Any model can drive the arm with honest outcomes</td><td><span class="pill good">working</span></td></tr>
+      <tr><td>Interlock Console</td><td>Live 3D, camera, loads, STOP</td><td><span class="pill good">working</span></td></tr>
       <tr><td>Heat</td><td>Health report done; temperature logged every 10 s; guard next</td><td><span class="pill good">logging live</span></td></tr>
       <tr><td>Guardrails</td><td>Human-first control, STOP, load/table/limit guards</td><td><span class="pill good">working</span></td></tr>
     </tbody>
@@ -199,7 +230,7 @@ footer{color:var(--ink2);font-size:13px}
   <div class="eyebrow">The ask</div>
   <h2>Three things we want from Seeed</h2>
   <ol style="padding-left:20px;margin:8px 0 0">
-    <li><b>A home.</b> A place in the SO-ARM100/101 ecosystem (a repo under Seeed or a link from the docs) so owners find this layer on day one.</li>
+    <li><b>A home.</b> A place in the SO-ARM100/101 ecosystem (a repo under Seeed or a link from the docs) so owners find Interlock on day one.</li>
     <li><b>Servo facts.</b> Which STS3215 datasheet applies to the 12 V follower, what exactly happens at 70 °C, and whether a steady 10 to 20% holding load is within duty cycle. The heat guard should use vendor data, not our guesses.</li>
     <li><b>Review.</b> An engineer to check the guard set before we call it a safety profile.</li>
   </ol>
@@ -210,10 +241,10 @@ footer{color:var(--ink2);font-size:13px}
   <div class="eyebrow">Talk track · about 5 minutes</div>
   <h2>Say it like this</h2>
   <p><b>30 s</b> "You opened the arm. Thank you: we built on it in a day. What we hit next was not hardware. It was the layer above."</p>
-  <p><b>60 s</b> "Four problems: port collisions, no visibility, an AI with no brakes, no memory of what happened. We solved them once. One daemon owns the bus. Everything else is a client."</p>
+  <p><b>60 s</b> "Four problems: port collisions, no visibility, an AI with no brakes, no memory of what happened. We solved them once. Interlock Core owns the bus. Everything else is a client."</p>
   <p><b>60 s</b> "This morning we attacked our own guardrails: 28 deliberate bad commands, into the table, below it, out of reach, a servo that doesn't exist. 28 refused. Nothing moved."</p>
-  <p><b>60 s</b> Live: open the dashboard, show the 3D model and temperature colours. Ask the agent to pick the carton. Hit STOP mid-move. "It froze where it was. The agent cannot take control back; only I can."</p>
-  <p><b>45 s</b> "Our dashboard showed the elbow at 71 degrees, over the limit. We traced it: the reading was stale, and the real heat sits in the servos that hold the arm up, not the ones that move most. We fixed it, and now we log temperature every 10 seconds. The log already caught a 74-degree spike that was a bad read. Now we want your servo data to set a guard that knows the difference."</p>
+  <p><b>60 s</b> Live: open the Console, show the 3D model and temperature colours. Ask the agent to pick the carton. Hit STOP mid-move. "It froze where it was. The agent cannot take control back; only I can."</p>
+  <p><b>45 s</b> "Our Console showed the elbow at 71 degrees, over the limit. We traced it: the reading was stale, and the real heat sits in the servos that hold the arm up, not the ones that move most. We fixed it, and now we log temperature every 10 seconds. The log already caught a 74-degree spike that was a bad read. Now we want your servo data to set a guard that knows the difference."</p>
   <p><b>45 s</b> The ask: a home, servo facts, a reviewer. "We would rather this be yours than ours."</p>
 </section>
 
@@ -221,9 +252,9 @@ footer{color:var(--ink2);font-size:13px}
   <div class="eyebrow">Appendix</div>
   <h2>Method and caveats</h2>
   <ul>
-    <li>Code figures come from main at <code>078c7be</code>: 167 test functions across the daemon tests, 31 MCP tools, 52 demo folders in the main checkout.</li>
+    <li>Code figures come from main at <code>078c7be</code>: 167 test functions in <code>arm-daemon/tests</code> (Interlock Core's code still lives in <code>arm-daemon/</code>), 31 MCP tools, 52 demo folders in the main checkout.</li>
     <li>Command and refusal counts come from <code>arm-daemon/logs/20261023.jsonl</code> (1,013 rows, 8.3 h). They are what the log caught; not every run that day was recorded, and no success rate is claimed.</li>
-    <li>The attack loop is <code>reports/guardrail-loop/</code> on branch <code>claude/arm-guardrail-test-loop-bb691d</code> (23 Oct 08:44–09:27). Unreachable and unknown-servo refusals come from the MCP layer, so they are not in the daemon log.</li>
+    <li>The attack loop is <code>reports/guardrail-loop/</code> on branch <code>claude/arm-guardrail-test-loop-bb691d</code> (23 Oct 08:44–09:27). Unreachable and unknown-servo refusals come from the MCP layer, so they are not in Core's log.</li>
     <li>Heat: the 71 °C story comes from <code>reports/servo-health/servo-health-report.html</code> (branch <code>claude/servo-health-report-2f4a19</code>). The logging fix (<code>3de86c7</code>) is merged to main and running; the 2 h figures come from <code>arm-daemon/logs/health/20261023.jsonl</code>, 08:36–10:38. Max temperatures exclude the two one-sample spikes.</li>
     <li>The 70 °C over-temperature limit is read from our servos' EEPROM backup (address 13). Only the 7.4 V datasheet was available; our follower reads about 12 V.</li>
     <li>No hand or person detection exists in the code yet; guardrails are bus-level (load, lag, table, limits, STOP, human-first control).</li>
@@ -233,7 +264,20 @@ footer{color:var(--ink2);font-size:13px}
   </ul>
 </section>
 
-<footer>Alternate to <code>reports/hackathon-pitch-script.html</code> (the "Arms, not bodies" talk). Local file, not published.</footer>
+<footer><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Interlock">
+  
+  <circle cx="32" cy="32" r="30" fill="#DCEDFB"/>
+  <g transform="translate(4 -3)">
+    
+    <rect x="15" y="47" width="22" height="7" rx="3.5" fill="#2C6AA8"/>
+    <path d="M26 47 L22 26 L42 21 L46 33" fill="none" stroke="#2C6AA8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="22" cy="26" r="2.6" fill="#FFFFFF"/>
+    <circle cx="42" cy="21" r="2.6" fill="#FFFFFF"/>
+    <circle cx="26" cy="45" r="2.6" fill="#FFFFFF"/>
+    
+    <circle cx="46" cy="40" r="3.4" fill="#8EC5F0"/>
+  </g>
+</svg><span>interlock · Alternate to <code>reports/hackathon-pitch-script.html</code> (the "Arms, not bodies" talk). Local file, not published.</span></footer>
 </main>
 </body>
 </html>
