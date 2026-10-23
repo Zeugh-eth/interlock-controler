@@ -19,6 +19,7 @@ PORT_DEV = os.environ.get("ARM_FOLLOWER_PORT", "/dev/cu.usbmodem5B790812561")
 LEADER_DEV = os.environ.get("ARM_LEADER_PORT", "/dev/cu.usbmodem5B901010331")
 DEMO_DIR = HERE / "demos"
 KEY_FILE = HERE / "human.key"
+AUTH_USERS = HERE / "auth-users.json"     # --auth-lock: {"<uid>": "<device key>"}; stays out of git
 STOP_FILE = ROOT / "arm-agent/STOP"
 POSES = ROOT / "lab/arm-vision/pose-library.json"
 LOG_DIR = HERE / "logs"
@@ -48,7 +49,18 @@ def main():
     ap.add_argument("--leader-port", default=LEADER_DEV, help="leader arm port for holder=leader teleop ('' = none)")
     ap.add_argument("--no-yolo", action="store_true", help="annotated view without the YOLO-World detector")
     ap.add_argument("--vision-hz", type=float, default=5.0)
+    ap.add_argument("--auth-lock", action="store_true",
+                    help=f"agent mode needs the code from a listed device once per run (users: {AUTH_USERS.name})")
     a = ap.parse_args()
+
+    auth_lock = None
+    if a.auth_lock:
+        from authlock import AuthLock, load_users
+        try:
+            auth_lock = AuthLock(load_users(AUTH_USERS))
+        except (OSError, ValueError) as e:
+            print(f"refusing to start: --auth-lock needs {AUTH_USERS} as {{\"<uid>\": \"<key>\"}} ({e})", file=sys.stderr)
+            sys.exit(2)
 
     from api import build_app
     from bus import BusWorker
@@ -70,7 +82,7 @@ def main():
         leader = RealLeader(a.leader_port) if a.leader_port else None
 
     key = human_key()
-    control = ControlState(key, STOP_FILE)
+    control = ControlState(key, STOP_FILE, auth_lock=auth_lock)
     cams = CameraWorker(a.cam_url)
     bus = BusWorker(backend, control, POSES, hz=a.hz, log_dir=LOG_DIR, leader=leader,
                     frame_fn=lambda: cams.frame("gripper"), demo_dir=DEMO_DIR)
@@ -104,7 +116,8 @@ def main():
     loop_sig = {signal.SIGTERM, signal.SIGINT}
     for s in loop_sig:
         signal.signal(s, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt))
-    print(f"arm-daemon on http://127.0.0.1:{a.port}  backend={'fake' if a.fake else 'real'}  key={KEY_FILE}")
+    print(f"arm-daemon on http://127.0.0.1:{a.port}  backend={'fake' if a.fake else 'real'}  key={KEY_FILE}"
+          + ("  auth-lock=on" if auth_lock else ""))
     web.run_app(app, host="127.0.0.1", port=a.port, print=None, handle_signals=False)
 
 
