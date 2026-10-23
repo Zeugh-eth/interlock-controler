@@ -56,8 +56,8 @@ footer{color:var(--ink2);font-size:13px}
 <div class="tiles">
   <div class="tile"><div class="big">1</div><div class="lbl">process owns the serial port; everything else is a client</div></div>
   <div class="tile"><div class="big">31</div><div class="lbl">MCP tools an agent can call, all through the same guards</div></div>
-  <div class="tile"><div class="big">164</div><div class="lbl">tests in the daemon, run against a fake bus, no hardware needed</div></div>
-  <div class="tile"><div class="big">17</div><div class="lbl">recorded demonstrations, each with an outcome card</div></div>
+  <div class="tile"><div class="big">43</div><div class="lbl">refused before anything moved, in 1,013 logged commands</div></div>
+  <div class="tile"><div class="big">28 / 28</div><div class="lbl">deliberate bad commands refused in our own attack loop</div></div>
   <div class="tile"><div class="big">0</div><div class="lbl">ways for an agent to take the arm from a human</div></div>
 </div>
 
@@ -82,6 +82,7 @@ footer{color:var(--ink2);font-size:13px}
         <li>Camera proxy, annotated vision, demo recording, named poses. Binds to loopback only.</li>
         <li>Wraps LeRobot rather than replacing it: a <code>released</code> holder hands the bus to <code>lerobot-teleoperate</code> and takes it back.</li>
         <li>Full <code>API.md</code> a builder can code a client from.</li>
+        <li>167 tests against a fake bus: no arm needed to contribute.</li>
       </ul></div>
       <div><h4>We would upstream</h4><ul>
         <li>The bus-ownership pattern and API spec as a reference for the SO-ARM100 repo.</li>
@@ -127,19 +128,20 @@ footer{color:var(--ink2);font-size:13px}
   </div>
 
   <div class="card">
-    <div class="n">4 · Heat performance analysis <span class="pill good">analysis done</span><span class="pill warn">logging fix not merged</span></div>
+    <div class="n">4 · Heat performance analysis <span class="pill good">analysis done</span><span class="pill good">logging live</span><span class="pill warn">guard next</span></div>
     <h3>We found a 71 °C elbow reading, traced it, and fixed what hid it</h3>
     <div class="cols">
       <div><h4>Today</h4><ul>
         <li>A servo health report covers about 14 h of use on 22 to 23 Oct (1,250 agent calls, 340 daemon commands, 17 demos): load, tracking and travel for all six STS3215 servos.</li>
         <li>Finding: the dashboard showed the elbow at 71 °C, above the 70 °C limit set in every servo's EEPROM. It was a stale value: the daemon stopped re-reading temperature while the leader arm drove. A fresh read showed 36 °C.</li>
-        <li>Pattern: the two warmest servos, elbow and shoulder lift, are the ones holding the folded arm against gravity (10 to 19% load), not the ones that move most. This is a hypothesis, not a proven cause.</li>
-        <li>Fix: temperature now refreshes every 2.5 s in every mode, and a per-servo health row (temperature, load, position, torque) is written every 10 s to <code>logs/health/</code>.</li>
+        <li>Fix, merged and running since 08:36 on 23 Oct: temperature refreshes every 2.5 s in every mode, and a per-servo health row (temperature, load, position, torque) is written every 10 s to <code>logs/health/</code>.</li>
+        <li>First 2 h of that log (427 rows): the shoulder lift, which holds the folded arm up, runs hottest on average (38.1 °C) at about 4× the load of the others. Hottest real reading: 44 °C (gripper), 26 °C under the limit. Heat following holding load is still a hypothesis.</li>
+        <li>The log caught two impossible readings on wrist flex: 74 °C and 62 °C for a single 10 s sample, with 36 °C either side. No servo heats and cools that fast, so these are bad bus reads. One in four health rows came back with no temperature at all.</li>
         <li>Live view: servo colour on the 3D model runs 32 to 60 °C; a joint is flagged hot at 55 °C.</li>
       </ul></div>
       <div><h4>Next (the contribution)</h4><ul>
-        <li>Merge and run the logging fix, then collect a real temperature history per task (hold, carry, long reach).</li>
-        <li>A temperature guard next to the load guard, so a hot servo slows or parks before the firmware unloads it.</li>
+        <li>Keep logging and compare heat per task (hold, carry, long reach).</li>
+        <li>A temperature guard next to the load guard, so a hot servo slows or parks before the firmware unloads it. It must ignore one-sample spikes, or it will stop the arm for a bad read.</li>
         <li>A duty-cycle guide for SO-101 builds, using Seeed's servo data (see the ask).</li>
       </ul></div>
     </div>
@@ -156,6 +158,7 @@ footer{color:var(--ink2);font-size:13px}
         <li><b>Table clearance</b> check before the move, refused with the reachable height.</li>
         <li><b>Joint limits</b> clamp and report. One write at a time; extras are refused as <code>busy</code>.</li>
         <li>Torque off while the arm is raised is refused without confirmation.</li>
+        <li><b>Attacked on purpose:</b> 28 unattended MCP-only cycles, each ending in one deliberately bad command of 9 kinds (into the table, below it, too far, behind the base, a servo that doesn't exist). All 28 refused; nothing moved.</li>
       </ul></div>
       <div><h4>We would upstream</h4><ul>
         <li>The guard set and the control model as a written safety profile for low-cost arms driven by AI.</li>
@@ -167,15 +170,26 @@ footer{color:var(--ink2);font-size:13px}
 
 <section>
   <div class="eyebrow">Proof it is real</div>
-  <h2>What a run looks like</h2>
-  <p class="lede">On 22 to 23 Oct, Claude picked a carton and placed it on a tray through MCP on the real arm. Misses were analysed and fed back into the tool design: the grab now refuses to close the jaws when the object is not aligned, and reports <code>not_aligned</code> instead of failing silently. Twelve recorded runs are summarised in <code>reports/robot-ai-practices/run-analysis.html</code>.</p>
+  <h2>What it caught, and how it stopped</h2>
+  <p class="lede">We don't count wins: many runs that day were never recorded. We count what the logs did catch. Over 8.3 h the daemon logged 1,013 motion commands and refused 43 before anything moved. 19 of those were paths into or within 1.5 cm of the table (the deepest 5.0 cm into it); 18 were writes while someone else held the arm. Two AI moves froze mid-way when a human took over with the leader arm. In the attack loop, cycle 4's tracker locked onto the white jaw; after 12 moves the tool returned <code>not_aligned</code> and never closed the jaws.</p>
+  <div class="scroll" style="margin-bottom:16px"><table>
+    <thead><tr><th>The error</th><th>Caught by</th><th>What happens</th><th>Where you see it</th></tr></thead>
+    <tbody>
+      <tr><td>A path into the table</td><td>clearance check, before moving</td><td>refused, with the cm</td><td>result log, MCP reason</td></tr>
+      <tr><td>An AI write while a human holds the arm</td><td>control token</td><td>refused: human has control</td><td>holder switch</td></tr>
+      <tr><td>A human takes over mid-move</td><td>holder change</td><td>AI move frozen in place, torque held</td><td>result log, 3D twin</td></tr>
+      <tr><td>Jaws closing beside the object</td><td>jaw-band check on the camera</td><td>not_aligned, jaws stay open</td><td>green band on the raw view</td></tr>
+      <tr><td>A stale 71 °C reading</td><td>refresh every 2.5 s, every mode</td><td>fresh reading + health log</td><td>servo colour on the twin</td></tr>
+      <tr><td>A 74 °C spike that wasn't real</td><td>the health log</td><td>logged, not acted on <span class="pill warn">next: filter</span></td><td>health log</td></tr>
+    </tbody>
+  </table></div>
   <div class="scroll"><table>
     <thead><tr><th>Layer</th><th>What a newcomer gets</th><th>Status</th></tr></thead>
     <tbody>
       <tr><td>Daemon</td><td>No port collisions; a documented API</td><td><span class="pill good">working</span></td></tr>
       <tr><td>MCP</td><td>Any model can drive the arm with honest outcomes</td><td><span class="pill good">working</span></td></tr>
       <tr><td>Dashboard</td><td>Live 3D, camera, loads, STOP</td><td><span class="pill good">working</span></td></tr>
-      <tr><td>Heat</td><td>Health report done; temperature logging fixed on a branch; guard next</td><td><span class="pill warn">fix not merged</span></td></tr>
+      <tr><td>Heat</td><td>Health report done; temperature logged every 10 s; guard next</td><td><span class="pill good">logging live</span></td></tr>
       <tr><td>Guardrails</td><td>Human-first control, STOP, load/table/limit guards</td><td><span class="pill good">working</span></td></tr>
     </tbody>
   </table></div>
@@ -193,12 +207,13 @@ footer{color:var(--ink2);font-size:13px}
 </section>
 
 <section class="talk">
-  <div class="eyebrow">Talk track · about 4 minutes</div>
+  <div class="eyebrow">Talk track · about 5 minutes</div>
   <h2>Say it like this</h2>
   <p><b>30 s</b> "You opened the arm. Thank you: we built on it in a day. What we hit next was not hardware. It was the layer above."</p>
   <p><b>60 s</b> "Four problems: port collisions, no visibility, an AI with no brakes, no memory of what happened. We solved them once. One daemon owns the bus. Everything else is a client."</p>
+  <p><b>60 s</b> "This morning we attacked our own guardrails: 28 deliberate bad commands, into the table, below it, out of reach, a servo that doesn't exist. 28 refused. Nothing moved."</p>
   <p><b>60 s</b> Live: open the dashboard, show the 3D model and temperature colours. Ask the agent to pick the carton. Hit STOP mid-move. "It froze where it was. The agent cannot take control back; only I can."</p>
-  <p><b>45 s</b> "Our dashboard showed the elbow at 71 degrees, over the limit. We traced it: the reading was stale, and the real heat sits in the servos that hold the arm up, not the ones that move most. We fixed the logging. Now we want your servo data to set the guard."</p>
+  <p><b>45 s</b> "Our dashboard showed the elbow at 71 degrees, over the limit. We traced it: the reading was stale, and the real heat sits in the servos that hold the arm up, not the ones that move most. We fixed it, and now we log temperature every 10 seconds. The log already caught a 74-degree spike that was a bad read. Now we want your servo data to set a guard that knows the difference."</p>
   <p><b>45 s</b> The ask: a home, servo facts, a reviewer. "We would rather this be yours than ours."</p>
 </section>
 
@@ -206,13 +221,15 @@ footer{color:var(--ink2);font-size:13px}
   <div class="eyebrow">Appendix</div>
   <h2>Method and caveats</h2>
   <ul>
-    <li>Figures come from the repo at commit <code>15d3a6d</code>: 164 test functions across the daemon tests, 31 MCP tool names, 17 demo folders in the main checkout.</li>
-    <li>Heat: figures come from <code>reports/servo-health/servo-health-report.html</code> on branch <code>claude/servo-health-report-2f4a19</code>. The logging fix is commit <code>335ca88</code> on that branch, not merged to main, so the running daemon does not log temperature yet (it also needs a human restart). Its tests could not run in that worktree because <code>scripts/kin.py</code> is not tracked in git.</li>
+    <li>Code figures come from main at <code>078c7be</code>: 167 test functions across the daemon tests, 31 MCP tools, 52 demo folders in the main checkout.</li>
+    <li>Command and refusal counts come from <code>arm-daemon/logs/20261023.jsonl</code> (1,013 rows, 8.3 h). They are what the log caught; not every run that day was recorded, and no success rate is claimed.</li>
+    <li>The attack loop is <code>reports/guardrail-loop/</code> on branch <code>claude/arm-guardrail-test-loop-bb691d</code> (23 Oct 08:44–09:27). Unreachable and unknown-servo refusals come from the MCP layer, so they are not in the daemon log.</li>
+    <li>Heat: the 71 °C story comes from <code>reports/servo-health/servo-health-report.html</code> (branch <code>claude/servo-health-report-2f4a19</code>). The logging fix (<code>3de86c7</code>) is merged to main and running; the 2 h figures come from <code>arm-daemon/logs/health/20261023.jsonl</code>, 08:36–10:38. Max temperatures exclude the two one-sample spikes.</li>
     <li>The 70 °C over-temperature limit is read from our servos' EEPROM backup (address 13). Only the 7.4 V datasheet was available; our follower reads about 12 V.</li>
     <li>No hand or person detection exists in the code yet; guardrails are bus-level (load, lag, table, limits, STOP, human-first control).</li>
     <li>Guards are advisory in one case: table clearance depends on a model that is wrong when the arm rests on something.</li>
     <li>"Licence" and "maintainer for six months" are offers to confirm with the team, not yet decided.</li>
-    <li>Vision uses YOLO-World and is imperfect for small objects above 6 cm; the pitch claims one successful carton pick and a documented set of failures.</li>
+    <li>Vision uses YOLO-World and misses small objects above 6 cm, which is why the tools point at a raw pixel when the detector sees nothing.</li>
   </ul>
 </section>
 
