@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" width="300" height="64" role="img" aria-label="Interlock">
+  <circle cx="32" cy="32" r="30" fill="#DCEDFB"/>
+  <g transform="translate(4 -3)">
+    <rect x="15" y="47" width="22" height="7" rx="3.5" fill="#2C6AA8"/>
+    <path d="M26 47 L22 26 L42 21 L46 33" fill="none" stroke="#2C6AA8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="22" cy="26" r="2.6" fill="#FFFFFF"/>
+    <circle cx="42" cy="21" r="2.6" fill="#FFFFFF"/>
+    <circle cx="26" cy="45" r="2.6" fill="#FFFFFF"/>
+    <circle cx="46" cy="40" r="3.4" fill="#8EC5F0"/>
+  </g>
+  <text x="76" y="44" font-family="'DM Sans',-apple-system,'Helvetica Neue',Arial,sans-serif" font-size="34" font-weight="500" letter-spacing="-0.5" fill="#1F2A37">interlock</text>
+</svg>
