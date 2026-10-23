@@ -166,3 +166,42 @@ def test_align_tools_over_stateful_fake():
     r = m.grasp(label="carton")
     assert "verdict" in r.structured_content
     fd.close()
+
+
+def test_http_transport_needs_the_bearer_token():
+    import socket, time, urllib.error, urllib.request
+    import uvicorn
+    from mcp.client.session import ClientSession
+    from mcp.client.streamable_http import create_mcp_http_client, streamable_http_client
+    fd = FakeDaemon()
+    m = _mcp(fd.url)
+    s = socket.socket(); s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]; s.close()
+    srv = uvicorn.Server(uvicorn.Config(m.http_app("k3y"), host="127.0.0.1", port=port, log_level="warning"))
+    threading.Thread(target=srv.run, daemon=True).start()
+    url = f"http://127.0.0.1:{port}/mcp"
+    for _ in range(100):
+        if srv.started:
+            break
+        time.sleep(0.05)
+    for headers in ({}, {"Authorization": "Bearer wrong"}):
+        req = urllib.request.Request(url, data=b"{}", headers=headers, method="POST")
+        try:
+            urllib.request.urlopen(req, timeout=5)
+            assert False, "expected 401"
+        except urllib.error.HTTPError as e:
+            assert e.code == 401
+
+    async def call():
+        async with create_mcp_http_client(headers={"Authorization": "Bearer k3y"}) as http:
+            async with streamable_http_client(url, http_client=http) as (r, w, *_):
+                async with ClientSession(r, w) as sess:
+                    await sess.initialize()
+                    names = {t.name for t in (await sess.list_tools()).tools}
+                    res = await sess.call_tool("state", {})
+                    return names, res
+    try:
+        names, res = asyncio.run(call())
+    finally:
+        srv.should_exit = True
+    assert {"look", "grasp", "align_to"} <= names
+    assert res.structured_content["control"]["holder"] == "agent"

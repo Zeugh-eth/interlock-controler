@@ -6,18 +6,25 @@ while the human holds the arm (ask the user to switch the holder on the dashboar
 
 Register:  claude mcp add arm-daemon -s project -- uv --directory <repo>/tools/arm-lerobot run python <repo>/arm-daemon/mcp_server.py
 Tool list: uv run python mcp_server.py --list
+Remote:    uv run python mcp_server.py --http   (streamable HTTP on :8811/mcp, bearer token in agent-http.key;
+           runs beside the local stdio server, both are agent clients of the same daemon)
 """
 import argparse
+import hmac
 import json
+import secrets
 import sys
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 from mcp.server.mcpserver import MCPServer
+from mcp.server.transport_security import TransportSecuritySettings
 from mcp.server.mcpserver.utilities.types import Image
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
 
 BASE = "http://127.0.0.1:8800"
+AGENT_HEADERS = {}          # --http sets {"X-Arm-Agent": "remote"}: the daemon ranks it below the local agent
 TIMEOUT = 120
 
 INSTRUCTIONS = """Drives a Seeed SO-101 arm through arm-daemon, as the AGENT client. Decide from the gripper
@@ -78,7 +85,7 @@ _open = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 def _http(method, path, body=None):
     data = json.dumps(body or {}).encode() if method == "POST" else None
     req = urllib.request.Request(BASE + path, data=data, method=method,
-                                 headers={"Content-Type": "application/json"} if data is not None else {})
+                                 headers={**AGENT_HEADERS, **({"Content-Type": "application/json"} if data is not None else {})})
     try:
         with _open.open(req, timeout=TIMEOUT) as r:
             raw = r.read()
@@ -358,7 +365,7 @@ def _skills():
     global _SKILLS
     if _SKILLS is None or _SKILLS.base != BASE:
         import skills
-        _SKILLS = skills.Skills(BASE)
+        _SKILLS = skills.Skills(BASE, headers=AGENT_HEADERS)
     return _SKILLS
 
 
@@ -510,17 +517,75 @@ def replan(plan: dict, evaluation: dict) -> CallToolResult:
     return _result(_skills().replan(plan, evaluation))
 
 
+KEY_FILE = Path(__file__).with_name("agent-http.key")
+
+
+def http_key():
+    """Bearer token for --http clients; created on first use, kept out of git."""
+    if not KEY_FILE.exists():
+        KEY_FILE.write_text(secrets.token_urlsafe(24) + "\n")
+        KEY_FILE.chmod(0o600)
+    return KEY_FILE.read_text().strip()
+
+
+def bearer_gate(app, key):
+    """ASGI wrapper: HTTP requests without `Authorization: Bearer <key>` get 401. Lifespan passes."""
+    want = f"Bearer {key}".encode()
+
+    async def gated(scope, receive, send):
+        if scope["type"] == "http":
+            got = dict(scope.get("headers") or []).get(b"authorization", b"")
+            if not hmac.compare_digest(got, want):
+                await send({"type": "http.response.start", "status": 401,
+                            "headers": [(b"content-type", b"text/plain"), (b"www-authenticate", b"Bearer")]})
+                await send({"type": "http.response.body", "body": b"bad or missing bearer token\n"})
+                return
+        await app(scope, receive, send)
+    return gated
+
+
+def http_app(key):
+    # The token, not the Host header, is the protection: the server is reached by LAN IP,
+    # .local name or Tailscale IP, so the SDK's localhost-only DNS-rebinding check is off.
+    app = server.streamable_http_app(
+        transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False))
+    return bearer_gate(app, key)
+
+
+def lan_names(port):
+    import socket
+    names = [f"{socket.gethostname().removesuffix('.local')}.local"]
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.connect(("10.255.255.255", 9)); names.append(s.getsockname()[0]); s.close()
+    except OSError:
+        pass
+    return [f"http://{n}:{port}/mcp" for n in names]
+
+
 def main(argv=None):
     global BASE
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--url", default=BASE)
     ap.add_argument("--list", action="store_true")
+    ap.add_argument("--http", action="store_true", help="serve streamable HTTP for agents on other machines")
+    ap.add_argument("--host", default="0.0.0.0")
+    ap.add_argument("--port", type=int, default=8811)
     a = ap.parse_args(argv)
     BASE = a.url
     if a.list:
         import asyncio
         for t in asyncio.run(server.list_tools()):
             print(f"{t.name:12s} {t.description.splitlines()[0]}")
+        return
+    if a.http:
+        import uvicorn
+        key = http_key()
+        AGENT_HEADERS["X-Arm-Agent"] = "remote"
+        print("arm-daemon MCP over HTTP as the REMOTE agent (the local agent goes first; the dashboard can block it)", flush=True)
+        for u in lan_names(a.port):
+            print(f"  url: {u}", flush=True)
+        print(f"  header: Authorization: Bearer {key}   (from {KEY_FILE.name})", flush=True)
+        uvicorn.run(http_app(key), host=a.host, port=a.port, log_level="warning")
         return
     server.run("stdio")
 
