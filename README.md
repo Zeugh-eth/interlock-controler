@@ -9,6 +9,10 @@ remote over HTTP with a bearer token), and teleop from a leader arm. The human a
 key: an agent can only move the arm while the human has handed it control, and STOP works for
 anyone.
 
+![The Interlock Console while an AI agent runs a pick-and-place round by itself](docs/media/console-live.gif)
+
+*The Interlock Console, recorded while an AI agent ran a guardrail-loop round on its own.*
+
 ## What is in here
 
 | Path | What |
@@ -25,6 +29,10 @@ anyone.
 | `.claude/skills/` | Agent skills for driving the arm and naming postures |
 | `lab/arm-vision/*.json` | Camera calibration, jaw signature and pose library |
 | `docs/`, `reports/robot-ai-practices/` | Design spec, plans, handoffs, and run analyses |
+
+## How it fits together
+
+![Interlock layers: Console, Link and LeRobot talk to Interlock Core over one API; only Core is connected to the SO-ARM101](docs/media/interlock-layers.png)
 
 ## Control model, in short
 

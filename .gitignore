@@ -76,3 +76,5 @@ tools/models/*
 !tools/models/yolov8s-worldv2.pt
 !lab/calibration/
 !lab/calibration/*.json
+!docs/media/
+!docs/media/*
