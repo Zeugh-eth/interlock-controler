@@ -158,18 +158,18 @@ body.idle #help,body.idle #count{opacity:0}
 </section>
 
 <!-- 2 COLD OPEN NUMBERS -->
-<section class="slide" data-notes="These numbers come straight from the log of one day. We do not count successful picks, because not every run was recorded. We count what Interlock stopped.">
+<section class="slide" data-notes="These numbers come straight from one day of logs, 02:20 to 12:17. We do not count successful picks, because not every run was recorded. We count what Interlock stopped.">
   <div class="eyebrow">Our test log · 23 October</div>
-  <h2>An AI model drove a real SO&#8209;ARM101 for 8 hours. <span class="hl">Interlock checked every move.</span></h2>
+  <h2>People and AI models drove a real SO&#8209;ARM101 for 10 hours. <span class="hl">Interlock checked every move.</span></h2>
   <div class="grow" style="display:flex;flex-direction:column;justify-content:center;padding-bottom:30px">
     <div class="kpis">
-      <div><div class="big">1,013</div><div class="lbl">moves sent to the arm, each saved with its result</div></div>
-      <div><div class="big hl">43</div><div class="lbl">moves stopped before the arm moved</div></div>
-      <div><div class="big hl">19</div><div class="lbl">of those would have hit the table</div></div>
+      <div><div class="big">1,709</div><div class="lbl">moves sent to the arm, each saved with its result</div></div>
+      <div><div class="big hl">71</div><div class="lbl">moves stopped before the arm moved</div></div>
+      <div><div class="big hl">35</div><div class="lbl">of those would have hit the table</div></div>
       <div><div class="big hl">0</div><div class="lbl">times the AI took control away from a person</div></div>
     </div>
   </div>
-  <div class="foot"><span>Source: arm-daemon/logs/20261023.jsonl (8.3 hours). Not every run that day was logged, so we do not report a success rate.</span><span></span></div>
+  <div class="foot"><span>Source: arm-daemon/logs/20261023.jsonl (02:20 to 12:17). Not every run that day was logged, so we do not report a success rate.</span><span></span></div>
 </section>
 
 <!-- 3 WHY -->
@@ -195,18 +195,18 @@ body.idle #help,body.idle #count{opacity:0}
 </section>
 
 <!-- 5 STACK -->
-<section class="slide" data-notes="One program owns the arm. People, AI models and LeRobot all talk to it. The checks live in Core, so no program can skip them.">
+<section class="slide" data-notes="One program owns the arm. People, AI models and LeRobot all talk to it. An AI on another computer can connect too, over the network; the AI on this computer goes first, and a person can block the remote one. The checks live in Core, so no program can skip them.">
   <div class="eyebrow">How it works</div>
   <h2 style="margin-bottom:16px">One program controls the arm. Everything else sends it requests.</h2>
   <div class="grow" style="display:flex;flex-direction:column;justify-content:center">
     <div class="box3">
       <div class="box"><b>Interlock Console</b><span>For people: watch the arm, control it, press STOP</span><span class="m">http://127.0.0.1:8800/</span></div>
-      <div class="box"><b>Interlock Link</b><span>For AI models: 31 tools over MCP</span><span class="m">mcp_server.py</span></div>
+      <div class="box"><b>Interlock Link</b><span>For AI models on this computer or another one: 31 tools over MCP</span><span class="m">mcp_server.py · --http</span></div>
       <div class="box"><b>LeRobot</b><span>For recording and teleoperation. Core lends it the arm, then takes it back.</span></div>
     </div>
     <div class="arrow">↓ HTTP AND WEBSOCKET · ONE DOCUMENTED API ↓</div>
     <div class="box core"><b>Interlock Core</b><span>The only program connected to the arm. Reads every servo 20 times a second. Checks every move.</span>
-      <div class="chips"><span>a person starts in control</span><span class="stop">STOP</span><span>load check</span><span>table check</span><span>joint limits</span><span>one move at a time</span></div>
+      <div class="chips"><span>a person starts in control</span><span class="stop">STOP</span><span>load check</span><span>table check</span><span>joint limits</span><span>one move at a time</span><span>local AI goes first</span></div>
     </div>
     <div class="arrow">↓ SERIAL CABLE ↓</div>
     <div class="box"><b>Seeed SO&#8209;ARM101</b><span>6 STS3215 servos and a gripper camera</span></div>
@@ -216,23 +216,23 @@ body.idle #help,body.idle #count{opacity:0}
 <!-- 6 DATA: STOPS -->
 <section class="slide" data-notes="Every move Interlock refused, grouped by reason. Most were paths into the table, or moves sent while someone else had control. Each one came back with a reason in plain words.">
   <div class="eyebrow">Test data · moves Interlock stopped</div>
-  <h2 style="margin-bottom:22px">Interlock stopped 43 moves. <span class="hl">Each stop came with a clear reason.</span></h2>
+  <h2 style="margin-bottom:22px">Interlock stopped 71 moves. <span class="hl">Each stop came with a clear reason.</span></h2>
   <div class="row grow" style="gap:44px">
     <div style="flex:1.45">
       <div class="hb head" style="grid-template-columns:300px 1fr 60px"><span>reason given</span><span>number of moves</span><span></span></div>
       <div class="hbars">
-        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="path within X cm of table: 19 refusals, deepest -5.0 cm"><span><b>path would hit the table</b></span><div class="track"><div class="fill key" style="width:100.0%"></div></div><span class="v">19</span></div>
-        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="leader has control: 11 · human has control: 7"><span>someone else has control</span><div class="track"><div class="fill" style="width:94.7%"></div></div><span class="v">18</span></div>
-        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="busy: a move was already running"><span>another move was running</span><div class="track"><div class="fill" style="width:15.8%"></div></div><span class="v">3</span></div>
-        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="arm is raised; pass confirm"><span>motors off while arm is raised</span><div class="track"><div class="fill" style="width:5.3%"></div></div><span class="v">1</span></div>
-        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="wrong unit: gripper takes pct"><span>wrong unit in the command</span><div class="track"><div class="fill" style="width:5.3%"></div></div><span class="v">1</span></div>
-        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="bus released"><span>arm was lent to LeRobot</span><div class="track"><div class="fill" style="width:5.3%"></div></div><span class="v">1</span></div>
+        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="path within X cm of table: 35 refusals, deepest -6.0 cm"><span><b>path would hit the table</b></span><div class="track"><div class="fill key" style="width:100.0%"></div></div><span class="v">35</span></div>
+        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="leader has control: 11 · human has control: 7"><span>someone else has control</span><div class="track"><div class="fill" style="width:51.4%"></div></div><span class="v">18</span></div>
+        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="busy: a move was already running"><span>another move was running</span><div class="track"><div class="fill" style="width:42.9%"></div></div><span class="v">15</span></div>
+        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="arm is raised; pass confirm"><span>motors off while arm is raised</span><div class="track"><div class="fill" style="width:2.9%"></div></div><span class="v">1</span></div>
+        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="wrong unit: gripper takes pct"><span>wrong unit in the command</span><div class="track"><div class="fill" style="width:2.9%"></div></div><span class="v">1</span></div>
+        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="bus released"><span>arm was lent to LeRobot</span><div class="track"><div class="fill" style="width:2.9%"></div></div><span class="v">1</span></div>
       </div>
-      <p class="src" style="margin-top:16px">Source: arm-daemon/logs/20261023.jsonl, 1,013 moves. "Stopped" means the arm did not move.</p>
+      <p class="src" style="margin-top:16px">Source: arm-daemon/logs/20261023.jsonl, 1,709 moves. "Stopped" means the arm did not move.</p>
     </div>
     <div style="flex:.75;display:flex;flex-direction:column;justify-content:center;gap:20px">
-      <div class="card"><div class="big hl">−5.0 cm</div><div class="lbl">The worst case: a path 5 cm into the table. <span class="pill p-refused">stopped</span></div></div>
-      <div class="card"><div class="big">2</div><div class="lbl">AI moves paused when a person took over with the leader arm. <span class="pill p-caution">frozen</span></div></div>
+      <div class="card"><div class="big hl">−6.0 cm</div><div class="lbl">The worst case: a path 6 cm into the table. <span class="pill p-refused">stopped</span></div></div>
+      <div class="card"><div class="big">4</div><div class="lbl">moves frozen during the move: 2 when a person took over, 2 on a lag spike. <span class="pill p-caution">frozen</span></div></div>
     </div>
   </div>
 </section>
@@ -253,26 +253,26 @@ body.idle #help,body.idle #count{opacity:0}
 </section>
 
 <!-- 8 GUARDRAIL LOOP -->
-<section class="slide" data-notes="This morning we tested our own checks. The AI ran 28 rounds with no person at the controls. Each round: pick up the carton, lift it, put it down, then one bad command on purpose. Nine kinds of bad command. All 28 were stopped. The arm never moved for them.">
-  <div class="eyebrow">Stress test · 23 October, 08:44 to 09:27</div>
-  <h2 style="margin-bottom:14px">We sent 28 bad commands on purpose. <span class="hl">Interlock stopped all 28.</span></h2>
+<section class="slide" data-notes="This morning we tested our own checks. The AI ran 55 rounds by itself. Each round: pick up the carton, lift it, put it down, then one bad command on purpose. Later rounds added spins and shakes while holding the carton, and a new box standing on its edge. Nine kinds of bad command, 51 in total. All 51 were stopped. The arm never moved for them.">
+  <div class="eyebrow">Stress test · 23 October, 08:44 to 12:16</div>
+  <h2 style="margin-bottom:14px">We sent 51 bad commands on purpose. <span class="hl">Interlock stopped all 51.</span></h2>
   <div class="row grow" style="gap:26px">
     <div class="tablecard" style="flex:1;align-self:center">
       <table class="t compact" style="font-size:15px">
         <tr><th>Bad command</th><th>Times</th><th>What the AI sent</th><th>Interlock's reply</th></tr>
-        <tr><td><b>Touch the table</b></td><td class="m">4</td><td><code>goto_xyz(0.25, 0.08, 0.0)</code></td><td><span class="pill p-refused">path within -0.0 cm of table</span></td></tr>
-        <tr><td><b>Push down into the table</b></td><td class="m">3</td><td><code>move_tool(dz=-0.10)</code></td><td><span class="pill p-refused">path within -4.7 cm of table</span></td></tr>
-        <tr><td><b>Aim below the table</b></td><td class="m">3</td><td><code>goto_xyz(0.20, -0.05, -0.05)</code></td><td><span class="pill p-refused">path within -5.0 cm of table</span></td></tr>
-        <tr><td><b>Move down at an angle</b></td><td class="m">3</td><td><code>move_tool(0.10, 0.05, -0.07)</code></td><td><span class="pill p-refused">path within -1.9 cm of table</span></td></tr>
-        <tr><td><b>End 0.6 cm above the table</b></td><td class="m">2</td><td><code>move_tool(dz=-0.045)</code></td><td><span class="pill p-refused">path within 0.7 cm of table</span></td></tr>
-        <tr><td><b>Reach too far out</b></td><td class="m">4</td><td><code>goto_xyz(0.45, -0.10, 0.06)</code></td><td><span class="pill p-refused">unreachable top-down</span></td></tr>
-        <tr><td><b>Reach behind the base</b></td><td class="m">3</td><td><code>goto_xyz(-0.20, -0.05, 0.10)</code></td><td><span class="pill p-refused">unreachable top-down</span></td></tr>
-        <tr><td><b>Reach the far side</b></td><td class="m">3</td><td><code>goto_xyz(0.0, -0.45, 0.08)</code></td><td><span class="pill p-refused">unreachable top-down</span></td></tr>
-        <tr><td><b>Use a servo name that does not exist</b></td><td class="m">3</td><td><code>set_servo("wrist_pitch", 30)</code></td><td><span class="pill p-refused">unknown servo wrist_pitch</span></td></tr>
+        <tr><td><b>Touch the table</b></td><td class="m">7</td><td><code>goto_xyz(0.25, 0.08, 0.0)</code></td><td><span class="pill p-refused">path within -0.0 cm of table</span></td></tr>
+        <tr><td><b>Push down into the table</b></td><td class="m">6</td><td><code>move_tool(dz=-0.10)</code></td><td><span class="pill p-refused">path within -4.7 cm of table</span></td></tr>
+        <tr><td><b>Aim below the table</b></td><td class="m">6</td><td><code>goto_xyz(0.20, 0.12, -0.06)</code></td><td><span class="pill p-refused">path within -6.0 cm of table</span></td></tr>
+        <tr><td><b>Move down at an angle</b></td><td class="m">6</td><td><code>move_tool(0.10, 0.05, -0.07)</code></td><td><span class="pill p-refused">path within -1.9 cm of table</span></td></tr>
+        <tr><td><b>End just above the table</b></td><td class="m">4</td><td><code>move_tool(dz=-0.045)</code></td><td><span class="pill p-refused">path within 0.7 cm of table</span></td></tr>
+        <tr><td><b>Reach too far out</b></td><td class="m">7</td><td><code>goto_xyz(0.45, -0.10, 0.06)</code></td><td><span class="pill p-refused">unreachable top-down</span></td></tr>
+        <tr><td><b>Reach behind the base</b></td><td class="m">4</td><td><code>goto_xyz(-0.20, -0.05, 0.10)</code></td><td><span class="pill p-refused">unreachable top-down</span></td></tr>
+        <tr><td><b>Reach the far side</b></td><td class="m">5</td><td><code>goto_xyz(0.0, -0.45, 0.08)</code></td><td><span class="pill p-refused">unreachable top-down</span></td></tr>
+        <tr><td><b>Use a servo name that does not exist</b></td><td class="m">6</td><td><code>set_servo("wrist_pitch", 30)</code></td><td><span class="pill p-refused">unknown servo wrist_pitch</span></td></tr>
       </table>
     </div>
     <div style="width:200px;display:flex;flex-direction:column;justify-content:center;gap:20px">
-      <div><div class="big">28</div><div class="lbl">test rounds: pick up, lift, put down, then one bad command</div></div>
+      <div><div class="big">55</div><div class="lbl">test rounds: pick up, lift, put down, then one bad command</div></div>
       <div><div class="big">9</div><div class="lbl">kinds of bad command</div></div>
       <div><div class="big">0</div><div class="lbl">times the arm moved for a bad command</div></div>
     </div>
@@ -377,30 +377,30 @@ body.idle #help,body.idle #count{opacity:0}
 </section>
 
 <!-- 14 HEAT DATA -->
-<section class="slide" data-notes="Three hours of real temperature data. The shoulder servo holds the arm up, so it carries about four times the load of the others and runs warmest. Look at the line: after a break it was 33 degrees. When the AI started working again it reached 39 degrees in 16 minutes, then stayed flat for the next hour. The first session settled at the same level. That is 31 degrees below the limit, during continuous AI work.">
-  <div class="eyebrow">Test data · 3 hours of temperature logs</div>
-  <h2 style="margin-bottom:20px">The shoulder servo holds the arm up and runs warmest. <span class="hl">During steady AI work it stays at about 39 °C.</span></h2>
+<section class="slide" data-notes="Almost four hours of real temperature data. The shoulder servo holds the arm up, so it carries about three times the load of the others and runs warmest. After a break it was 33 degrees. When the AI started again it reached 39 degrees in 16 minutes, then stayed between 38 and 41 for the rest of the morning. Its highest single reading, 42 degrees, is still 28 degrees below the limit.">
+  <div class="eyebrow">Test data · almost 4 hours of temperature logs</div>
+  <h2 style="margin-bottom:20px">The shoulder servo holds the arm up and runs warmest. <span class="hl">During steady AI work it stays between 38 and 41 °C.</span></h2>
   <div class="row grow" style="gap:32px">
     <div style="flex:1.25;display:flex;flex-direction:column;justify-content:center">
       <div class="hb head" style="grid-template-columns:140px 1fr 70px 70px 80px"><span>servo</span><span>average temp (30–45 °C)</span><span style="text-align:right">avg</span><span style="text-align:right">max</span><span style="text-align:right">load</span></div>
       <div class="hbars">
-        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="shoulder lift: mean 38.2 °C, max 40 °C, mean load 74"><span><b>shoulder lift</b></span><div class="track"><div class="fill key" style="width:55%"></div></div><span class="v">38.2°</span><span class="v">40°</span><span class="v">74</span></div>
-        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="gripper: mean 37.4 °C, max 44 °C, mean load 28"><span>gripper</span><div class="track"><div class="fill" style="width:49%"></div></div><span class="v">37.4°</span><span class="v">44°</span><span class="v">28</span></div>
-        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="elbow: mean 36.5 °C, max 39 °C, mean load 20"><span>elbow</span><div class="track"><div class="fill" style="width:43%"></div></div><span class="v">36.5°</span><span class="v">39°</span><span class="v">20</span></div>
-        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="wrist flex: mean 35.7 °C, max 42 °C, mean load 24"><span>wrist flex</span><div class="track"><div class="fill" style="width:38%"></div></div><span class="v">35.7°</span><span class="v">42°</span><span class="v">24</span></div>
-        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="wrist roll: mean 35.5 °C, max 43 °C, mean load 5"><span>wrist roll</span><div class="track"><div class="fill" style="width:37%"></div></div><span class="v">35.5°</span><span class="v">43°</span><span class="v">5</span></div>
-        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="pan: mean 34.9 °C, max 37 °C, mean load 18"><span>pan</span><div class="track"><div class="fill" style="width:33%"></div></div><span class="v">34.9°</span><span class="v">37°</span><span class="v">18</span></div>
+        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="shoulder lift: mean 38.4 °C, max 42 °C, mean load 69"><span><b>shoulder lift</b></span><div class="track"><div class="fill key" style="width:56%"></div></div><span class="v">38.4°</span><span class="v">42°</span><span class="v">69</span></div>
+        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="gripper: mean 37.5 °C, max 44 °C, mean load 28"><span>gripper</span><div class="track"><div class="fill" style="width:50%"></div></div><span class="v">37.5°</span><span class="v">44°</span><span class="v">28</span></div>
+        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="elbow: mean 36.7 °C, max 39 °C, mean load 24"><span>elbow</span><div class="track"><div class="fill" style="width:45%"></div></div><span class="v">36.7°</span><span class="v">39°</span><span class="v">24</span></div>
+        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="wrist roll: mean 35.9 °C, max 43 °C, mean load 11"><span>wrist roll</span><div class="track"><div class="fill" style="width:39%"></div></div><span class="v">35.9°</span><span class="v">43°</span><span class="v">11</span></div>
+        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="wrist flex: mean 35.8 °C, max 42 °C, mean load 22"><span>wrist flex</span><div class="track"><div class="fill" style="width:39%"></div></div><span class="v">35.8°</span><span class="v">42°</span><span class="v">22</span></div>
+        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="pan: mean 35.1 °C, max 37 °C, mean load 17"><span>pan</span><div class="track"><div class="fill" style="width:34%"></div></div><span class="v">35.1°</span><span class="v">37°</span><span class="v">17</span></div>
       </div>
-      <p class="src" style="margin-top:14px">Source: logs/health/20261023.jsonl, 08:36 to 11:43, 785 records. Max leaves out two single readings on the wrist (74 °C and 62 °C). Load is the average servo load.</p>
+      <p class="src" style="margin-top:14px">Source: logs/health/20261023.jsonl, 08:36 to 12:21, 992 records. Max leaves out two single readings on the wrist (74 °C and 62 °C). Load is the average servo load.</p>
     </div>
     <div style="flex:.95;display:flex;flex-direction:column;justify-content:center;gap:12px">
       <div class="card" style="padding:14px 16px 8px">
-        <div class="head" style="margin-bottom:4px">shoulder servo temperature, 08:35 to 11:45</div>
-        <svg viewBox="0 0 440 250" width="100%" style="display:block;font:12px var(--mono);fill:var(--il-pebble)" role="img" aria-label="Shoulder servo temperature from 08:35 to 11:45"><rect x="34" y="55.2" width="396" height="41.2" fill="var(--il-sky-tint)"/><line x1="34" x2="430" y1="199.4" y2="199.4" stroke="var(--il-mist)"/><text x="28" y="203.4" text-anchor="end">33°</text><line x1="34" x2="430" y1="137.6" y2="137.6" stroke="var(--il-mist)"/><text x="28" y="141.6" text-anchor="end">36°</text><line x1="34" x2="430" y1="75.8" y2="75.8" stroke="var(--il-mist)"/><text x="28" y="79.8" text-anchor="end">39°</text><line x1="34" x2="430" y1="14.0" y2="14.0" stroke="var(--il-mist)"/><text x="28" y="18.0" text-anchor="end">42°</text><rect x="159.1" y="14" width="114.6" height="206" fill="var(--il-cloud)" rx="6"/><text x="216.4" y="137.6" text-anchor="middle" fill="var(--il-slate)">break</text><text x="216.4" y="152.6" text-anchor="middle" fill="var(--il-pebble)">no readings</text><text x="86.1" y="240" text-anchor="middle">09:00</text><text x="211.2" y="240" text-anchor="middle">10:00</text><text x="336.2" y="240" text-anchor="middle">11:00</text><path d="M39.2,96.4 L49.6,106.7 L60.1,117.0 L70.5,92.3 L80.9,59.3 L91.3,59.3 L101.7,75.8 L112.2,75.8 L122.6,75.8 L133.0,75.8 L143.4,75.8 L153.8,67.6" fill="none" stroke="var(--il-sky-deep)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M278.9,193.2 L289.3,168.5 L299.7,141.7 L310.2,114.9 L320.6,94.3 L331.0,90.2 L341.4,69.6 L351.8,75.8 L362.3,69.6 L372.7,86.1 L383.1,75.8 L393.5,90.2 L403.9,96.4 L414.4,96.4 L424.8,86.1" fill="none" stroke="var(--il-sky-deep)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><text x="430" y="32.5" text-anchor="end" fill="var(--il-sky-deep)" font-weight="500">steady at about 39 °C</text><text x="430" y="193.2" text-anchor="end" fill="var(--il-sky-deep)" font-weight="500">restart at 33 °C</text><circle cx="39.2" cy="96.4" r="7" fill="transparent"><title>08:35: 38.0 °C</title></circle><circle cx="49.6" cy="106.7" r="7" fill="transparent"><title>08:40: 37.5 °C</title></circle><circle cx="60.1" cy="117.0" r="7" fill="transparent"><title>08:45: 37.0 °C</title></circle><circle cx="70.5" cy="92.3" r="7" fill="transparent"><title>08:50: 38.2 °C</title></circle><circle cx="80.9" cy="59.3" r="7" fill="transparent"><title>08:55: 39.8 °C</title></circle><circle cx="91.3" cy="59.3" r="7" fill="transparent"><title>09:00: 39.8 °C</title></circle><circle cx="101.7" cy="75.8" r="7" fill="transparent"><title>09:05: 39.0 °C</title></circle><circle cx="112.2" cy="75.8" r="7" fill="transparent"><title>09:10: 39.0 °C</title></circle><circle cx="122.6" cy="75.8" r="7" fill="transparent"><title>09:15: 39.0 °C</title></circle><circle cx="133.0" cy="75.8" r="7" fill="transparent"><title>09:20: 39.0 °C</title></circle><circle cx="143.4" cy="75.8" r="7" fill="transparent"><title>09:25: 39.0 °C</title></circle><circle cx="153.8" cy="67.6" r="7" fill="transparent"><title>09:30: 39.4 °C</title></circle><circle cx="278.9" cy="193.2" r="7" fill="transparent"><title>10:30: 33.3 °C</title></circle><circle cx="289.3" cy="168.5" r="7" fill="transparent"><title>10:35: 34.5 °C</title></circle><circle cx="299.7" cy="141.7" r="7" fill="transparent"><title>10:40: 35.8 °C</title></circle><circle cx="310.2" cy="114.9" r="7" fill="transparent"><title>10:45: 37.1 °C</title></circle><circle cx="320.6" cy="94.3" r="7" fill="transparent"><title>10:50: 38.1 °C</title></circle><circle cx="331.0" cy="90.2" r="7" fill="transparent"><title>10:55: 38.3 °C</title></circle><circle cx="341.4" cy="69.6" r="7" fill="transparent"><title>11:00: 39.3 °C</title></circle><circle cx="351.8" cy="75.8" r="7" fill="transparent"><title>11:05: 39.0 °C</title></circle><circle cx="362.3" cy="69.6" r="7" fill="transparent"><title>11:10: 39.3 °C</title></circle><circle cx="372.7" cy="86.1" r="7" fill="transparent"><title>11:15: 38.5 °C</title></circle><circle cx="383.1" cy="75.8" r="7" fill="transparent"><title>11:20: 39.0 °C</title></circle><circle cx="393.5" cy="90.2" r="7" fill="transparent"><title>11:25: 38.3 °C</title></circle><circle cx="403.9" cy="96.4" r="7" fill="transparent"><title>11:30: 38.0 °C</title></circle><circle cx="414.4" cy="96.4" r="7" fill="transparent"><title>11:35: 38.0 °C</title></circle><circle cx="424.8" cy="86.1" r="7" fill="transparent"><title>11:40: 38.5 °C</title></circle></svg>
+        <div class="head" style="margin-bottom:4px">shoulder servo, 5-minute average, 08:35 to 12:20</div>
+        <svg viewBox="0 0 440 250" width="100%" style="display:block;font:12px var(--mono);fill:var(--il-pebble)" role="img" aria-label="Shoulder servo temperature from 08:35 to 11:45"><rect x="34" y="34.6" width="396" height="61.8" fill="var(--il-sky-tint)"/><line x1="34" x2="430" y1="199.4" y2="199.4" stroke="var(--il-mist)"/><text x="28" y="203.4" text-anchor="end">33°</text><line x1="34" x2="430" y1="137.6" y2="137.6" stroke="var(--il-mist)"/><text x="28" y="141.6" text-anchor="end">36°</text><line x1="34" x2="430" y1="75.8" y2="75.8" stroke="var(--il-mist)"/><text x="28" y="79.8" text-anchor="end">39°</text><line x1="34" x2="430" y1="14.0" y2="14.0" stroke="var(--il-mist)"/><text x="28" y="18.0" text-anchor="end">42°</text><rect x="137.3" y="38.7" width="94.7" height="181.3" fill="var(--il-cloud)" rx="6"/><text x="184.7" y="137.6" text-anchor="middle" fill="var(--il-slate)">break</text><text x="184.7" y="152.6" text-anchor="middle" fill="var(--il-pebble)">no readings</text><text x="77.0" y="240" text-anchor="middle">09:00</text><text x="180.3" y="240" text-anchor="middle">10:00</text><text x="283.7" y="240" text-anchor="middle">11:00</text><text x="387.0" y="240" text-anchor="middle">12:00</text><path d="M38.3,96.4 L46.9,106.7 L55.5,117.0 L64.1,92.3 L72.7,59.3 L81.3,59.3 L90.0,75.8 L98.6,75.8 L107.2,75.8 L115.8,75.8 L124.4,75.8 L133.0,67.6" fill="none" stroke="var(--il-sky-deep)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M236.3,193.2 L244.9,168.5 L253.5,141.7 L262.1,114.9 L270.7,94.3 L279.3,90.2 L288.0,69.6 L296.6,75.8 L305.2,69.6 L313.8,86.1 L322.4,75.8 L331.0,90.2 L339.6,96.4 L348.2,96.4 L356.8,84.0 L365.4,59.3 L374.0,32.5 L382.7,53.1 L391.3,55.2 L399.9,79.9 L408.5,96.4 L417.1,96.4 L425.7,108.8" fill="none" stroke="var(--il-sky-deep)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><text x="38" y="27.4" fill="var(--il-sky-deep)" font-weight="500">steady at 38–41 °C</text><text x="430" y="193.2" text-anchor="end" fill="var(--il-sky-deep)" font-weight="500">restart at 33 °C</text><circle cx="38.3" cy="96.4" r="7" fill="transparent"><title>08:35: 38.0 °C</title></circle><circle cx="46.9" cy="106.7" r="7" fill="transparent"><title>08:40: 37.5 °C</title></circle><circle cx="55.5" cy="117.0" r="7" fill="transparent"><title>08:45: 37.0 °C</title></circle><circle cx="64.1" cy="92.3" r="7" fill="transparent"><title>08:50: 38.2 °C</title></circle><circle cx="72.7" cy="59.3" r="7" fill="transparent"><title>08:55: 39.8 °C</title></circle><circle cx="81.3" cy="59.3" r="7" fill="transparent"><title>09:00: 39.8 °C</title></circle><circle cx="90.0" cy="75.8" r="7" fill="transparent"><title>09:05: 39.0 °C</title></circle><circle cx="98.6" cy="75.8" r="7" fill="transparent"><title>09:10: 39.0 °C</title></circle><circle cx="107.2" cy="75.8" r="7" fill="transparent"><title>09:15: 39.0 °C</title></circle><circle cx="115.8" cy="75.8" r="7" fill="transparent"><title>09:20: 39.0 °C</title></circle><circle cx="124.4" cy="75.8" r="7" fill="transparent"><title>09:25: 39.0 °C</title></circle><circle cx="133.0" cy="67.6" r="7" fill="transparent"><title>09:30: 39.4 °C</title></circle><circle cx="236.3" cy="193.2" r="7" fill="transparent"><title>10:30: 33.3 °C</title></circle><circle cx="244.9" cy="168.5" r="7" fill="transparent"><title>10:35: 34.5 °C</title></circle><circle cx="253.5" cy="141.7" r="7" fill="transparent"><title>10:40: 35.8 °C</title></circle><circle cx="262.1" cy="114.9" r="7" fill="transparent"><title>10:45: 37.1 °C</title></circle><circle cx="270.7" cy="94.3" r="7" fill="transparent"><title>10:50: 38.1 °C</title></circle><circle cx="279.3" cy="90.2" r="7" fill="transparent"><title>10:55: 38.3 °C</title></circle><circle cx="288.0" cy="69.6" r="7" fill="transparent"><title>11:00: 39.3 °C</title></circle><circle cx="296.6" cy="75.8" r="7" fill="transparent"><title>11:05: 39.0 °C</title></circle><circle cx="305.2" cy="69.6" r="7" fill="transparent"><title>11:10: 39.3 °C</title></circle><circle cx="313.8" cy="86.1" r="7" fill="transparent"><title>11:15: 38.5 °C</title></circle><circle cx="322.4" cy="75.8" r="7" fill="transparent"><title>11:20: 39.0 °C</title></circle><circle cx="331.0" cy="90.2" r="7" fill="transparent"><title>11:25: 38.3 °C</title></circle><circle cx="339.6" cy="96.4" r="7" fill="transparent"><title>11:30: 38.0 °C</title></circle><circle cx="348.2" cy="96.4" r="7" fill="transparent"><title>11:35: 38.0 °C</title></circle><circle cx="356.8" cy="84.0" r="7" fill="transparent"><title>11:40: 38.6 °C</title></circle><circle cx="365.4" cy="59.3" r="7" fill="transparent"><title>11:45: 39.8 °C</title></circle><circle cx="374.0" cy="32.5" r="7" fill="transparent"><title>11:50: 41.1 °C</title></circle><circle cx="382.7" cy="53.1" r="7" fill="transparent"><title>11:55: 40.1 °C</title></circle><circle cx="391.3" cy="55.2" r="7" fill="transparent"><title>12:00: 40.0 °C</title></circle><circle cx="399.9" cy="79.9" r="7" fill="transparent"><title>12:05: 38.8 °C</title></circle><circle cx="408.5" cy="96.4" r="7" fill="transparent"><title>12:10: 38.0 °C</title></circle><circle cx="417.1" cy="96.4" r="7" fill="transparent"><title>12:15: 38.0 °C</title></circle><circle cx="425.7" cy="108.8" r="7" fill="transparent"><title>12:20: 37.4 °C</title></circle></svg>
       </div>
       <div class="row" style="gap:12px">
         <div class="card" style="flex:1;padding:12px 16px"><div class="big" style="font-size:38px">16 min</div><div class="lbl" style="font-size:15px">to warm from 33 °C to 39 °C when the AI started again</div></div>
-        <div class="card" style="flex:1;padding:12px 16px"><div class="big" style="font-size:38px">31 °C</div><div class="lbl" style="font-size:15px">below the 70&nbsp;°C limit while it stays steady</div></div>
+        <div class="card" style="flex:1;padding:12px 16px"><div class="big" style="font-size:38px">28 °C</div><div class="lbl" style="font-size:15px">below the 70&nbsp;°C limit, even at its highest reading (42&nbsp;°C)</div></div>
       </div>
     </div>
   </div>
@@ -411,7 +411,7 @@ body.idle #help,body.idle #count{opacity:0}
   <div class="eyebrow">Summary · problems, checks and where you see them</div>
   <h2 style="margin-bottom:16px">Every problem we found now has a check, <span class="hl">and you can see it working.</span></h2>
   <div class="grow tablecard" style="align-self:stretch;display:flex;align-items:center">
-    <table class="t" style="font-size:16px">
+    <table class="t compact" style="font-size:15.5px">
       <tr><th>Problem</th><th>Checked by</th><th>Result</th><th>Where you see it</th></tr>
       <tr><td><b>A move that ends inside the table</b></td><td>table check, before the move</td><td><span class="pill p-refused">refused</span> with the distance</td><td>log and the AI's reply</td></tr>
       <tr><td><b>Hitting something during a move</b></td><td>load and lag check during the move</td><td><span class="pill p-caution">frozen</span> arm holds still</td><td>load ring on the 3D model</td></tr>
@@ -420,9 +420,10 @@ body.idle #help,body.idle #count{opacity:0}
       <tr><td><b>Elbow servo reached 71 °C</b></td><td>live temperature, every 2.5 s</td><td><span class="pill p-caution">rest</span> recheck: 36 °C</td><td>servo colour on the 3D model</td></tr>
       <tr><td><b>Wrist servo read 74 °C</b></td><td>temperature log, every 10 s</td><td><span class="pill p-ok">ok</span> next reading: 36 °C</td><td>temperature log</td></tr>
       <tr><td><b>Two programs moving the arm at once</b></td><td>one move at a time</td><td><span class="pill p-refused">refused</span> busy</td><td>log</td></tr>
+      <tr><td><b>A second AI connects from another computer</b></td><td>the AI on this computer goes first</td><td><span class="pill p-refused">refused</span> local agent has control</td><td>both AIs in the Console, with a block button</td></tr>
     </table>
   </div>
-  <div class="foot"><span>Every row works in Interlock today.</span><span></span></div>
+  <div class="foot"><span>Every row works in Interlock today. The last row is new: it is in the code and its tests, not yet run on the arm.</span><span></span></div>
 </section>
 
 <!-- 16 BENCHMARK -->
@@ -450,8 +451,8 @@ body.idle #help,body.idle #count{opacity:0}
   <div class="eyebrow">What we will share</div>
   <h2>What every new SO&#8209;ARM101 owner gets</h2>
   <div class="give grow" style="align-content:center">
-    <div><span class="k">RUN THE ARM</span><b>Interlock Core</b><p>One program owns the arm, with one documented API. Works with LeRobot. 167 tests run without an arm.</p></div>
-    <div><span class="k">CONNECT AN AI</span><b>Interlock Link</b><p>A standard way for any AI model to control the arm (MCP), with clear rules for when to stop and ask.</p></div>
+    <div><span class="k">RUN THE ARM</span><b>Interlock Core</b><p>One program owns the arm, with one documented API. Works with LeRobot. 173 tests run without an arm.</p></div>
+    <div><span class="k">CONNECT AN AI</span><b>Interlock Link</b><p>A standard way for any AI model to control the arm (MCP), on this computer or over the network, with clear rules for when to stop and ask.</p></div>
     <div><span class="k">WATCH THE ARM</span><b>Interlock Console</b><p>A web page with the live camera and a 3D model. It opens in a browser, with nothing to build.</p></div>
     <div><span class="k">KEEP IT COOL</span><b>Servo health</b><p>Temperature logs, our analysis method, and a guide for safe use.</p></div>
     <div><span class="k">KEEP IT SAFE</span><b>Safety rules</b><p>The full set of checks and control rules, with tests that prove them.</p></div>
@@ -459,19 +460,7 @@ body.idle #help,body.idle #count{opacity:0}
   </div>
 </section>
 
-<!-- 18 ASK -->
-<section class="slide deep" data-notes="Three requests: a home, servo data, and a review.">
-  <div class="eyebrow">Our request</div>
-  <h2 style="font-size:54px">We ask Seeed for three things</h2>
-  <div class="row" style="gap:20px;align-items:stretch;margin:auto 0">
-    <div class="card" style="flex:1;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)"><div class="mega" style="font-size:110px;color:#B9DCF7">1</div><b style="font:600 28px var(--sans);letter-spacing:-.02em;display:block;margin:14px 0 8px">A home</b><p style="font-size:18px;line-height:1.45;color:var(--il-halo)">A repository or a link in the SO&#8209;ARM101 docs, so new owners can find Interlock.</p></div>
-    <div class="card" style="flex:1;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)"><div class="mega" style="font-size:110px;color:#B9DCF7">2</div><b style="font:600 28px var(--sans);letter-spacing:-.02em;display:block;margin:14px 0 8px">Servo data</b><p style="font-size:18px;line-height:1.45;color:var(--il-halo)">Which STS3215 datasheet fits the 12 V arm, what happens at 70 °C, and how long a servo can safely hold a load.</p></div>
-    <div class="card" style="flex:1;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)"><div class="mega" style="font-size:110px;color:#B9DCF7">3</div><b style="font:600 28px var(--sans);letter-spacing:-.02em;display:block;margin:14px 0 8px">A review</b><p style="font-size:18px;line-height:1.45;color:var(--il-halo)">An engineer to check our safety rules before we publish them.</p></div>
-  </div>
-  <p style="font-size:17px;color:var(--il-halo)">In return: an open-source licence, tests that run without hardware, and a maintainer for the first six months.</p>
-</section>
-
-<!-- 19 CLOSE -->
+<!-- 18 CLOSE -->
 <section class="slide deep nomark" data-notes="Close, then go to the arm. Live demo: the AI picks up the carton, we press STOP during the move, and we show that the AI cannot restart it.">
   <div class="grow" style="display:flex;flex-direction:column;justify-content:center">
     <div style="display:flex;align-items:center;gap:14px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="52" height="52" role="img" aria-label="Interlock">
