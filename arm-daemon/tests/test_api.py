@@ -193,7 +193,7 @@ async def test_dashboard_served_with_key(aiohttp_client, worker, control, cams):
     r = await c.get("/")
     assert r.status == 200 and r.headers["Content-Type"].startswith("text/html")
     html = await r.text()
-    assert 'window.__ARM_KEY__ = "sekret"' in html and "<title>Arm Dashboard</title>" in html
+    assert 'window.__ARM_KEY__ = "sekret"' in html and "<title>Interlock Console</title>" in html
     assert (await c.get("/dashboard")).status == 200
 
 
