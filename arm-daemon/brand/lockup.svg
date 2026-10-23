@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" width="300" height="64" role="img" aria-label="Interlock">
+  <path d="M21 30V16h22v14" fill="none" stroke="#1C2321" stroke-width="6" stroke-linejoin="round"/>
+  <circle cx="21" cy="16" r="5" fill="#FBFBF9" stroke="#1C2321" stroke-width="3"/>
+  <circle cx="43" cy="16" r="5" fill="#FBFBF9" stroke="#1C2321" stroke-width="3"/>
+  <rect x="12" y="28" width="40" height="28" rx="8" fill="#1C2321"/>
+  <circle cx="32" cy="42" r="5" fill="#22B98E"/>
+  <text x="68" y="50" font-family="'IBM Plex Sans','Helvetica Neue',Arial,sans-serif" font-size="38" font-weight="600" letter-spacing="-0.5" fill="#1C2321">interlock</text>
+</svg>
