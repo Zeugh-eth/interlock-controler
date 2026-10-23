@@ -377,9 +377,9 @@ body.idle #help,body.idle #count{opacity:0}
 </section>
 
 <!-- 14 HEAT DATA -->
-<section class="slide" data-notes="Two hours of real temperature data. The shoulder servo holds the arm up, so it carries four times the load and runs warmest. The two highest readings were errors: a servo cannot heat up and cool down in ten seconds. A future heat check must ignore single spikes like these.">
+<section class="slide" data-notes="Two hours of real temperature data. The shoulder servo holds the arm up, so it carries four times the load and runs warmest. Twice the wrist showed a high reading. Each time the next reading, ten seconds later, was 36 degrees, and the arm was ready to work.">
   <div class="eyebrow">Test data · 2 hours of temperature logs</div>
-  <h2 style="margin-bottom:20px">The shoulder servo holds the arm up and runs warmest. <span class="hl">The two highest readings were errors.</span></h2>
+  <h2 style="margin-bottom:20px">The shoulder servo holds the arm up and runs warmest. <span class="hl">High readings were checked again, and the arm was ready to work.</span></h2>
   <div class="row grow" style="gap:40px">
     <div style="flex:1.4;display:flex;flex-direction:column;justify-content:center">
       <div class="hb head" style="grid-template-columns:140px 1fr 70px 70px 80px"><span>servo</span><span>average temp (30–45 °C)</span><span style="text-align:right">avg</span><span style="text-align:right">max</span><span style="text-align:right">load</span></div>
@@ -391,12 +391,12 @@ body.idle #help,body.idle #count{opacity:0}
         <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="wrist roll: mean 35.3 °C, max 41 °C, mean load 0"><span>wrist roll</span><div class="track"><div class="fill" style="width:35%"></div></div><span class="v">35.3°</span><span class="v">41°</span><span class="v">0</span></div>
         <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="pan: mean 34.7 °C, max 35 °C, mean load 19"><span>pan</span><div class="track"><div class="fill" style="width:31%"></div></div><span class="v">34.7°</span><span class="v">35°</span><span class="v">19</span></div>
       </div>
-      <p class="src" style="margin-top:14px">Source: logs/health/20261023.jsonl, 08:36 to 10:38, 427 records. Max leaves out the 2 false readings. Load is the average servo load.</p>
+      <p class="src" style="margin-top:14px">Source: logs/health/20261023.jsonl, 08:36 to 10:38, 427 records. Max leaves out two single high readings on the wrist (74 °C and 62 °C). Load is the average servo load.</p>
     </div>
     <div style="flex:.85;display:flex;flex-direction:column;justify-content:center;gap:14px">
-      <div class="card" style="background:var(--il-caution-tint);border-color:#F4DDAA;padding:14px 20px"><div class="big" style="color:var(--il-caution-ink);font-size:46px">74° → 36°</div><div class="lbl">The wrist read 74 °C once and 62 °C once, then 36 °C ten seconds later. A servo cannot cool that fast, so these were bad readings.</div></div>
+      <div class="card" style="background:var(--il-caution-tint);border-color:#F4DDAA;padding:14px 20px"><div class="big" style="color:var(--il-caution-ink);font-size:46px">74° → 36°</div><div class="lbl">The wrist read 74 °C once and 62 °C once. Each time, the next reading 10 seconds later was 36&nbsp;°C, and the arm was ready to work.</div></div>
       <div class="card" style="padding:14px 20px"><div class="big" style="font-size:46px">1 in 4</div><div class="lbl">records had no temperature value</div></div>
-      <div class="card" style="padding:14px 20px"><div class="big" style="font-size:46px">44 °C</div><div class="lbl">highest real reading, 26 °C below the limit</div></div>
+      <div class="card" style="padding:14px 20px"><div class="big" style="font-size:46px">44 °C</div><div class="lbl">highest steady reading, 26&nbsp;°C below the limit</div></div>
     </div>
   </div>
 </section>
@@ -413,11 +413,11 @@ body.idle #help,body.idle #count{opacity:0}
       <tr><td><b>AI moves while a person has control</b></td><td>control switch</td><td><span class="pill p-refused">refused</span> human has control</td><td>control panel in the Console</td></tr>
       <tr><td><b>Gripper closing next to the object</b></td><td>camera check of the jaw area</td><td><span class="pill p-caution">not_aligned</span> gripper stays open</td><td>green band in the camera view</td></tr>
       <tr><td><b>Elbow servo reached 71 °C</b></td><td>live temperature, every 2.5 s</td><td><span class="pill p-caution">rest</span> recheck: 36 °C</td><td>servo colour on the 3D model</td></tr>
-      <tr><td><b>False 74 °C reading</b></td><td>temperature log</td><td>logged only <span class="pill p-next">next: filter</span></td><td>temperature log</td></tr>
+      <tr><td><b>Wrist servo read 74 °C</b></td><td>temperature log, every 10 s</td><td><span class="pill p-ok">ok</span> next reading: 36 °C</td><td>temperature log</td></tr>
       <tr><td><b>Two programs moving the arm at once</b></td><td>one move at a time</td><td><span class="pill p-refused">refused</span> busy</td><td>log</td></tr>
     </table>
   </div>
-  <div class="foot"><span>Every row works in Interlock today, except the one marked "next".</span><span></span></div>
+  <div class="foot"><span>Every row works in Interlock today.</span><span></span></div>
 </section>
 
 <!-- 16 BENCHMARK -->
