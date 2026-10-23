@@ -375,7 +375,35 @@ body.idle #help,body.idle #count{opacity:0}
   <div class="foot"><span>Source: arm-daemon/API.md, control model item 8 · commits 6e214f2 and f5a8609</span><span></span></div>
 </section>
 
-<!-- 13 COCKPIT -->
+<!-- 13 DEVICE LOCK -->
+<section class="slide" data-notes="New today: an optional lock on AI control, using Seeed's own SenseCAP Watcher. When a person clicks agent in the Console, Core shows a QR code instead. The person scans it with their Watcher. The Watcher shows a 6-digit code, and the person types it in. Only then does the AI get control. The code is never on the screen: the QR holds a different hidden number for each listed person, and only that person's Watcher can turn it into the code. We tested this end to end with a real Watcher on the simulated arm. It is not yet merged or run on the real arm.">
+  <div class="eyebrow">05 · Safety rules · device lock with a Seeed SenseCAP Watcher</div>
+  <h2 style="margin-bottom:18px">Before the AI gets control, a person scans a QR code <span class="hl">with a Seeed Watcher.</span></h2>
+  <div class="row grow" style="gap:36px;align-items:center">
+    <div style="width:330px;flex:none;display:flex;flex-direction:column;gap:10px">
+      <div class="card" style="padding:16px;text-align:center">
+        <div class="head" style="margin-bottom:8px">what the Console shows</div>
+        <img src="data:image/png;base64,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" alt="Unlock QR code from Interlock Core" style="display:block;width:260px;height:260px;margin:0 auto;image-rendering:pixelated">
+        <p style="font:500 13px var(--mono);color:var(--il-slate);margin-top:8px">Scan with your Watcher, then type the 6 digits it shows.</p>
+      </div>
+      <p class="src">Real QR from Interlock's code, made with two demo users.</p>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;gap:14px;align-items:flex-start"><span class="big" style="font-size:30px;color:var(--il-sky-deep);width:26px;flex:none">1</span><p style="font-size:18px;line-height:1.4">A person clicks <b>agent</b> in the Console. Core shows this QR code instead of giving the AI control.</p></div>
+<div style="display:flex;gap:14px;align-items:flex-start"><span class="big" style="font-size:30px;color:var(--il-sky-deep);width:26px;flex:none">2</span><p style="font-size:18px;line-height:1.4">The person scans it with their SenseCAP Watcher. The Watcher shows a 6-digit code.</p></div>
+<div style="display:flex;gap:14px;align-items:flex-start"><span class="big" style="font-size:30px;color:var(--il-sky-deep);width:26px;flex:none">3</span><p style="font-size:18px;line-height:1.4">The person types the code into the Console. Now the AI gets control.</p></div>
+<div style="display:flex;gap:14px;align-items:flex-start"><span class="big" style="font-size:30px;color:var(--il-sky-deep);width:26px;flex:none">4</span><p style="font-size:18px;line-height:1.4">After 5 wrong codes, Core makes a new code and a new QR.</p></div>
+      <div class="row" style="gap:12px;margin-top:6px">
+        <div class="card" style="flex:1;padding:12px 16px"><div class="lbl" style="margin:0;font-size:15px"><b style="color:var(--il-ink)">The code is never on the screen.</b> The QR holds a different hidden number for each listed person. Only that person's Watcher can read it.</div></div>
+        <div class="card" style="flex:1;padding:12px 16px"><div class="lbl" style="margin:0;font-size:15px"><b style="color:var(--il-ink)">A new code each time Core starts.</b> 11 tests. Tested end to end with a real Watcher.</div></div>
+      </div>
+      <p style="margin:0"><span class="pill p-next" style="margin:0">new today: tested on the simulated arm, not yet on the real arm</span></p>
+    </div>
+  </div>
+  <div class="foot"><span>Source: arm-daemon/authlock.py, commit fa2a0fe (--auth-lock) · Watcher firmware: watcher-qrcode-build</span><span></span></div>
+</section>
+
+<!-- 14 COCKPIT -->
 <section class="slide" style="padding:44px 56px" data-notes="This is the real Console, recorded while the AI ran a test round by itself. Watch the result log fill with each move. Left: the 3D model. Middle: the gripper camera. Right: control, poses and STOP.">
   <div class="eyebrow">03 · Interlock Console · for people</div>
   <h2 style="font-size:40px;margin:10px 0 18px">Everything about the arm on one screen</h2>
@@ -391,7 +419,7 @@ body.idle #help,body.idle #count{opacity:0}
   </div>
 </section>
 
-<!-- 14 MEME: VISION -->
+<!-- 15 MEME: VISION -->
 <section class="slide" data-notes="Left: a real frame from the gripper camera, with a grid in centimetres and the carton with its measured size. Right: the 3D model in the Console. Each label shows one servo's angle, load and temperature. A person and the AI read the same data.">
   <div class="eyebrow">03 · Interlock Console · camera and servos</div>
   <h2 style="margin-bottom:18px">A person and the AI see the same camera view and the same servo data.</h2>
@@ -413,7 +441,7 @@ body.idle #help,body.idle #count{opacity:0}
   </div>
 </section>
 
-<!-- 15 MEME: HEAT -->
+<!-- 16 MEME: HEAT -->
 <section class="slide" data-notes="The Console showed the elbow servo at 71 degrees, just above the limit. We stopped the arm and let it rest. When we checked again it was 36 degrees, so it was safe to keep working. Live temperature on every servo is what let us see this and act on it.">
   <div class="eyebrow">04 · Servo temperature</div>
   <h2>The elbow servo reached 71 °C. We let it rest, checked again, and it was back to 36 °C.</h2>
@@ -432,7 +460,7 @@ body.idle #help,body.idle #count{opacity:0}
   <div class="foot"><span>Now every servo's temperature updates every 2.5 s and is logged every 10 s.</span><span>Source: servo health report</span></div>
 </section>
 
-<!-- 16 HEAT DATA -->
+<!-- 17 HEAT DATA -->
 <section class="slide" data-notes="Almost four hours of real temperature data. The shoulder servo holds the arm up, so it carries about three times the load of the others and runs warmest. After a break it was 33 degrees. When the AI started again it reached 39 degrees in 16 minutes, then stayed between 38 and 41 for the rest of the morning. Its highest single reading, 42 degrees, is still 28 degrees below the limit.">
   <div class="eyebrow">Test data · almost 4 hours of temperature logs</div>
   <h2 style="margin-bottom:20px">The shoulder servo holds the arm up and runs warmest. <span class="hl">During steady AI work it stays between 38 and 41 °C.</span></h2>
@@ -462,7 +490,7 @@ body.idle #help,body.idle #count{opacity:0}
   </div>
 </section>
 
-<!-- 17 ERRORS CAUGHT -->
+<!-- 18 ERRORS CAUGHT -->
 <section class="slide" data-notes="This is the most important slide. Each problem we found in testing now has a check, and each check is visible somewhere: in the log, in the AI's reply, or on the Console.">
   <div class="eyebrow">Summary · problems, checks and where you see them</div>
   <h2 style="margin-bottom:16px">Every problem we found now has a check, <span class="hl">and you can see it working.</span></h2>
@@ -482,7 +510,7 @@ body.idle #help,body.idle #count{opacity:0}
   <div class="foot"><span>Every row works in Interlock today. The last row is new: it is in the code and its tests, not yet run on the arm.</span><span></span></div>
 </section>
 
-<!-- 18 BENCHMARK -->
+<!-- 19 BENCHMARK -->
 <section class="slide" data-notes="How Interlock fits with what exists. LeRobot and LeLab record data and train models. Interlock runs the arm safely while a model or an AI agent controls it. They work together. Running a LeLab-trained model through Interlock is the next step; it is not built yet.">
   <div class="eyebrow">Comparison · open tools for the SO&#8209;ARM101</div>
   <h2>LeLab trains the model. <span class="hl">Interlock runs it safely.</span></h2>
@@ -502,7 +530,7 @@ body.idle #help,body.idle #count{opacity:0}
   <div class="foot"><span>LeLab at commit 9b5afae (huggingface/leLab), read 23 Oct · LeRobot v0.6</span><span></span></div>
 </section>
 
-<!-- 19 GIVE BACK -->
+<!-- 20 GIVE BACK -->
 <section class="slide" data-notes="This is what we will give to the community. Each piece helps a new owner on the first day.">
   <div class="eyebrow">What we will share</div>
   <h2>What every new SO&#8209;ARM101 owner gets</h2>
@@ -516,7 +544,7 @@ body.idle #help,body.idle #count{opacity:0}
   </div>
 </section>
 
-<!-- 20 CLOSE -->
+<!-- 21 CLOSE -->
 <section class="slide deep nomark" data-notes="Close, then go to the arm. Live demo: the AI picks up the carton, we press STOP during the move, and we show that the AI cannot restart it.">
   <div class="grow" style="display:flex;flex-direction:column;justify-content:center">
     <div style="display:flex;align-items:center;gap:14px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="52" height="52" role="img" aria-label="Interlock">
