@@ -7,6 +7,7 @@ from pathlib import Path
 
 from aiohttp import web
 
+import authlock
 import guards
 
 HUMAN_HEADER = "X-Arm-Human-Key"
@@ -62,6 +63,7 @@ def build_app(control, bus, cams, human_key: str | None = None, vision=None) -> 
     def state():
         s = bus.snapshot()
         s["cameras"] = cams.health()
+        s["auth"] = control.auth_lock.status() if control.auth_lock else {"lock": False, "unlocked": True}
         if vision is not None:
             vi = vision.info()
             s["vision"] = {"detections": vi.get("detections", []), "tool": vi.get("tool"), "prompts": vi.get("prompts"),
@@ -77,6 +79,8 @@ def build_app(control, bus, cams, human_key: str | None = None, vision=None) -> 
     def _dashboard(page):
         html = page.read_text()
         inject = f'<script>window.__ARM_KEY__ = {json.dumps(human_key or "")};</script>'
+        if control.auth_lock is not None:
+            inject += authlock.dashboard_js(control.auth_lock)
         html = html.replace("<script>\nconst KEY", inject + "\n<script>\nconst KEY", 1)
         return web.Response(text=html, content_type="text/html", headers={"Cache-Control": "no-store"})
 
@@ -297,6 +301,29 @@ def build_app(control, bus, cams, human_key: str | None = None, vision=None) -> 
             return _refused(400 if why == "unknown holder" else 403, why)
         return web.json_response({"holder": control.holder, "since": control.since})
 
+    # --- device lock on agent mode (--auth-lock) -------------------------------------------------
+    async def get_auth_challenge(request):
+        if control.auth_lock is None:
+            return _refused(404, "auth lock is off")
+        if not human(request):
+            return _refused(403, "human key required")
+        lk = control.auth_lock
+        out = lk.status()
+        if not lk.unlocked:
+            out.update(payload=lk.payload(), qr=lk.qr_data_url())
+        return web.json_response(out, headers={"Cache-Control": "no-store"})
+
+    async def post_auth_unlock(request):
+        b = await _body(request)
+        if control.auth_lock is None:
+            return _refused(404, "auth lock is off")
+        if not human(request):
+            return _refused(403, "human key required")
+        ok, why = control.auth_lock.unlock(b.get("code", ""))
+        if not ok:
+            return _refused(403, why)
+        return web.json_response(control.auth_lock.status())
+
     async def post_stop(request):
         b = await _body(request)
         control.stop(str(b.get("reason", "")), by="human" if human(request) else "agent")
@@ -354,6 +381,7 @@ def build_app(control, bus, cams, human_key: str | None = None, vision=None) -> 
         web.post("/move", post_move), web.post("/gripper", post_gripper), web.post("/pose", post_pose),
         web.get("/poses", get_poses), web.post("/torque", post_torque), web.get("/kinematics", get_kinematics),
         web.post("/control", post_control), web.post("/stop", post_stop), web.post("/resume", post_resume),
+        web.get("/auth/challenge", get_auth_challenge), web.post("/auth/unlock", post_auth_unlock),
         web.get("/vision", get_vision), web.get("/vision/frame.jpg", get_vision_frame), web.get("/vision/raw.jpg", get_vision_raw),
         web.get("/vision/stream", get_vision_stream), web.post("/vision/prompts", post_vision_prompts),
         web.post("/vision/settings", post_vision_settings),

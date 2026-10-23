@@ -11,9 +11,10 @@ HOLDERS = ("human", "agent", "leader", "released")   # leader = teleop through t
 
 
 class ControlState:
-    def __init__(self, key: str, stop_file: Path):
+    def __init__(self, key: str, stop_file: Path, auth_lock=None):
         self._key = key
         self._stop_file = Path(stop_file)
+        self.auth_lock = auth_lock          # authlock.AuthLock: agent mode needs the device code once
         self.holder = "human"
         self.since = time.time()
         self._stop = {"set": False, "reason": "", "by": ""}
@@ -33,6 +34,8 @@ class ControlState:
             return False, "unknown holder"
         if not human:
             return False, "human key required"
+        if holder == "agent" and self.auth_lock is not None and not self.auth_lock.unlocked:
+            return False, "device auth required"
         if holder != self.holder:
             self.holder = holder
             self.since = time.time()
