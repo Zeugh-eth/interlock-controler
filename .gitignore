@@ -12,6 +12,9 @@ arm-daemon/*
 !arm-daemon/tests/
 arm-daemon/tests/*
 !arm-daemon/tests/*.py
+!arm-daemon/tests/data/
+arm-daemon/tests/data/*
+!arm-daemon/tests/data/*.jpg
 !.claude/
 .claude/*
 !.claude/skills/

@@ -237,3 +237,21 @@ def test_measure_height_from_parallax(sk, fd):
     assert fd.heights["carton"] == r["height_above_table_cm"] and r["stored_as_vision_height"] is True
     fd.object = None
     assert sk.measure_height("carton")["measured"] is False
+
+
+def test_blob_tracker_on_a_real_look_down_frame():
+    """Haiku's 08:15 run: seven 'no trackable region' refusals. The floating-range flood fill
+    crawled over the whole photo; the fixed range finds the carton's white top face (left edge at
+    raw x ~322, the band's target_left 320.7) from a seed on it, and from a seed on its print."""
+    import cv2
+    import skills
+    img = cv2.imread("tests/data/lookdown-carton-20261023-081522-000092.jpg")
+    assert img is not None and img.shape[:2] == (480, 640)
+    t = skills._BlobTracker(img, 372, 230)                 # on the white face
+    loc = t.locate(img)
+    assert loc["method"] == "blob-tracker"
+    x, y, w, h = loc["bbox"]
+    assert 310 <= x <= 335 and 90 <= w <= 140 and h > 200, loc
+    t2 = skills._BlobTracker(img, 340, 200)                # on the greyish print next to the face
+    loc2 = t2.locate(img)
+    assert 300 <= loc2["bbox"][0] <= 335 and loc2["bbox"][2] >= 60, loc2

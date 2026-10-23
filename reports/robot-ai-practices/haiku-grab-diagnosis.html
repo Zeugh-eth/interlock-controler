@@ -68,6 +68,16 @@ figcaption b{color:var(--ink)}
 <p class="standfirst">Two Haiku runs on the same arm, scene and MCP ended with zero jaw closes after 41 tool calls. The carton was grabbed on the next run in 18 calls once the agent judged the raw camera frame itself and set aside three of the written rules. Most of the gap is tooling and instructions, not model size: the five changes under “Do now” would have let Haiku’s own first plan succeed.</p>
 <p class="meta">Scene: red/white Raspberry Pi carton (10.5 × 7 × 3 cm) standing on the Seeed box, 3 cm face up, about <b>4 cm toward the base</b> and <b>3 cm left</b> of the look-down jaw target. Demos: <b>061851</b> Haiku, aborted · <b>062200</b> Haiku retry, aborted · <b>062828</b> Fable, held. Daemon holder <b>agent</b>, no STOP, bus ok throughout.</p>
 
+<div class="card" style="border-left:4px solid var(--good)">
+<h3 style="margin-top:0">Update, 08:15: Haiku grabbed the carton on the re-run <span class="pill good">held, 1 close</span></h3>
+<p>Same model, same scene, new tools, and a brief with no coordinates (only “load the driving-the-arm skill and grab the box”). Demo <span class="num">20261023-081522-grab-the-box</span>: 31 tool calls, 100 s, one jaw close at tool z 3.8 cm (open 54.6 %, stop 4.3 %, 5.0 % after a 2 cm lift), carton held and lifted 3.3 cm.</p>
+<ul>
+<li><b>What carried it:</b> the raw view with the jaw band. Haiku read “left edge at about x 320, matching target_left 320.7” off <code>look()</code> and moved the tool in 1.5 to 3 cm steps with a look between each, exactly the facts block. The detector never listed the carton (as predicted), and the grasp verdict came from the jaw reading because <code>grasp(label)</code> now treats “no detection” as no evidence.</li>
+<li><b>What did not work:</b> <code>align_to(u, v)</code> refused seven times with “no trackable region”. Cause: the blob tracker's flood fill used the floating (neighbour) range, which crawls across a whole photo; on the saved frame from this run it filled 99 % of the image from every seed. Fixed the same hour: fixed range (within 30 of the seed colour) plus a 9-point neighbourhood search so a seed on the print still finds the white face. On that frame the tracker now returns the carton with its left edge at x 322. Covered by a test on the real frame (<code>tests/data/lookdown-carton-20261023-081522-000092.jpg</code>).</li>
+<li><b>Still unverified on hardware:</b> <code>align_to</code> end to end. Haiku's pick went through the manual path; the closed loop has only run on the fake daemon and on saved frames.</li>
+</ul>
+</div>
+
 <div class="tiles">
   <div class="tile"><div class="k"><span class="dot bad"></span>Haiku · run 1</div><div class="v">25</div><div class="s">tool calls · 113 s · 0 closes</div></div>
   <div class="tile"><div class="k"><span class="dot bad"></span>Haiku · run 2</div><div class="v">16</div><div class="s">tool calls · 48 s · 0 closes · never opened the jaws</div></div>

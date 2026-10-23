@@ -631,7 +631,10 @@ class _BlobTracker:
     region's bbox, and rejects fills that leaked into the background or changed colour. Gives a
     real bbox, so the jaw-band test is the same as for a detector box and the growing picture
     during a descent costs nothing. Falls back to _PatchTracker when the fill is unusable."""
-    MIN_FRAC, MAX_FRAC, TOL, COLOR_JUMP = 0.002, 0.45, 18, 70
+    MIN_FRAC, MAX_FRAC, TOL, COLOR_JUMP = 0.002, 0.45, 30, 70
+    # FIXED range: every filled pixel is within TOL of the SEED colour. The floating (neighbour) range
+    # crawled across the whole frame on real photos (gradients): Haiku's 08:15 run got seven
+    # "no trackable region" refusals from that.
 
     def __init__(self, img, u, v):
         import cv2
@@ -640,7 +643,7 @@ class _BlobTracker:
         self.cx, self.cy = float(u), float(v)
         self.mean = None
         self.patch = _PatchTracker(img, u, v)
-        first = self._fill(img, self.cx, self.cy)
+        first = self._fill_best(img, self.cx, self.cy)
         if first is None:
             raise ValueError(f"no trackable region at raw pixel ({u:.0f}, {v:.0f}): point at the object's body, not its edge")
         self.mean = first["mean"]
@@ -652,7 +655,7 @@ class _BlobTracker:
         sx, sy = int(min(max(0, sx), w - 1)), int(min(max(0, sy), h - 1))
         blur = cv2.GaussianBlur(img, (5, 5), 0)
         mask = np.zeros((h + 2, w + 2), np.uint8)
-        flags = 4 | cv2.FLOODFILL_MASK_ONLY | (255 << 8)
+        flags = 4 | cv2.FLOODFILL_MASK_ONLY | cv2.FLOODFILL_FIXED_RANGE | (255 << 8)
         cv2.floodFill(blur, mask, (sx, sy), 0, (self.TOL,) * 3, (self.TOL,) * 3, flags)
         m = mask[1:-1, 1:-1]
         area = int(np.count_nonzero(m))
@@ -667,10 +670,20 @@ class _BlobTracker:
         return {"cx": (x0 + x1) / 2, "cy": (y0 + y1) / 2, "bbox": [float(x0), float(y0), float(x1 - x0 + 1), float(y1 - y0 + 1)],
                 "mean": mean, "frac": frac}
 
+    def _fill_best(self, img, sx, sy, radius=25):
+        """The largest usable fill from the seed or one of eight points around it: a seed that
+        lands on a printed mark or an edge still finds the object's body next to it."""
+        best = None
+        for dx, dy in ((0, 0), (radius, 0), (-radius, 0), (0, radius), (0, -radius), (radius, radius), (-radius, -radius), (radius, -radius), (-radius, radius)):
+            f = self._fill(img, sx + dx, sy + dy)
+            if f is not None and (best is None or f["frac"] > best["frac"]):
+                best = f
+        return best
+
     def locate(self, img, expect_px=None):
         ex, ey = (expect_px or (0.0, 0.0))
         for sx, sy in ((self.cx + ex, self.cy + ey), (self.cx, self.cy)):
-            f = self._fill(img, sx, sy)
+            f = self._fill_best(img, sx, sy)
             if f is not None:
                 self.cx, self.cy, self.mean = f["cx"], f["cy"], f["mean"]
                 self.patch.cx, self.patch.cy = f["cx"], f["cy"]
