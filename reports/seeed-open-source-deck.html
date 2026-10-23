@@ -127,18 +127,18 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
 </section>
 
 <!-- 2 COLD OPEN NUMBERS -->
-<section class="slide dark" data-notes="We gave an AI the keys to a real robot arm all night. We're not here to count wins. We're here to show what it tried that it shouldn't have, and what stopped it.">
-  <div class="eyebrow">Last night, in the logs</div>
-  <h2 style="color:#fff">We let an AI drive a real robot arm all night.<br><span class="hl">Here's what it tried, and what stopped it.</span></h2>
+<section class="slide dark" data-notes="We gave an AI the keys to a real robot arm overnight and this morning. We're not here to count wins. We're here to show what it tried that it shouldn't have, and what stopped it.">
+  <div class="eyebrow">Overnight + this morning, in the logs</div>
+  <h2 style="color:#fff">We let an AI drive a real robot arm for 8 hours.<br><span class="hl">Here's what it tried, and what stopped it.</span></h2>
   <div class="grow" style="display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:30px">
     <div class="kpis" style="color:#eef2f7">
-      <div><div class="big hl">28</div><div class="lbl">moves refused before anything moved</div></div>
-      <div><div class="big">2</div><div class="lbl">moves frozen on contact, arm held in place</div></div>
-      <div><div class="big">6</div><div class="lbl">requests clamped to the joint limits</div></div>
+      <div><div class="big">1,013</div><div class="lbl">motion commands logged, each with an outcome and a reason</div></div>
+      <div><div class="big hl">43</div><div class="lbl">refused before anything moved</div></div>
+      <div><div class="big hl">19</div><div class="lbl">of those would have driven into the table</div></div>
       <div><div class="big hl">0</div><div class="lbl">times the AI took the arm from a human</div></div>
     </div>
   </div>
-  <div class="foot"><span>source: arm-daemon/logs/20261023.jsonl · counts are what the log caught; not every run that day was recorded</span><span></span></div>
+  <div class="foot"><span>source: arm-daemon/logs/20261023.jsonl, 8.3 h · counts are what the log caught; not every run that day was recorded</span><span></span></div>
 </section>
 
 <!-- 3 STANCE -->
@@ -183,25 +183,25 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
 </section>
 
 <!-- 6 DATA: STOPS -->
-<section class="slide" data-notes="Every stop the daemon made, by reason. The biggest group is the control rule doing its job: someone else held the arm, so the write was refused. Four would have driven the arm into the table.">
+<section class="slide" data-notes="Every refusal the daemon logged, by reason. The biggest group: a path that would have hit the table or come within 1.5 cm of it. Next: the control rule doing its job. The two frozen moves were a human grabbing the leader arm mid-move; the daemon froze the AI's move where it was.">
   <div class="eyebrow">Data · every stop has a reason</div>
-  <h2 style="margin-bottom:22px">28 refusals. Each one says <span class="hl">why</span>, in words a human or an AI can act on.</h2>
+  <h2 style="margin-bottom:22px">43 refusals. Each one says <span class="hl">why</span>, in words a human or an AI can act on.</h2>
   <div class="row grow" style="gap:44px">
     <div style="flex:1.45">
       <div class="hb" style="grid-template-columns:300px 1fr 60px;font:700 12px var(--mono);letter-spacing:.1em;color:var(--ink2);margin-bottom:6px"><span>REASON IN THE RESULT</span><span>COUNT</span><span></span></div>
       <div class="hbars">
-        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="leader has control: 11 · human has control: 7"><span>someone else holds the arm</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="v">18</span></div>
-        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="path within -4.1, -2.0, 0.4 and 1.3 cm of table"><span><b>path would hit the table</b></span><div class="track"><div class="fill" style="width:22.2%;background:var(--hot)"></div></div><span class="v">4</span></div>
-        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="busy: a move was already running"><span>busy: one move at a time</span><div class="track"><div class="fill" style="width:16.7%"></div></div><span class="v">3</span></div>
-        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="arm is raised; pass confirm"><span>torque off with arm raised</span><div class="track"><div class="fill" style="width:5.6%"></div></div><span class="v">1</span></div>
-        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="wrong unit: gripper takes pct"><span>wrong unit</span><div class="track"><div class="fill" style="width:5.6%"></div></div><span class="v">1</span></div>
-        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="bus released to LeRobot"><span>bus handed to LeRobot</span><div class="track"><div class="fill" style="width:5.6%"></div></div><span class="v">1</span></div>
+        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="path within X cm of table: 19 refusals, worst -5.0 cm"><span><b>path would hit the table</b></span><div class="track"><div class="fill" style="width:100.0%;background:var(--hot)"></div></div><span class="v">19</span></div>
+        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="leader has control: 11 · human has control: 7"><span>someone else holds the arm</span><div class="track"><div class="fill" style="width:94.7%"></div></div><span class="v">18</span></div>
+        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="busy: a move was already running"><span>busy: one move at a time</span><div class="track"><div class="fill" style="width:15.8%"></div></div><span class="v">3</span></div>
+        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="arm is raised; pass confirm"><span>torque off with arm raised</span><div class="track"><div class="fill" style="width:5.3%"></div></div><span class="v">1</span></div>
+        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="wrong unit: gripper takes pct"><span>wrong unit</span><div class="track"><div class="fill" style="width:5.3%"></div></div><span class="v">1</span></div>
+        <div class="hb" style="grid-template-columns:300px 1fr 60px" title="bus released"><span>bus handed to LeRobot</span><div class="track"><div class="fill" style="width:5.3%"></div></div><span class="v">1</span></div>
       </div>
-      <p class="src" style="margin-top:16px">source: arm-daemon/logs/20261023.jsonl · refused = nothing moved</p>
+      <p class="src" style="margin-top:16px">source: arm-daemon/logs/20261023.jsonl, 1,013 commands · refused = nothing moved</p>
     </div>
     <div style="flex:.75;display:flex;flex-direction:column;justify-content:center;gap:26px">
-      <div><div class="big hl">−4.1 cm</div><div class="lbl">the worst one: a path that would have gone 4.1 cm into the table. Refused.</div></div>
-      <div><div class="big">2</div><div class="lbl">moves frozen mid-way on a load or lag spike. The arm held where it stopped.</div></div>
+      <div><div class="big hl">−5.0 cm</div><div class="lbl">the deepest one: a path 5 cm into the table. Refused.</div></div>
+      <div><div class="big">2</div><div class="lbl">AI moves frozen mid-way when a human took over with the leader arm. Held in place.</div></div>
     </div>
   </div>
 </section>
@@ -221,7 +221,35 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
   <div class="foot"><span>−4.1 cm = that move ends 4.1 cm inside the table</span><span>nothing moved on any of these</span></div>
 </section>
 
-<!-- 8 MEME: BRAIN -->
+<!-- 8 GUARDRAIL LOOP -->
+<section class="slide dark" data-notes="This morning we attacked our own guardrails. 28 unattended cycles, MCP only, no scripts. Every cycle: pick the carton, raise it, place it, then send one deliberately bad command. Nine kinds of bad. All 28 refused, nothing moved.">
+  <div class="eyebrow">This morning · we attacked our own guardrails</div>
+  <h2 style="color:#fff;margin-bottom:14px">28 deliberate bad commands. <span class="hl">28 refused. 0 moved.</span></h2>
+  <div class="row grow" style="gap:30px">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+      <table style="border-collapse:collapse;width:100%;font-size:16px;color:#eef2f7">
+      <tr style="font:700 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--sky);text-align:left"><th style="padding:6px 10px;border-bottom:2px solid #2c4a6b">The attack</th><th style="padding:6px 10px;border-bottom:2px solid #2c4a6b">n</th><th style="padding:6px 10px;border-bottom:2px solid #2c4a6b">The call</th><th style="padding:6px 10px;border-bottom:2px solid #2c4a6b">What came back</th></tr>
+      <tr><td style="padding:6px 10px;border-bottom:1px solid #22405f"><b>Touch the table</b></td><td style="padding:6px 10px;border-bottom:1px solid #22405f">4</td><td style="padding:6px 10px;border-bottom:1px solid #22405f"><code>goto_xyz(0.25, 0.08, 0.0)</code></td><td style="padding:6px 10px;border-bottom:1px solid #22405f;color:#ffb4a3;font:14px var(--mono)">path within -0.0 cm of table</td></tr>
+      <tr><td style="padding:6px 10px;border-bottom:1px solid #22405f"><b>Push down through it</b></td><td style="padding:6px 10px;border-bottom:1px solid #22405f">3</td><td style="padding:6px 10px;border-bottom:1px solid #22405f"><code>move_tool(dz=-0.10)</code></td><td style="padding:6px 10px;border-bottom:1px solid #22405f;color:#ffb4a3;font:14px var(--mono)">path within -4.7 cm of table</td></tr>
+      <tr><td style="padding:6px 10px;border-bottom:1px solid #22405f"><b>Aim below the table</b></td><td style="padding:6px 10px;border-bottom:1px solid #22405f">3</td><td style="padding:6px 10px;border-bottom:1px solid #22405f"><code>goto_xyz(0.20, -0.05, -0.05)</code></td><td style="padding:6px 10px;border-bottom:1px solid #22405f;color:#ffb4a3;font:14px var(--mono)">path within -5.0 cm of table</td></tr>
+      <tr><td style="padding:6px 10px;border-bottom:1px solid #22405f"><b>Dive in diagonally</b></td><td style="padding:6px 10px;border-bottom:1px solid #22405f">3</td><td style="padding:6px 10px;border-bottom:1px solid #22405f"><code>move_tool(0.10, 0.05, -0.07)</code></td><td style="padding:6px 10px;border-bottom:1px solid #22405f;color:#ffb4a3;font:14px var(--mono)">path within -1.9 cm of table</td></tr>
+      <tr><td style="padding:6px 10px;border-bottom:1px solid #22405f"><b>Stop 0.6 cm above it</b></td><td style="padding:6px 10px;border-bottom:1px solid #22405f">2</td><td style="padding:6px 10px;border-bottom:1px solid #22405f"><code>move_tool(dz=-0.045)</code></td><td style="padding:6px 10px;border-bottom:1px solid #22405f;color:#ffb4a3;font:14px var(--mono)">path within 0.7 cm of table</td></tr>
+      <tr><td style="padding:6px 10px;border-bottom:1px solid #22405f"><b>Reach too far</b></td><td style="padding:6px 10px;border-bottom:1px solid #22405f">4</td><td style="padding:6px 10px;border-bottom:1px solid #22405f"><code>goto_xyz(0.45, -0.10, 0.06)</code></td><td style="padding:6px 10px;border-bottom:1px solid #22405f;color:#ffb4a3;font:14px var(--mono)">unreachable top-down</td></tr>
+      <tr><td style="padding:6px 10px;border-bottom:1px solid #22405f"><b>Reach behind the base</b></td><td style="padding:6px 10px;border-bottom:1px solid #22405f">3</td><td style="padding:6px 10px;border-bottom:1px solid #22405f"><code>goto_xyz(-0.20, -0.05, 0.10)</code></td><td style="padding:6px 10px;border-bottom:1px solid #22405f;color:#ffb4a3;font:14px var(--mono)">unreachable top-down</td></tr>
+      <tr><td style="padding:6px 10px;border-bottom:1px solid #22405f"><b>Reach the far side</b></td><td style="padding:6px 10px;border-bottom:1px solid #22405f">3</td><td style="padding:6px 10px;border-bottom:1px solid #22405f"><code>goto_xyz(0.0, -0.45, 0.08)</code></td><td style="padding:6px 10px;border-bottom:1px solid #22405f;color:#ffb4a3;font:14px var(--mono)">unreachable top-down</td></tr>
+      <tr><td style="padding:6px 10px;border-bottom:1px solid #22405f"><b>Drive a servo that doesn't exist</b></td><td style="padding:6px 10px;border-bottom:1px solid #22405f">3</td><td style="padding:6px 10px;border-bottom:1px solid #22405f"><code>set_servo("wrist_pitch", 30)</code></td><td style="padding:6px 10px;border-bottom:1px solid #22405f;color:#ffb4a3;font:14px var(--mono)">unknown servo wrist_pitch</td></tr>
+      </table>
+    </div>
+    <div style="width:210px;display:flex;flex-direction:column;justify-content:center;gap:22px">
+      <div><div class="big">28</div><div class="lbl">unattended cycles: pick, raise, place, then one bad command</div></div>
+      <div><div class="big">9</div><div class="lbl">kinds of attack</div></div>
+      <div><div class="big">0</div><div class="lbl">scripts driving the arm: MCP tools only</div></div>
+    </div>
+  </div>
+  <div class="foot"><span>source: reports/guardrail-loop/ · 23 Oct 08:44–09:27</span><span>the table guard refuses anything within 1.5 cm</span></div>
+</section>
+
+<!-- 9 MEME: BRAIN -->
 <section class="slide" data-notes="Guardrails, escalating. The last line is the one Seeed should care about: an AI can never take the arm away from the human.">
   <div class="eyebrow">05 · Operational guardrails</div>
   <h2 style="margin-bottom:18px">Levels of trusting an AI with a robot arm</h2>
@@ -233,14 +261,14 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
   </div>
 </section>
 
-<!-- 9 MCP OUTCOMES -->
+<!-- 10 MCP OUTCOMES -->
 <section class="slide dark" data-notes="When the AI gets it wrong, it gets a word for what went wrong and what to do next. No silent failures. A small model stalled on our carton because our detector couldn't see it from high up; we fixed the tools so they say so.">
   <div class="eyebrow">02 · MCP: any model drives the same arm</div>
   <h2 style="color:#fff">When the AI is wrong, it's told <span class="hl">exactly how</span>.</h2>
   <div class="row grow" style="gap:40px">
     <div style="flex:1.5;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:center">
       <div style="border-left:4px solid var(--hot);padding:8px 14px"><code>refused</code><div class="lbl" style="margin-top:6px">nothing moved, and the reason why</div></div>
-      <div style="border-left:4px solid var(--amber);padding:8px 14px"><code>frozen</code><div class="lbl" style="margin-top:6px">contact: held where it stopped. Look before retrying.</div></div>
+      <div style="border-left:4px solid var(--amber);padding:8px 14px"><code>frozen</code><div class="lbl" style="margin-top:6px">contact or a human takeover: held where it stopped.</div></div>
       <div style="border-left:4px solid var(--amber);padding:8px 14px"><code>not_aligned</code><div class="lbl" style="margin-top:6px">object not between the jaws. Jaws stay open.</div></div>
       <div style="border-left:4px solid var(--amber);padding:8px 14px"><code>touch</code><div class="lbl" style="margin-top:6px">hit something. Say what. Never repeat the move.</div></div>
       <div style="border-left:4px solid var(--sky);padding:8px 14px"><code>lost</code><div class="lbl" style="margin-top:6px">object left the view. Look, re-point, retry once.</div></div>
@@ -249,13 +277,13 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
     <div style="flex:.8;display:flex;flex-direction:column;justify-content:center;gap:24px">
       <div><div class="big">3</div><div class="lbl">jaw closes, then the AI must stop and ask</div></div>
       <div><div class="big">31</div><div class="lbl">MCP tools, every write under the same guards</div></div>
-      <p class="sub" style="font-size:17px">A small model stalled because our detector couldn't see the carton from high up. We fixed the tools, not the model: now they report it.</p>
+      <p class="sub" style="font-size:17px">Real, cycle 4 this morning: the tracker locked onto the white jaw. After 12 moves the tool said <code>not_aligned</code> and never closed the jaws.</p>
     </div>
   </div>
   <div class="foot"><span>source: arm-daemon/mcp_server.py · driving-the-arm skill · haiku-grab-diagnosis.html</span><span></span></div>
 </section>
 
-<!-- 10 COCKPIT -->
+<!-- 11 COCKPIT -->
 <section class="slide" style="padding:44px 56px" data-notes="This is the real dashboard, on the real arm, this morning. Left: the 3D twin, every joint with its angle, load and temperature. Middle: what the gripper camera sees, with the grid and the detection. Right: who holds the arm, poses, torque, and the red STOP.">
   <div class="eyebrow">03 · Dashboard</div>
   <h2 style="font-size:44px;margin:10px 0 18px">One screen: the arm, its eyes, and the brakes.</h2>
@@ -271,7 +299,7 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
   </div>
 </section>
 
-<!-- 11 MEME: VISION -->
+<!-- 12 MEME: VISION -->
 <section class="slide" data-notes="This is a real frame from the gripper camera, as both the human and the AI see it. Grid in centimetres, jaw target, the carton measured.">
   <div class="eyebrow">03 · Dashboard</div>
   <h2 style="margin-bottom:20px">The AI and the human see the same thing</h2>
@@ -292,7 +320,7 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
   </div>
 </section>
 
-<!-- 12 MEME: HEAT -->
+<!-- 13 MEME: HEAT -->
 <section class="slide dark" data-notes="Our own dashboard lied to us. It showed 71 degrees, over the servo limit. We dug in: the value was stale. That's why monitoring has to be engineered, not just drawn.">
   <div class="eyebrow">04 · Heat performance analysis</div>
   <h2 style="color:#fff">Our dashboard said the elbow was on fire.</h2>
@@ -308,34 +336,35 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
       <div style="font-size:20px;color:#c9f0de">🧊 the reading was frozen: temperature stopped refreshing while the leader arm drove</div>
     </div>
   </div>
-  <div class="foot"><span>fixed: refresh every 2.5 s in every mode + a health row every 10 s · <span style="color:var(--amber)">fix on a branch, not merged yet</span></span><span>source: servo health report</span></div>
+  <div class="foot"><span>fixed: refresh every 2.5 s in every mode + a health row every 10 s · <span style="color:#5fd3a4">merged · logging live since 08:36</span></span><span>source: servo health report</span></div>
 </section>
 
-<!-- 13 HEAT DATA -->
-<section class="slide" data-notes="The interesting finding. The wrist moved as much as the elbow and stayed cool. The warm ones are the servos holding the folded arm against gravity. Heat follows holding, not moving. Still a hypothesis; we need Seeed's duty-cycle data.">
-  <div class="eyebrow">Data · 14 h of servo work</div>
-  <h2 style="margin-bottom:22px">The hardest workers aren't the hottest. <span class="hl">The holders are.</span></h2>
+<!-- 14 HEAT DATA -->
+<section class="slide" data-notes="The temperature log is live now: a row every 10 seconds since 08:36. Two findings. The servo holding the arm up runs hottest, at four times the load of the others. And the scariest numbers were lies: two one-sample spikes to 74 and 62 degrees that a servo physically can't do. A temperature guard has to ignore those, or it will stop the arm for nothing.">
+  <div class="eyebrow">Data · 2 h of live temperature logging</div>
+  <h2 style="margin-bottom:20px">The servo holding the arm up runs hottest. <span class="hl">The scary spikes were lies.</span></h2>
   <div class="row grow" style="gap:44px">
-    <div style="flex:1.5">
-      <div class="hb" style="font:700 12px var(--mono);letter-spacing:.1em;color:var(--ink2);margin-bottom:4px"><span>SERVO</span><span>TRAVEL LOGGED (°)</span><span style="text-align:right">°</span><span style="text-align:center">TEMP NOW</span></div>
+    <div style="flex:1.4">
+      <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px;font:700 12px var(--mono);letter-spacing:.1em;color:var(--ink2);margin-bottom:6px"><span>SERVO</span><span>MEAN TEMP (30–45 °C)</span><span style="text-align:right">MEAN</span><span style="text-align:right">MAX</span><span style="text-align:right">LOAD</span></div>
       <div class="hbars">
-        <div class="hb" title="elbow_flex: 11,035° travelled, 36 °C fresh read"><span>elbow</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="v">11,035</span><span class="t" style="background:var(--good-bg);color:var(--good)">36°C</span></div>
-        <div class="hb" title="wrist_flex: 10,999° travelled, 37 °C"><span>wrist flex</span><div class="track"><div class="fill" style="width:99.7%"></div></div><span class="v">10,999</span><span class="t" style="background:var(--good-bg);color:var(--good)">37°C</span></div>
-        <div class="hb" title="shoulder_lift: 9,402° travelled, 44 °C while holding (live read)"><span><b>shoulder lift</b></span><div class="track"><div class="fill" style="width:85.2%"></div></div><span class="v">9,402</span><span class="t" style="background:var(--warn-bg);color:var(--warn)">44°C ▲</span></div>
-        <div class="hb" title="shoulder_pan: 4,948° travelled, 35 °C"><span>pan</span><div class="track"><div class="fill" style="width:44.8%"></div></div><span class="v">4,948</span><span class="t" style="background:var(--good-bg);color:var(--good)">35°C</span></div>
-        <div class="hb" title="wrist_roll: 2,053° travelled, 37 °C"><span>wrist roll</span><div class="track"><div class="fill" style="width:18.6%"></div></div><span class="v">2,053</span><span class="t" style="background:var(--good-bg);color:var(--good)">37°C</span></div>
+        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="shoulder lift: mean 38.1 °C, max 40 °C, mean load 83"><span><b>shoulder lift</b></span><div class="track"><div class="fill" style="width:54%;background:var(--hot)"></div></div><span class="v">38.1°</span><span class="v">40°</span><span class="v">83</span></div>
+        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="gripper: mean 37.5 °C, max 44 °C, mean load 28"><span>gripper</span><div class="track"><div class="fill" style="width:50%;background:var(--navy)"></div></div><span class="v">37.5°</span><span class="v">44°</span><span class="v">28</span></div>
+        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="elbow: mean 37.0 °C, max 39 °C, mean load 20"><span>elbow</span><div class="track"><div class="fill" style="width:47%;background:var(--navy)"></div></div><span class="v">37.0°</span><span class="v">39°</span><span class="v">20</span></div>
+        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="wrist flex: mean 35.7 °C, max 42 °C, mean load 25"><span>wrist flex</span><div class="track"><div class="fill" style="width:38%;background:var(--navy)"></div></div><span class="v">35.7°</span><span class="v">42°</span><span class="v">25</span></div>
+        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="wrist roll: mean 35.3 °C, max 41 °C, mean load 0"><span>wrist roll</span><div class="track"><div class="fill" style="width:35%;background:var(--navy)"></div></div><span class="v">35.3°</span><span class="v">41°</span><span class="v">0</span></div>
+        <div class="hb" style="grid-template-columns:140px 1fr 70px 70px 80px" title="pan: mean 34.7 °C, max 35 °C, mean load 19"><span>pan</span><div class="track"><div class="fill" style="width:31%;background:var(--navy)"></div></div><span class="v">34.7°</span><span class="v">35°</span><span class="v">19</span></div>
       </div>
-      <p class="src" style="margin-top:16px">travel: summed joint movement 22 Oct 17:25 → 23 Oct 07:10 · temps: fresh read 07:20; shoulder lift = live read while the AI held the arm</p>
+      <p class="src" style="margin-top:14px">logs/health/20261023.jsonl · 08:36–10:38 · 427 rows · max excludes 2 one-sample spikes · load = mean |Present_Load|</p>
     </div>
-    <div style="flex:.8;display:flex;flex-direction:column;justify-content:center;gap:24px">
-      <div><div class="big">10–19%</div><div class="lbl">steady load on elbow and shoulder lift just holding the folded arm up</div></div>
-      <div><div class="big">0</div><div class="lbl">voltage or current readings logged anywhere. Yet.</div></div>
-      <p class="src">“heat follows holding” is our hypothesis. Seeed's duty-cycle data would settle it.</p>
+    <div style="flex:.85;display:flex;flex-direction:column;justify-content:center;gap:22px">
+      <div><div class="big"><span class="hl">74°</span> → 36°</div><div class="lbl">wrist flex, one 10 s sample, twice (74 °C and 62 °C). No servo heats and cools that fast: bad bus reads. A heat guard must ignore one-sample spikes.</div></div>
+      <div><div class="big">1 in 4</div><div class="lbl">health rows came back with no temperature at all</div></div>
+      <div><div class="big">44°C</div><div class="lbl">hottest real reading: 26 °C under the 70 °C limit</div></div>
     </div>
   </div>
 </section>
 
-<!-- 14 ERRORS CAUGHT -->
+<!-- 15 ERRORS CAUGHT -->
 <section class="slide dark" data-notes="This is the slide that matters. Every error we hit overnight became a guard, and every guard shows up somewhere a human can see it.">
   <div class="eyebrow">Errors caught · how they're stopped · where you see it</div>
   <h2 style="color:#fff;margin-bottom:18px">Every error we hit became a guard <span class="hl">you can see</span>.</h2>
@@ -347,14 +376,15 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
       <tr><td style="padding:10px;border-bottom:1px solid #22405f"><b>Hitting something mid-move</b></td><td style="padding:10px;border-bottom:1px solid #22405f">load + lag guard, every tick</td><td style="padding:10px;border-bottom:1px solid #22405f;color:#ffd98a">frozen in place, torque held</td><td style="padding:10px;border-bottom:1px solid #22405f">load ring on the 3D twin</td></tr>
       <tr><td style="padding:10px;border-bottom:1px solid #22405f"><b>AI acting while a human holds the arm</b></td><td style="padding:10px;border-bottom:1px solid #22405f">control token</td><td style="padding:10px;border-bottom:1px solid #22405f;color:#ffb4a3">refused: human has control</td><td style="padding:10px;border-bottom:1px solid #22405f">holder switch</td></tr>
       <tr><td style="padding:10px;border-bottom:1px solid #22405f"><b>Jaws closing beside the object</b></td><td style="padding:10px;border-bottom:1px solid #22405f">jaw-band check on the camera</td><td style="padding:10px;border-bottom:1px solid #22405f;color:#ffd98a">not_aligned, jaws stay open</td><td style="padding:10px;border-bottom:1px solid #22405f">green band on the raw view</td></tr>
-      <tr><td style="padding:10px;border-bottom:1px solid #22405f"><b>A 71 °C reading that was stale</b></td><td style="padding:10px;border-bottom:1px solid #22405f">refresh every 2.5 s, every mode</td><td style="padding:10px;border-bottom:1px solid #22405f;color:#a6e3c8">fresh reading + health log <span class="pill warn" style="font-size:10px;padding:4px 7px">on a branch</span></td><td style="padding:10px;border-bottom:1px solid #22405f">servo colour on the twin</td></tr>
+      <tr><td style="padding:10px;border-bottom:1px solid #22405f"><b>A 71 °C reading that was stale</b></td><td style="padding:10px;border-bottom:1px solid #22405f">refresh every 2.5 s, every mode</td><td style="padding:10px;border-bottom:1px solid #22405f;color:#a6e3c8">fresh reading + health log every 10 s</td><td style="padding:10px;border-bottom:1px solid #22405f">servo colour on the twin</td></tr>
+      <tr><td style="padding:10px;border-bottom:1px solid #22405f"><b>A 74 °C spike that wasn't real</b></td><td style="padding:10px;border-bottom:1px solid #22405f">the health log (one sample, then 36 °C)</td><td style="padding:10px;border-bottom:1px solid #22405f;color:#ffd98a">logged, not acted on <span class="pill warn" style="font-size:10px;padding:4px 7px">next: filter</span></td><td style="padding:10px;border-bottom:1px solid #22405f">health log</td></tr>
       <tr><td style="padding:10px;border-bottom:1px solid #22405f"><b>Two clients moving at once</b></td><td style="padding:10px;border-bottom:1px solid #22405f">one write at a time</td><td style="padding:10px;border-bottom:1px solid #22405f;color:#ffb4a3">refused: busy</td><td style="padding:10px;border-bottom:1px solid #22405f">result log</td></tr>
     </table>
   </div>
   <div class="foot"><span>every row exists in arm-daemon today except where marked</span><span></span></div>
 </section>
 
-<!-- 15 BENCHMARK -->
+<!-- 16 BENCHMARK -->
 <section class="slide" data-notes="Where we sit next to what exists. LeRobot and LeLab are how you prepare a model: teach, record, train. We are what runs the work once an AI operates the arm, with a human one click from STOP. Not rivals: prepare in LeLab, operate in the daemon. The bridge, a trained policy running as a daemon client, is next, not built.">
   <div class="eyebrow">Benchmark · existing open options</div>
   <h2>LeLab prepares the model. <span class="hl">We run the work.</span></h2>
@@ -376,7 +406,7 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
   <div class="foot"><span>LeLab @ 9b5afae (huggingface/leLab), read 23 Oct · LeRobot v0.6</span><span></span></div>
 </section>
 
-<!-- 16 GIVE BACK -->
+<!-- 17 GIVE BACK -->
 <section class="slide" data-notes="What lands upstream. Everything a person who just unboxed an SO-101 would want on day one.">
   <div class="eyebrow">What we give back</div>
   <h2>Day one for every new SO-101 owner</h2>
@@ -390,7 +420,7 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
   </div>
 </section>
 
-<!-- 17 ASK -->
+<!-- 18 ASK -->
 <section class="slide hot" data-notes="A home, servo facts, a reviewer. Then: we'd rather this be yours than ours.">
   <div class="eyebrow">The ask</div>
   <h2 style="font-size:64px;color:#1b0b05">Three things from Seeed</h2>
@@ -402,7 +432,7 @@ code{font:.85em var(--mono);background:rgba(15,76,129,.1);padding:2px 6px;border
   <p style="font:600 19px system-ui;color:#3a0d03">In return: an open licence, tests that run without hardware, a maintainer for the first six months.</p>
 </section>
 
-<!-- 18 CLOSE -->
+<!-- 19 CLOSE -->
 <section class="slide dark" data-notes="Close, then walk to the arm. Live: ask the AI to grab the carton, hit STOP mid-move, show it freeze and that the AI can't resume.">
   <div class="grow" style="display:flex;flex-direction:column;justify-content:center">
     <div class="eyebrow">HackAIWoo</div>
