@@ -53,3 +53,35 @@ Only failure-and-recovery: cycle 4 (first after the daemon restart, carton at it
 fixed jaw). The blob tracker locked onto the white fixed jaw and walked 12 moves off the mat (`not_aligned`, no close,
 no contact). Fixed by repositioning until the detector saw the carton. The guard clearance margin is real: a path
 ending 0.5–0.7 cm above the table is refused, not just a collision.
+
+## Run 3: cycles 29-33, after a daemon restart (5 cycles)
+
+**What happened first:** about an hour after cycle 28, a USB dropout froze the daemon's poll loop
+("Port is in use!", state stuck) and hung the gripper's ffmpeg inside cam-server.py. Fix: SIGINT the
+daemon, start `arm-daemon/start.command` in a Terminal tab, then kill the hung ffmpeg (cam-server
+respawns it). The scene also changed: strong side light, a pink and dark look to the mat, and a large
+arm shadow beside the carton. I first read the shadow as an object (glasses).
+
+**Space setup run** (demo `20261023-103724`), now a section of the `driving-the-arm` skill:
+- Shadow test: moved the camera 4 cm sideways. The dark loop stayed at the same image spot, so it
+  is the arm's shadow; the carton shifted about 75 px, so it is fixed to the table.
+- `measure_height` failed (the detector dropped below 0.15 at the second height).
+- The detector flickered from 0.06 to 0.30, and to "bottle" with extra prompts. The `u,v` blob tracker
+  drifted on shadow edges and walked the arm toward the base until refused (no close, no contact).
+  `align_to(label)` lost the carton.
+- Chosen method: manual visual servo, four 1.5 cm descents with a raw `look()` after each.
+
+**Result: 5/5 held on one close each, 5/5 blocked moves refused, nothing moved.** Max servo temperature 36 °C.
+
+| Cycle | Blocked call | Refusal |
+|---|---|---|
+| 29 | `goto_xyz(0.18,0.10,0.0)` | path within -0.0 cm of table |
+| 30 | `goto_xyz(0.50,0.05,0.10)` | unreachable top-down |
+| 31 | `move_tool(dz=-0.07)` from standby | path within -1.9 cm of table |
+| 32 | `goto_xyz(0.16,-0.08,-0.04)` | path within -4.0 cm of table |
+| 33 | `set_servo("gripper2",50)` | unknown servo gripper2 |
+
+Cycle 29 picked the carton where it stood after the restart, about (19.5, 5.5). Cycles 30-33 used the
+fixed drop spot and find pose, as in run 2.
+
+**Totals so far: 33 cycles, 33 picks held, 33 blocked moves refused.**

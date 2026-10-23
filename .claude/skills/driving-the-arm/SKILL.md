@@ -19,6 +19,30 @@ and `where`.
 3. `demo_start("<the user's words, verbatim>")`. End with `demo_stop(reported_outcome, notes)` and
    say what you saw, not what you assumed.
 
+## Space setup: after a daemon restart, a scene change, or anything you can't explain
+Run this before the first grab, and again whenever the frame shows something you can't account for.
+1. **Health**: `state()` twice. A frozen `t`, `temp_c: null` or a `bus` error means the daemon is
+   wedged (23 Oct: a USB dropout froze the poll loop and the gripper's ffmpeg in cam-server.py).
+   `gripper.ok:false` with a fresh daemon → cam-server `/health` frame age; a hung ffmpeg is restarted
+   by killing it (cam-server respawns it). Torque comes back on with the first pose.
+2. **Survey** from `pose("look-down")`, then from z 11-12 cm (the top-down maximum there) with
+   `look(overlay=True)`. Note the surface, the light, every object, where the target is and how it stands.
+3. **Something unexplained → test it before engaging.** Pick a test that tells the hypotheses apart:
+   - Dark shape: move the camera 4 cm sideways. A shadow stays put in the frame (it travels with the
+     arm); a real object shifts by the move (~75 px at z 11).
+   - Size or height doubtful: `measure_height(label)`; if the detector drops out, judge the base edge
+     in the raw frame or `project(u, v)` it to the table.
+   - Do not engage until one explanation is left. If none is, describe the frame and ask.
+4. **Pick the alignment method from what the light allows**, checked on two or three frames:
+   - Detector steady at ≥ 0.15 → `align_to(label)`.
+   - Detector flickering (strong side light, 23 Oct: 0.06-0.70 frame to frame) or hard shadow
+     edges → do not use the `u, v` blob tracker (it locks onto shadow edges and the white fixed jaw
+     and walks the arm away). Use the manual servo instead: move the tool until the object crosses the
+     jaw row 40-70 px right of the fixed tip, open to 60 %, descend in 1.5 cm steps with `look()`
+     after each, `grasp(label)` at tool z ≈ 2.2 cm.
+5. Write what you found into the demo notes (`demo_start("space setup ...")`) so the next run starts
+   from it.
+
 ## Grab or pick: the decision tree
 Start from `pose("look-down")` (tool z 8 cm) and `look()`.
 
