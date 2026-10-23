@@ -21,7 +21,7 @@ main{max-width:980px;margin:0 auto;padding:40px 16px 80px}
 .lockup svg{width:44px;height:44px;flex:none}
 .lockup .word{font:500 30px/1 var(--sans);letter-spacing:-.025em}
 .lockup .tag{font:13px var(--mono);color:var(--il-slate);margin-left:auto;text-align:right}
-.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--il-sky-deep)}
+.eyebrow{font:500 11px/1.5 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--il-sky-deep)}
 h1,h2,.big{font-family:var(--sans);font-weight:600;letter-spacing:-.025em}
 h1{font-size:clamp(30px,5vw,46px);line-height:1.1;margin:14px 0 16px}
 h2{font-size:28px;line-height:1.2;margin:0 0 6px}
@@ -79,190 +79,205 @@ footer svg{width:20px;height:20px;flex:none}
   </g>
 </svg><span class="word">interlock</span><span class="tag">One hand on the arm at a time.</span></div>
 
-<div class="eyebrow">Interlock · by HackAIWoo · for Seeed Studio</div>
-<h1>The SO-101 is open. We built Interlock, the layer that makes it safe, visible and easy to use, and we are giving it back.</h1>
-<p class="stand">Seeed and the SO-ARM100/101 community opened the hardware. The next barrier to adoption is not the arm. It is what sits above it: who owns the serial port, what stops a model from crashing the arm into the table, how a newcomer sees what is happening, and how an AI agent drives it without guessing. We built that layer, Interlock, in a hackathon and propose to contribute it upstream: Interlock Core owns the arm, Interlock Link lets any AI model drive it, and Interlock Console lets a person watch, steer and stop it.</p>
-<div class="meta"><span>audience: Seeed Studio team</span><span>hardware: SO-ARM101 · LeRobot 0.6.1</span><span>prepared 2026-10-23</span><span>sibling of: hackathon-pitch-script.html</span></div>
+<div class="eyebrow">Interlock · built at HackAIWoo · for Seeed Studio</div>
+<h1>Interlock lets people and AI models control the SO&#8209;ARM101 safely. We want to give it to the community.</h1>
+<p class="stand">Interlock is open-source software that sits between the SO&#8209;ARM101 and every program that drives it. It checks each move before the arm moves. It shows a person what the arm is doing. It lets any AI model control the arm through one standard interface (MCP). We built it at HackAIWoo and we propose to share it with all SO&#8209;ARM101 owners.</p>
+<div class="meta"><span>For: the Seeed Studio team</span><span>Hardware: SO&#8209;ARM101 · LeRobot 0.6.1</span><span>Date: 23 Oct 2026</span><span>Slides: seeed-open-source-deck.html</span></div>
 
 <div class="tiles">
-  <div class="tile"><div class="big">1</div><div class="lbl">process owns the serial port; everything else is a client</div></div>
-  <div class="tile"><div class="big">31</div><div class="lbl">MCP tools an agent can call, all through the same guards</div></div>
-  <div class="tile"><div class="big">43</div><div class="lbl">refused before anything moved, in 1,013 logged commands</div></div>
-  <div class="tile"><div class="big">28 / 28</div><div class="lbl">deliberate bad commands refused in our own attack loop</div></div>
-  <div class="tile"><div class="big">0</div><div class="lbl">ways for an agent to take the arm from a human</div></div>
+  <div class="tile"><div class="big">1</div><div class="lbl">program is connected to the arm. All other programs send it requests.</div></div>
+  <div class="tile"><div class="big">31</div><div class="lbl">tools an AI model can use, all under the same checks</div></div>
+  <div class="tile"><div class="big">43</div><div class="lbl">moves stopped before the arm moved, out of 1,013 logged</div></div>
+  <div class="tile"><div class="big">28 / 28</div><div class="lbl">bad commands sent on purpose were stopped</div></div>
+  <div class="tile"><div class="big">0</div><div class="lbl">times the AI took control away from a person</div></div>
 </div>
 
 <section>
-  <div class="eyebrow">The gap</div>
-  <h2>Open hardware gets bought. Open infrastructure gets used.</h2>
-  <p class="lede">A new SO-101 owner today meets four walls: scripts that each open the serial port and collide ("Port is in use"); no live view of load or temperature; an AI agent with no brakes; and every run lost because nothing recorded what happened. Each is solvable once, in the open, instead of by every user separately. That is the contribution.</p>
+  <div class="eyebrow">Words we use</div>
+  <h2>Interlock has three parts and gives two kinds of warning</h2>
+  <div class="scroll"><table>
+    <tbody>
+      <tr><td><b>Interlock Core</b></td><td>The only program connected to the arm. It checks every move.</td></tr>
+      <tr><td><b>Interlock Link</b></td><td>The connection for AI models. It uses MCP, a standard way for AI models to use tools.</td></tr>
+      <tr><td><b>Interlock Console</b></td><td>A web page for people: live camera, 3D model, controls and STOP.</td></tr>
+      <tr><td><span class="pill refused" style="margin:0">refused</span></td><td>Core said no. The arm did not move. The reply says why.</td></tr>
+      <tr><td><span class="pill warn" style="margin:0">frozen</span></td><td>The arm stopped during a move and holds still, because it touched something or a person took over.</td></tr>
+    </tbody>
+  </table></div>
 </section>
 
 <section>
-  <div class="eyebrow">What we contribute</div>
-  <h2>Five pieces, one stack</h2>
-  <p class="lede">Each card says what exists today and what we would hand over. The heat piece is the youngest and is labelled honestly.</p>
+  <div class="eyebrow">The problem</div>
+  <h2>New SO&#8209;ARM101 owners meet four problems that the hardware cannot solve</h2>
+  <p class="lede">First, each script opens the serial port by itself, so two programs cannot run together ("Port is in use"). Second, there is no live view of servo load or temperature. Third, an AI model can send any command, and nothing checks it before the motors move. Fourth, runs are not recorded, so nobody can learn from them. Every owner solves these alone today. We solved them once, in the open.</p>
+</section>
+
+<section>
+  <div class="eyebrow">What we built</div>
+  <h2>Five parts. Four work today. The temperature check is next.</h2>
+  <p class="lede">Each card shows what works today and what we would share.</p>
 
   <div class="card">
     <div class="n">1 · Interlock Core <span class="pill good">working</span></div>
-    <h3>One owner for the bus, a documented API for everyone else</h3>
+    <h3>One program owns the arm, with one documented API for all others</h3>
     <div class="cols">
       <div><h4>Today</h4><ul>
-        <li>Single process holds the serial port; torque is never dropped on start or exit.</li>
-        <li>20 Hz state for every servo (position, goal, load, torque, temperature) over HTTP and WebSocket.</li>
-        <li>Camera proxy, annotated vision, demo recording, named poses. Binds to loopback only.</li>
-        <li>Wraps LeRobot rather than replacing it: a <code>released</code> holder hands the bus to <code>lerobot-teleoperate</code> and takes it back.</li>
-        <li>Full <code>API.md</code> a builder can code a client from.</li>
-        <li>167 tests against a fake bus: no arm needed to contribute.</li>
+        <li>Only Core opens the serial port. When it starts or stops, it leaves the motors as they were, so the arm does not drop.</li>
+        <li>It reads every servo 20 times a second: position, target, load, motor power and temperature. Other programs get this over HTTP and WebSocket.</li>
+        <li>It also runs the camera feed, object detection, run recording and saved poses. It only accepts connections from the same computer.</li>
+        <li>It works with LeRobot. Core can lend the arm to <code>lerobot-teleoperate</code> and take it back.</li>
+        <li>One file, <code>API.md</code>, describes every request.</li>
+        <li>167 tests run on a simulated arm, so people can help without owning one.</li>
       </ul></div>
-      <div><h4>We would upstream</h4><ul>
-        <li>The bus-ownership pattern and API spec as a reference for the SO-ARM100 repo.</li>
-        <li>The fake-bus test harness, so contributors can develop without an arm.</li>
-        <li>A LeRobot-compatible holder handoff, already in use.</li>
+      <div><h4>We would share</h4><ul>
+        <li>The design and the API, as a reference for the SO&#8209;ARM100 repository.</li>
+        <li>The simulated arm for testing.</li>
+        <li>The LeRobot hand-over, which we already use.</li>
       </ul></div>
     </div>
   </div>
 
   <div class="card">
     <div class="n">2 · Interlock Link (MCP) <span class="pill good">working</span></div>
-    <h3>Any model, open or closed, drives the same arm</h3>
+    <h3>Any AI model can control the arm, and every answer it gets is clear</h3>
     <div class="cols">
       <div><h4>Today</h4><ul>
-        <li>31 tools: <code>look</code>, <code>pose</code>, <code>align_to</code>, <code>grasp</code>, <code>release</code>, <code>stop</code>, demo search and replay.</li>
-        <li>Every write returns one result: <code>ok</code>, <code>frozen</code> or <code>refused</code>, plus a plain-language reason. The model never has to guess what happened.</li>
-        <li>Grab logic is a decision tree with a stated attempt budget (three jaw closes, then ask).</li>
-        <li>A cheap model (Haiku) was used as the stress test; its failures drove the tool design.</li>
+        <li>31 tools, such as <code>look</code>, <code>pose</code>, <code>align_to</code>, <code>grasp</code>, <code>release</code> and <code>stop</code>, plus search and replay of recorded runs.</li>
+        <li>Every move returns one of three results: <code>ok</code>, <code>frozen</code> or <code>refused</code>, with a short reason in plain words.</li>
+        <li>Grabbing follows fixed steps. After three tries to close the gripper, the AI must stop and ask a person.</li>
+        <li>We tested the tools with a small AI model (Haiku) on purpose. Its mistakes showed us what to fix in the tools.</li>
       </ul></div>
-      <div><h4>We would upstream</h4><ul>
-        <li>Interlock Link, as the first standard tool interface for the SO-101.</li>
-        <li>The <code>driving-the-arm</code> skill: when to look, grab, stop or ask.</li>
-        <li>The outcome vocabulary, reusable for other low-cost arms.</li>
+      <div><h4>We would share</h4><ul>
+        <li>Interlock Link, as the first standard AI interface for the SO&#8209;ARM101.</li>
+        <li>The <code>driving-the-arm</code> guide: when the AI should look, grab, stop or ask.</li>
+        <li>The list of results and reasons, which other low-cost arms can reuse.</li>
       </ul></div>
     </div>
   </div>
 
   <div class="card">
     <div class="n">3 · Interlock Console <span class="pill good">working</span></div>
-    <h3>See the arm, take it back, stop it</h3>
+    <h3>A person can watch the arm, take control, and press STOP</h3>
     <div class="cols">
       <div><h4>Today</h4><ul>
-        <li>3D model built from the real SO-101 STL meshes and URDF, driven by the same kinematics as Core.</li>
-        <li>Live gripper camera with a 1 cm table grid, detections and size/offset in cm.</li>
-        <li>Per-joint angle, load and temperature; sliders, nudges, named poses, big STOP, holder switch.</li>
-        <li>A log of every motion result from every client, human or agent.</li>
+        <li>A 3D model of the arm, built from the official SO&#8209;ARM101 parts and moved by the same maths as Core.</li>
+        <li>The live gripper camera with a 1 cm grid on the table. Detected objects show their size and position in cm.</li>
+        <li>Angle, load and temperature for each joint. Sliders, small steps, saved poses, a STOP button and a control switch.</li>
+        <li>A log of every move result, from people and from AI models.</li>
       </ul></div>
-      <div><h4>We would upstream</h4><ul>
-        <li>Interlock Console as a no-build, single-folder UI (vendored three.js).</li>
-        <li>The URDF-driven 3D viewer, usable by any SO-101 project.</li>
+      <div><h4>We would share</h4><ul>
+        <li>Interlock Console: one folder, it opens in a browser, nothing to build.</li>
+        <li>The 3D viewer, which any SO&#8209;ARM101 project can use.</li>
       </ul></div>
     </div>
   </div>
 
   <div class="card">
-    <div class="n">4 · Heat performance analysis <span class="pill good">analysis done</span><span class="pill good">logging live</span><span class="pill warn">guard next</span></div>
-    <h3>We found a 71 °C elbow reading, traced it, and fixed what hid it</h3>
+    <div class="n">4 · Servo temperature <span class="pill good">logging works</span><span class="pill warn">check is next</span></div>
+    <h3>The Console once showed 71 °C. The real value was 36 °C. We found the cause and fixed it.</h3>
     <div class="cols">
       <div><h4>Today</h4><ul>
-        <li>A servo health report covers about 14 h of use on 22 to 23 Oct (1,250 agent calls, 340 Core commands, 17 demos): load, tracking and travel for all six STS3215 servos.</li>
-        <li>Finding: the Console showed the elbow at 71 °C, above the 70 °C limit set in every servo's EEPROM. It was a stale value: Core stopped re-reading temperature while the leader arm drove. A fresh read showed 36 °C.</li>
-        <li>Fix, merged and running since 08:36 on 23 Oct: temperature refreshes every 2.5 s in every mode, and a per-servo health row (temperature, load, position, torque) is written every 10 s to <code>logs/health/</code>.</li>
-        <li>First 2 h of that log (427 rows): the shoulder lift, which holds the folded arm up, runs hottest on average (38.1 °C) at about 4× the load of the others. Hottest real reading: 44 °C (gripper), 26 °C under the limit. Heat following holding load is still a hypothesis.</li>
-        <li>The log caught two impossible readings on wrist flex: 74 °C and 62 °C for a single 10 s sample, with 36 °C either side. No servo heats and cools that fast, so these are bad bus reads. One in four health rows came back with no temperature at all.</li>
-        <li>Live view: servo colour on the 3D model runs 32 to 60 °C; a joint is flagged hot at 55 °C.</li>
+        <li>We studied about 14 hours of use on 22 to 23 October: 1,250 AI tool calls, 340 moves and 17 recorded runs, for all six STS3215 servos.</li>
+        <li>The Console showed the elbow servo at 71 °C, above the 70 °C limit set in every servo. The value was old: Core did not update temperature while the leader arm had control. A new reading showed 36 °C.</li>
+        <li>The fix runs since 08:36 on 23 October. Temperature now updates every 2.5 seconds, and each servo's temperature, load and position is logged every 10 seconds.</li>
+        <li>In the first 2 hours of the log (427 records), the shoulder servo was the warmest, at 38.1 °C on average. It holds the arm up, so it carries about four times the load of the others. The highest real reading was 44 °C, 26 °C below the limit. We think holding a load causes most of the heat, but we have not proven it.</li>
+        <li>The log also caught two false readings on the wrist servo: 74 °C and 62 °C, each for one 10-second sample, with 36 °C before and after. A servo cannot heat and cool that fast. One in four records had no temperature at all.</li>
+        <li>In the Console, each servo's colour shows its temperature. A joint is marked hot at 55 °C.</li>
       </ul></div>
-      <div><h4>Next (the contribution)</h4><ul>
-        <li>Keep logging and compare heat per task (hold, carry, long reach).</li>
-        <li>A temperature guard next to the load guard, so a hot servo slows or parks before the firmware unloads it. It must ignore one-sample spikes, or it will stop the arm for a bad read.</li>
-        <li>A duty-cycle guide for SO-101 builds, using Seeed's servo data (see the ask).</li>
+      <div><h4>Next</h4><ul>
+        <li>Keep logging, and compare heat for holding, carrying and long reaches.</li>
+        <li>Add a temperature check next to the load check, so a hot servo slows down or rests before it shuts itself off. The check must ignore single false readings.</li>
+        <li>Write a guide for safe servo use, based on Seeed's data (see our request).</li>
       </ul></div>
     </div>
   </div>
 
   <div class="card">
-    <div class="n">5 · Operational guardrails <span class="pill good">working</span></div>
-    <h3>An AI that cannot hurt the arm, the table or the person</h3>
+    <div class="n">5 · Safety rules <span class="pill good">working</span></div>
+    <h3>A person decides when the AI gets control. Anyone can stop it. Only a person can restart it.</h3>
     <div class="cols">
       <div><h4>Today</h4><ul>
-        <li><b>Human first:</b> Interlock Core starts with the human in control. Only a request carrying the human key can hand control to an agent. An agent cannot take it back.</li>
-        <li><b>STOP for anyone,</b> resume for humans only. The legacy STOP file still works.</li>
-        <li><b>Load and lag guard</b> on every move, always on; the arm freezes where it is and holds.</li>
-        <li><b>Table clearance</b> check before the move, refused with the reachable height.</li>
-        <li><b>Joint limits</b> clamp and report. One write at a time; extras are refused as <code>busy</code>.</li>
-        <li>Torque off while the arm is raised is refused without confirmation.</li>
-        <li><b>Attacked on purpose:</b> 28 unattended MCP-only cycles, each ending in one deliberately bad command of 9 kinds (into the table, below it, too far, behind the base, a servo that doesn't exist). All 28 refused; nothing moved.</li>
+        <li><b>A person starts in control.</b> Only a person can give control to an AI. The AI cannot take it.</li>
+        <li><b>STOP works for anyone.</b> Only a person can restart after STOP. The old STOP file also still works.</li>
+        <li><b>Load and lag check</b> on every move, always on. If it trips, the arm stops where it is and holds still.</li>
+        <li><b>Table check</b> before every move. A move that comes within 1.5 cm of the table is refused, and the reply gives the distance in cm.</li>
+        <li><b>Joint limits:</b> values past a limit are cut to the limit, and the reply says so. Only one move runs at a time. A second move gets <code>busy</code>.</li>
+        <li>Turning the motors off while the arm is raised is refused unless a person confirms it.</li>
+        <li><b>Tested on purpose:</b> the AI ran 28 rounds alone. Each round ended with one bad command, of 9 kinds: into the table, below it, too far, behind the base, or a servo name that does not exist. All 28 were refused. The arm did not move.</li>
       </ul></div>
-      <div><h4>We would upstream</h4><ul>
-        <li>The guard set and the control model as a written safety profile for low-cost arms driven by AI.</li>
-        <li>The tests that prove each guard, including that the agent cannot override them.</li>
+      <div><h4>We would share</h4><ul>
+        <li>The checks and control rules, written as a safety guide for low-cost arms controlled by AI.</li>
+        <li>The tests that prove each check, including that the AI cannot turn them off.</li>
       </ul></div>
     </div>
   </div>
 </section>
 
 <section>
-  <div class="eyebrow">Proof it is real</div>
-  <h2>What it caught, and how it stopped</h2>
-  <p class="lede">We don't count wins: many runs that day were never recorded. We count what the logs did catch. Over 8.3 h Interlock Core logged 1,013 motion commands and refused 43 before anything moved. 19 of those were paths into or within 1.5 cm of the table (the deepest 5.0 cm into it); 18 were writes while someone else held the arm. Two AI moves froze mid-way when a human took over with the leader arm. In the attack loop, cycle 4's tracker locked onto the white jaw; after 12 moves the tool returned <code>not_aligned</code> and never closed the jaws.</p>
+  <div class="eyebrow">Test results</div>
+  <h2>Interlock stopped 43 of 1,013 logged moves, each with a clear reason</h2>
+  <p class="lede">We do not report a success rate, because many runs that day were not recorded. We report what the log did record. In 8.3 hours, Core logged 1,013 moves and refused 43 of them before the arm moved. 19 of those paths went into the table or within 1.5 cm of it; the worst went 5.0 cm into it. 18 came while someone else had control. Two AI moves were frozen when a person took over with the leader arm. In test round 4, the camera tracker followed the white gripper finger by mistake. After 12 moves the tool answered <code>not_aligned</code> and did not close the gripper.</p>
   <div class="scroll" style="margin-bottom:16px"><table>
-    <thead><tr><th>The error</th><th>Caught by</th><th>What happens</th><th>Where you see it</th></tr></thead>
+    <thead><tr><th>Problem</th><th>Checked by</th><th>Result</th><th>Where you see it</th></tr></thead>
     <tbody>
-      <tr><td>A path into the table</td><td>clearance check, before moving</td><td>refused, with the cm</td><td>result log, Link reason</td></tr>
-      <tr><td>An AI write while a human holds the arm</td><td>control token</td><td>refused: human has control</td><td>holder switch</td></tr>
-      <tr><td>A human takes over mid-move</td><td>holder change</td><td>AI move frozen in place, torque held</td><td>result log, 3D twin</td></tr>
-      <tr><td>Jaws closing beside the object</td><td>jaw-band check on the camera</td><td>not_aligned, jaws stay open</td><td>green band on the raw view</td></tr>
-      <tr><td>A stale 71 °C reading</td><td>refresh every 2.5 s, every mode</td><td>fresh reading + health log</td><td>servo colour on the twin</td></tr>
-      <tr><td>A 74 °C spike that wasn't real</td><td>the health log</td><td>logged, not acted on <span class="pill warn">next: filter</span></td><td>health log</td></tr>
+      <tr><td>A move into the table</td><td>table check, before the move</td><td><span class="pill refused" style="margin:0">refused</span> with the distance</td><td>log and the AI's reply</td></tr>
+      <tr><td>AI moves while a person has control</td><td>control switch</td><td><span class="pill refused" style="margin:0">refused</span> human has control</td><td>control panel in the Console</td></tr>
+      <tr><td>A person takes over during a move</td><td>control switch</td><td><span class="pill warn" style="margin:0">frozen</span> arm holds still</td><td>log and the 3D model</td></tr>
+      <tr><td>Gripper closing next to the object</td><td>camera check of the jaw area</td><td><span class="pill warn" style="margin:0">not_aligned</span> gripper stays open</td><td>green band in the camera view</td></tr>
+      <tr><td>Old 71 °C temperature reading</td><td>update every 2.5 s</td><td><span class="pill good" style="margin:0">ok</span> fresh value, logged</td><td>servo colour on the 3D model</td></tr>
+      <tr><td>False 74 °C reading</td><td>temperature log</td><td>logged only <span class="pill warn">next: filter</span></td><td>temperature log</td></tr>
     </tbody>
   </table></div>
   <div class="scroll"><table>
-    <thead><tr><th>Layer</th><th>What a newcomer gets</th><th>Status</th></tr></thead>
+    <thead><tr><th>Part</th><th>What a new owner gets</th><th>Status</th></tr></thead>
     <tbody>
-      <tr><td>Interlock Core</td><td>No port collisions; a documented API</td><td><span class="pill good">working</span></td></tr>
-      <tr><td>Interlock Link</td><td>Any model can drive the arm with honest outcomes</td><td><span class="pill good">working</span></td></tr>
-      <tr><td>Interlock Console</td><td>Live 3D, camera, loads, STOP</td><td><span class="pill good">working</span></td></tr>
-      <tr><td>Heat</td><td>Health report done; temperature logged every 10 s; guard next</td><td><span class="pill good">logging live</span></td></tr>
-      <tr><td>Guardrails</td><td>Human-first control, STOP, load/table/limit guards</td><td><span class="pill good">working</span></td></tr>
+      <tr><td>Interlock Core</td><td>No port errors, and one documented API</td><td><span class="pill good">working</span></td></tr>
+      <tr><td>Interlock Link</td><td>Any AI model can control the arm and gets clear answers</td><td><span class="pill good">working</span></td></tr>
+      <tr><td>Interlock Console</td><td>Live 3D model, camera, loads and STOP</td><td><span class="pill good">working</span></td></tr>
+      <tr><td>Servo temperature</td><td>Logged every 10 s. The check is next.</td><td><span class="pill good">logging works</span></td></tr>
+      <tr><td>Safety rules</td><td>A person starts in control, STOP, and the load, table and limit checks</td><td><span class="pill good">working</span></td></tr>
     </tbody>
   </table></div>
 </section>
 
 <section class="ask">
-  <div class="eyebrow">The ask</div>
-  <h2>Three things we want from Seeed</h2>
+  <div class="eyebrow">Our request</div>
+  <h2>We ask Seeed for three things</h2>
   <ol style="padding-left:20px;margin:8px 0 0">
-    <li><b>A home.</b> A place in the SO-ARM100/101 ecosystem (a repo under Seeed or a link from the docs) so owners find Interlock on day one.</li>
-    <li><b>Servo facts.</b> Which STS3215 datasheet applies to the 12 V follower, what exactly happens at 70 °C, and whether a steady 10 to 20% holding load is within duty cycle. The heat guard should use vendor data, not our guesses.</li>
-    <li><b>Review.</b> An engineer to check the guard set before we call it a safety profile.</li>
+    <li><b>A home.</b> A repository under Seeed, or a link in the SO&#8209;ARM101 docs, so new owners can find Interlock.</li>
+    <li><b>Servo data.</b> Which STS3215 datasheet fits the 12 V arm, what happens at 70 °C, and whether a steady 10 to 20% holding load is safe over time. Our temperature check should use your numbers, not our guesses.</li>
+    <li><b>A review.</b> An engineer to check our safety rules before we publish them as a guide.</li>
   </ol>
-  <p style="margin:14px 0 0;color:#d6e3f1">In return: MIT-style licence, tests that run without hardware, and a maintainer for the first six months.</p>
+  <p style="margin:14px 0 0;color:var(--il-halo)">In return: an open-source licence (MIT style), tests that run without hardware, and a maintainer for the first six months.</p>
 </section>
 
 <section class="talk">
   <div class="eyebrow">Talk track · about 5 minutes</div>
-  <h2>Say it like this</h2>
-  <p><b>30 s</b> "You opened the arm. Thank you: we built on it in a day. What we hit next was not hardware. It was the layer above."</p>
-  <p><b>60 s</b> "Four problems: port collisions, no visibility, an AI with no brakes, no memory of what happened. We solved them once. Interlock Core owns the bus. Everything else is a client."</p>
-  <p><b>60 s</b> "This morning we attacked our own guardrails: 28 deliberate bad commands, into the table, below it, out of reach, a servo that doesn't exist. 28 refused. Nothing moved."</p>
-  <p><b>60 s</b> Live: open the Console, show the 3D model and temperature colours. Ask the agent to pick the carton. Hit STOP mid-move. "It froze where it was. The agent cannot take control back; only I can."</p>
-  <p><b>45 s</b> "Our Console showed the elbow at 71 degrees, over the limit. We traced it: the reading was stale, and the real heat sits in the servos that hold the arm up, not the ones that move most. We fixed it, and now we log temperature every 10 seconds. The log already caught a 74-degree spike that was a bad read. Now we want your servo data to set a guard that knows the difference."</p>
-  <p><b>45 s</b> The ask: a home, servo facts, a reviewer. "We would rather this be yours than ours."</p>
+  <h2>What to say, in six parts</h2>
+  <p><b>30 s</b> "Thank you for opening the SO&#8209;ARM101. We built on it at this hackathon. The problems we found were not in the hardware. They were in the software around it."</p>
+  <p><b>60 s</b> "New owners meet four problems: two programs cannot share the port, there is no live view of the servos, nothing checks an AI's commands, and runs are not recorded. Interlock Core solves this. It is the only program connected to the arm. Every other program sends it requests."</p>
+  <p><b>60 s</b> "This morning we tested our own checks. The AI sent 28 bad commands on purpose: into the table, below it, too far, and a servo that does not exist. Interlock stopped all 28. The arm did not move."</p>
+  <p><b>60 s</b> Live: open the Console and show the 3D model and the temperature colours. Ask the AI to pick up the carton. Press STOP during the move. "The arm stopped where it was. The AI cannot restart it. Only a person can."</p>
+  <p><b>45 s</b> "Our Console once showed the elbow at 71 degrees, above the limit. The value was old; the real value was 36. We fixed it, and now we log temperature every 10 seconds. The log already caught a false 74-degree reading. We want your servo data so our temperature check can tell real heat from a bad reading."</p>
+  <p><b>45 s</b> Our request: a home, servo data and a review. "We want Interlock to become part of the SO&#8209;ARM101 community."</p>
 </section>
 
 <section>
-  <div class="eyebrow">Appendix</div>
-  <h2>Method and caveats</h2>
+  <div class="eyebrow">Sources and limits</div>
+  <h2>Where each number comes from, and what we have not proven</h2>
   <ul>
-    <li>Code figures come from main at <code>078c7be</code>: 167 test functions in <code>arm-daemon/tests</code> (Interlock Core's code still lives in <code>arm-daemon/</code>), 31 MCP tools, 52 demo folders in the main checkout.</li>
-    <li>Command and refusal counts come from <code>arm-daemon/logs/20261023.jsonl</code> (1,013 rows, 8.3 h). They are what the log caught; not every run that day was recorded, and no success rate is claimed.</li>
-    <li>The attack loop is <code>reports/guardrail-loop/</code> on branch <code>claude/arm-guardrail-test-loop-bb691d</code> (23 Oct 08:44–09:27). Unreachable and unknown-servo refusals come from the MCP layer, so they are not in Core's log.</li>
-    <li>Heat: the 71 °C story comes from <code>reports/servo-health/servo-health-report.html</code> (branch <code>claude/servo-health-report-2f4a19</code>). The logging fix (<code>3de86c7</code>) is merged to main and running; the 2 h figures come from <code>arm-daemon/logs/health/20261023.jsonl</code>, 08:36–10:38. Max temperatures exclude the two one-sample spikes.</li>
-    <li>The 70 °C over-temperature limit is read from our servos' EEPROM backup (address 13). Only the 7.4 V datasheet was available; our follower reads about 12 V.</li>
-    <li>No hand or person detection exists in the code yet; guardrails are bus-level (load, lag, table, limits, STOP, human-first control).</li>
-    <li>Guards are advisory in one case: table clearance depends on a model that is wrong when the arm rests on something.</li>
-    <li>"Licence" and "maintainer for six months" are offers to confirm with the team, not yet decided.</li>
-    <li>Vision uses YOLO-World and misses small objects above 6 cm, which is why the tools point at a raw pixel when the detector sees nothing.</li>
+    <li>Code numbers come from the main branch at <code>078c7be</code>: 167 tests in <code>arm-daemon/tests</code> (Interlock Core's code still lives in the <code>arm-daemon/</code> folder), 31 MCP tools, and 52 recorded runs.</li>
+    <li>Move and refusal counts come from <code>arm-daemon/logs/20261023.jsonl</code> (1,013 records, 8.3 hours). They show what the log recorded. Not every run that day was logged, so we give no success rate.</li>
+    <li>The 28-round test is in <code>reports/guardrail-loop/</code> on branch <code>claude/arm-guardrail-test-loop-bb691d</code> (23 Oct, 08:44 to 09:27). "Too far" and "unknown servo" refusals come from Link, so they are not in Core's log.</li>
+    <li>The 71 °C finding comes from <code>reports/servo-health/servo-health-report.html</code> (branch <code>claude/servo-health-report-2f4a19</code>). The fix (<code>3de86c7</code>) is on the main branch and running. The 2-hour numbers come from <code>arm-daemon/logs/health/20261023.jsonl</code>, 08:36 to 10:38. Maximum values leave out the two false readings.</li>
+    <li>The 70 °C limit comes from a backup of our servos' settings (address 13). We could only find the 7.4 V datasheet; our arm runs at about 12 V.</li>
+    <li>Interlock does not detect hands or people yet. The checks work on servo data only: load, lag, table, limits, STOP and who has control.</li>
+    <li>The table check depends on a model of the arm. That model is wrong when the arm rests on an object.</li>
+    <li>The licence and the six-month maintainer are offers. The team has not decided them yet.</li>
+    <li>Object detection (YOLO-World) misses small objects seen from above 6 cm. When that happens, the AI points at the object's position in the camera image instead.</li>
   </ul>
 </section>
+
 
 <footer><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Interlock">
   
@@ -277,7 +292,7 @@ footer svg{width:20px;height:20px;flex:none}
     
     <circle cx="46" cy="40" r="3.4" fill="#8EC5F0"/>
   </g>
-</svg><span>interlock · Alternate to <code>reports/hackathon-pitch-script.html</code> (the "Arms, not bodies" talk). Local file, not published.</span></footer>
+</svg><span>interlock · A second pitch, next to <code>reports/hackathon-pitch-script.html</code>. Local file, not published.</span></footer>
 </main>
 </body>
 </html>
